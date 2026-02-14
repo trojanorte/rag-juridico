@@ -20,6 +20,9 @@ class FAISSStore:
             pickle.dump(self.texts, f)
 
     def load(self, index_path="vectorstore/faiss.index", metadata_path="vectorstore/metadata.pkl"):
+        if not os.path.exists(index_path):
+            raise FileNotFoundError("Índice FAISS não encontrado. Rode build_index.py primeiro.")
+
         self.index = faiss.read_index(index_path)
 
         with open(metadata_path, "rb") as f:
@@ -33,3 +36,6 @@ class FAISSStore:
             results.append(self.texts[idx])
 
         return results
+
+    def get_dimension(self):
+        return self.index.d

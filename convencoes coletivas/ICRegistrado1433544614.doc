@@ -1,0 +1,603 @@
+
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <title>
+        Mediador - Extrato Termo Aditivo de Acordo Coletivo
+    </title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G"></script>
+
+    <script src='/sistemas/mediador/WebResource.axd?d=mrsqBfycVuLUXNl1cBgBTS5e_zgKGT_ydqPRFYm385YpdfzTzxV6hshOewYDoLiqkOG5xDMpMwYkPFkVGOCk3Y5dYguSzi7CobMhisYHUM9t2KtHWNt2XO-WPVQxtFvj_Ojdds3d9AEuk1uzZDngf1CaMeTRwhhvrPWLN68FVwx2MKay9IB88DnjaO5EJfVu0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=tg4c3d9DGBdyY2FRFNUysRw8BXR2FCFKN2Hxucxv7I7uKRxf5xlBbt8q4jssOn7PMwhXsRCvSVq8IleJdeUJ1A0jkOo7a8JXMC2JQHv6bhTagXEFqDiP6DCJQzeQIlBcVUCVNmMDykvbzsZc5IPFPFKK4p5OM1lwI6yLnAw1qI72yFrvDsK7Bk7gZAnjMQRPb1VBubasmLNB2yshW-BA-A2&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ci_Ef54u9rsqxctDQvgSa2Fqbu19aIC7-bvt-mrcQU0uKWQrI1aDKWlhPhhcqtDD6lRJrp5X3QNdj-3105H2TUImyDa1ifpjjF5aQAr6czlicBRMTW5Iv0ij7lHhFGdhR9_fM7C0hBTz-MBAB3jNQ7E7I2ip1ncT13KBICCDctBDCCyZa671FU6tziLAWVqS0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=HhRvNPO_8EFR9zXDBtRPZ2vqDcqzTjtXWvAHwwDdGmYPxHFNGjxFIeDHPtFiIyYDQa6V4bDifrfSTevNX6oD9WP_ZoKMBiPFnlTJ5WrYBfJQwZBD6lUNGufAikMWKyj4_tO8lSJ1gxwaJ9GMePDWssPDfpV-KiTalP50xwt3a6PSYOKdgSFrlvmG-A2NxId_0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ji-F9gbs5nq8Dd3QjdkZDB9bS2ka5inEVN6mHWhVKUfaWkcBlVtZmkNsFaLeAuJxNhFZXOb9gyIabCLrea9HdUblOKZO3Lson6pi4KdqIE0-IEngSpkAkb8IzgTMdpJ_getA9JixUIOpDom6HDHOEoyUQsDgcDmnToVGbO4v1M6isu7z6oIKEkDOr9GXgUnQ0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=1oOmSykdKljldEVdM-TVR6vUbXsxyBWjItMDx4wCQf3Kabnp412nq3Nuui35243OaS0tD2owbuFN3Xilzzca8j8BcT7XSvu9Jm9w2r8ElZKT8A7wvfFpbUC5BrzB4eYkn8Uy5KZ6KPebNTIxS5doOnddihnTsMr_CWq5sXfdIOwDXL1pU0HsjpKH54ZaHW_T0&t=639040922190000000' type='text/javascript'></script>
+
+
+<script type="text/javascript">
+        var recaptchaSiteKey = '6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G';
+        var pageLoadToken = '';
+        var isPageValidated = false;
+
+        function onRecaptchaLoad() {
+            console.log('reCAPTCHA carregado, validando página...');
+            executePageLoadRecaptcha();
+        }
+
+        function executePageLoadRecaptcha() {
+            if (typeof grecaptcha === 'undefined') {
+                console.error('reCAPTCHA não carregado');
+                return;
+            }
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(recaptchaSiteKey, {
+                    action: 'page_load_resumo'
+                }).then(function(token) {
+                    console.log('Token de página gerado');
+                    pageLoadToken = token;
+
+                    // Enviar o token para o servidor
+                    validatePageLoadToken(token);
+                }).catch(function(error) {
+                    console.error('Erro no reCAPTCHA de página:', error);
+                    // Em desenvolvimento, permitir continuar
+                });
+            });
+        }
+
+        function validatePageLoadToken(token) {
+            var currentUrl = window.location.href;
+            var queryString = window.location.search;
+            var nrSolicitacao = 'MR066867/2025';
+
+            $.ajax({
+                url: '/sistemas/mediador/Resumo/ValidateResumoPageLoad',
+                type: 'POST',
+                data: {
+                    recaptchaToken: token,
+                    currentUrl: currentUrl,
+                    queryString: queryString,
+                    nrSolicitacao: nrSolicitacao
+                },
+                success: function(response) {
+                    if (response.success) {
+                        console.log('Página validada com sucesso');
+                        isPageValidated = true;
+                        showPageContent();
+                    } else {
+                        console.warn('Validação de página falhou:', response.message);
+                        handleValidationFailed(response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erro ao validar página:', error);
+                    handleValidationFailed({ message: 'Erro de comunicação com o servidor' });
+                }
+            });
+        }
+
+        function showPageContent() {
+            // Remover overlay de loading se existir
+            $('#recaptcha-loading').remove();
+            console.log('Conteúdo da página liberado');
+        }
+
+        function handleValidationFailed(response) {
+            // Mostrar mensagem de erro
+            var errorHtml = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: #d32f2f;">Validação de Segurança</h2>
+                        <p style="font-size: 16px; margin: 20px 0;">${response.message || 'Falha na validação de segurança.'}</p>
+                        <button onclick="window.location.reload()" style="padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Tentar Novamente
+                        </button>
+                        <br><br>
+                        <button onclick="window.location.href='/sistemas/mediador/'" style="padding: 8px 16px; background: #757575; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Voltar para Página Inicial
+                        </button>
+                    </div>
+                </div>
+            `;
+            $('body').prepend(errorHtml);
+        }
+
+        $(document).ready(function() {
+            console.log('Página carregada - ambiente de produção');
+
+            // Pular validação reCAPTCHA em produção
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.log('Produção - validando sem reCAPTCHA');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 1000);
+
+            // Timeout de segurança reduzido
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.warn('Timeout na validação - liberando conteúdo');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 5000); // Reduzido para 5 segundos
+        });
+
+        function Imprimir() {
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "none";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "none";
+            window.print();
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "";
+            return true;
+        }
+        $(function () {
+            var marcaDaguaHtml = $('.MarcaDagua').html();
+            var width = $('body').width();
+            var marcaW = $('.MarcaDagua').width();
+
+            var qtdNescessarios = Math.round((width / marcaW) + 0.4);
+            if (qtdNescessarios > 0)
+                for (var incrementador = 0; incrementador < qtdNescessarios; incrementador++) {
+                    $('.MarcaDagua').append("<br />");
+                    $('.MarcaDagua').append(marcaDaguaHtml);
+                }
+        });
+
+
+</script>
+    <style type="text/css">
+        .titulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .Subtitulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 13px;
+        }
+        .texto
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .tituloClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .descricaoClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .textogrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .textosubgrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .textonome
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .textofuncao
+        {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pagebreak
+        {
+            page-break-after: always;
+        }
+        table.titulo
+        {
+            text-align: left;
+        }
+        @page Section2 {size:21cm 29.7cm ;mso-page-orientation:portrait;margin-top:2cm; margin-rigth:2cm; mso-paper-source:0;}
+        div.Section2 {page:Section2;}
+        pre
+        {
+            white-space: pre-wrap; /* css-3 */
+            white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+            white-space: -pre-wrap; /* Opera 4-6 */
+            white-space: -o-pre-wrap; /* Opera 7 */
+            word-wrap: break-word; /* Internet Explorer 5.5+ */
+            white-space: normal;
+        }
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+    <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+    </xml>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="Section2">
+
+        <center>
+            <table border="0" style="width: 18cm;" id="tblConteudo">
+                <tr>
+                    <td>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+
+                                                            <tr>
+                                    <td align="center" class="titulo" style="text-transform: uppercase;">
+                                        <b>
+                                            Termo Aditivo a Acordo Coletivo De Trabalho 2025/2026
+                                        </b>
+                                        <br />
+                                        <br />
+                                    </td>
+                                </tr>
+                            <tr>
+                                <td>
+                                    <div style="text-align: left;">
+                                        <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <b>NÚMERO DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        SP000133/2026
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        05/01/2026
+                                                    </td>
+                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <b>NÚMERO DA SOLICITAÇÃO:</b>
+                                                </td>
+                                                <td style="width: 10px">
+                                                </td>
+                                                <td>
+                                                    MR066867/2025
+                                                </td>
+                                            </tr>
+                                                                                            <tr>
+                                                    <td>
+                                                        <b>NÚMERO DO PROCESSO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        47979.264810/2025-65
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DO PROTOCOLO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+31/10/2025                                                    </td>
+                                                </tr>
+                                        </table>
+                                        <br />
+
+                                                    <br />
+                                                    <br />
+                                                    <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td>
+                                                                <b>
+                                                                    N&#218;MERO DO PROCESSO  DO ACORDO COLETIVO PRINCIPAL:
+                                                                </b>
+                                                            </td>
+                                                            <td style="width: 10px">
+                                                            </td>
+                                                            <td>
+                                                                47979.207741/2025-92
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <b>
+                                                                    DATA DE REGISTRO  DO ACORDO COLETIVO PRINCIPAL:
+                                                                </b>
+                                                            </td>
+                                                            <td style="width: 10px">
+                                                            </td>
+                                                            <td>
+23/09/2025                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                        <p>
+                                                            <label class="texto">
+                                                                <b>
+                                                                    Confira a autenticidade no endereço http://www3.mte.gov.br/sistemas/mediador/.
+                                                                </b>
+                                                            </label>
+                                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" class="texto">
+                                    <p align="justify">
+SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A, CNPJ n. 61.186.888/0001-93, neste ato representado(a) por seu 
+
+Diretor, Sr(a). FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS e por seu Gerente, Sr(a). DANIELA GOMES BENA;
+    <br />
+&nbsp;
+    <br />
+SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A, CNPJ n. 61.186.888/0002-74, neste ato representado(a) por seu 
+
+Diretor, Sr(a). FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS e por seu Gerente, Sr(a). DANIELA GOMES BENA;
+    <br />
+&nbsp;
+    <br />
+SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A, CNPJ n. 61.186.888/0021-37, neste ato representado(a) por seu 
+
+Diretor, Sr(a). FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS e por seu Gerente, Sr(a). DANIELA GOMES BENA;
+    <br />
+&nbsp;
+    <br />
+SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A, CNPJ n. 61.186.888/0070-15, neste ato representado(a) por seu 
+
+Diretor, Sr(a). FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS e por seu Gerente, Sr(a). DANIELA GOMES BENA;
+    <br />
+&nbsp;
+    <br />
+                                        <label>
+                                            E
+                                        </label>
+                                        <br />
+                                        <br />
+SIND TRAB DE DEP DE DISTR DE BEBIDAS DE SAO PAULO GUAR OSASC, CNPJ n. 00.892.762/0001-40, neste ato representado(a) por seu 
+
+Presidente, Sr(a). JOSE APARECIDO BIAZON;
+    <br />
+&nbsp;
+    <br />
+                                                                                    celebram
+                                                                                    o
+                                         presente TERMO ADITIVO DE ACORDO COLETIVO DE TRABALHO,
+ estipulando as condi&#231;&#245;es de trabalho previstas nas cl&#225;usulas seguintes:                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA PRIMEIRA - VIG&#202;NCIA E DATA-BASE
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    As partes fixam a vigência do presente Termo Aditivo de Acordo Coletivo de Trabalho no período de 01º de maio de 2025 a 30 de abril de 2026 e a data-base da categoria em 01º de maio.
+                                                </label>
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA SEGUNDA - ABRANG&#202;NCIA
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    O presente Termo Aditivo de Acordo Coletivo de Trabalho, aplicável no âmbito da(s) empresa(s) acordante(s), abrangerá a(s) categoria(s) <b>Trabalhadores em Depósitos de Distribuição de Bebidas</b>, com abrangência territorial em <b>Osasco/SP e São Paulo/SP</b>.
+                                                </label>
+                                                <br />
+                                    </p>
+
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Relações Sindicais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Contribuições Sindicais
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA TERCEIRA - CONTRIBUI&#199;&#195;O CONFEDERATIVA
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p data-start="158" data-end="418"><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;">As partes convenentes, reconhecendo a necessidade de regulamentar a contribui&ccedil;&atilde;o destinada ao custeio das atividades sindicais e considerando que tal cl&aacute;usula n&atilde;o constou do Acordo Coletivo de Trabalho vigente, resolvem firmar o presente Termo Aditivo, com a finalidade de incluir a Cl&aacute;usula de Contribui&ccedil;&atilde;o Confederativa, que passa a vigorar com a seguinte reda&ccedil;&atilde;o:</span></p>
+<p data-start="1050" data-end="1332"><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;">A empresa proceder&aacute; <strong data-start="1070" data-end="1085">mensalmente</strong> ao <strong data-start="1089" data-end="1124">desconto de 2% (dois por cento)</strong> sobre o <strong data-start="1133" data-end="1149">sal&aacute;rio-base</strong> de todos os empregados integrantes da categoria profissional, <strong data-start="1212" data-end="1278">limitado ao valor do sal&aacute;rio normativo do Motorista Carreteiro</strong>, destinando o montante ao <strong data-start="1305" data-end="1331">sindicato profissional</strong>.</span></p>
+<p data-start="1334" data-end="1721"><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;"><strong data-start="1334" data-end="1357">Par&aacute;grafo Primeiro:&nbsp;</strong></span><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;">A contribui&ccedil;&atilde;o de que trata esta cl&aacute;usula tem por finalidade <strong data-start="1421" data-end="1456">custear as atividades sindicais</strong>, bem como a <strong data-start="1469" data-end="1521">manuten&ccedil;&atilde;o e amplia&ccedil;&atilde;o dos servi&ccedil;os e benef&iacute;cios</strong> oferecidos pelo sindicato &agrave; categoria, incluindo <strong data-start="1571" data-end="1663">atendimento m&eacute;dico, odontol&oacute;gico, jur&iacute;dico, programas de lazer, capacita&ccedil;&atilde;o profissional</strong> e demais assist&ecirc;ncias disponibilizadas aos trabalhadores.</span></p>
+<p data-start="1723" data-end="1890"><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;"><strong data-start="1723" data-end="1745">Par&aacute;grafo Segundo:&nbsp;</strong></span><span style="font-family: arial, helvetica, sans-serif; font-size: x-small;">&Eacute; assegurado ao empregado o <strong data-start="1776" data-end="1811">direito de oposi&ccedil;&atilde;o ao desconto</strong>, nos termos, prazos e condi&ccedil;&otilde;es <strong data-start="1844" data-end="1889">estabelecidos pelo sindicato profissional</strong>.</span></p>
+                                                </label>
+                                                <br />
+                                    }
+                                    <br />
+                                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                        <tr>
+                                            <td align="center">
+                                                    <br />
+    <br />
+    <label class="textonome">
+        FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS
+        <br style="height: 5px" />
+        Diretor
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        DANIELA GOMES BENA
+        <br style="height: 5px" />
+        Gerente
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+
+    <br />
+    <br />
+    <label class="textonome">
+        FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS
+        <br style="height: 5px" />
+        Diretor
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        DANIELA GOMES BENA
+        <br style="height: 5px" />
+        Gerente
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS
+        <br style="height: 5px" />
+        Diretor
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        DANIELA GOMES BENA
+        <br style="height: 5px" />
+        Gerente
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        FLAVIA ANTONIA RUZZA FERRAZ DE CAMPOS
+        <br style="height: 5px" />
+        Diretor
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        DANIELA GOMES BENA
+        <br style="height: 5px" />
+        Gerente
+        <br style="height: 5px" />
+        SPAL INDUSTRIA BRASILEIRA DE BEBIDAS S/A
+        <br />
+        <br />
+    </label>
+    <br />
+    <br />
+    <label class="textonome">
+        JOSE APARECIDO BIAZON
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SIND TRAB DE DEP DE DISTR DE BEBIDAS DE SAO PAULO GUAR OSASC
+        <br />
+        <br />
+    </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                        <br />
+                                        <center>
+                                            <label class="textogrupo">
+                                                <b>ANEXOS </b>
+                                            </label>
+                                        </center>
+                                                        <label>
+                                                            <b>
+                                                                <center>
+                                                                    <label class="textogrupo">
+                                                                        ANEXO I - ATA
+                                                                    </label>
+                                                                </center>
+                                                                <label class="tituloClausula">
+                                                                                                                                    </label>
+                                                            </b>
+                                                        </label>
+                                                        <b>
+                                                            <label>
+
+                                                            </label>
+                                                        </b>
+                                                        <br />
+                                                        <label class="descricaoClausula" >
+                                                            <p><a href="https://www3.mte.gov.br/sistemas/mediador/imagemAnexo/MR066867_20252025_10_28T14_32_44.pdf" target="_blank">Anexo (PDF)</a></p>
+                                                        </label>
+                                                        <br />
+                                        <!--****************************************** FIM - Anexos ******************************************-->
+                                            <label class="texto">
+                                                &#160;&#160;&#160;&#160;A autenticidade deste documento poderá ser confirmada na
+                                                página do Ministerio do Trabalho e Emprego na Internet, no endereço http://www.mte.gov.br.
+                                            </label>
+                                            <br />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
+</body>
+<script>
+    setTimeout(function () {
+        window.history.replaceState({}, '', window.location.pathname);
+    }, 0);
+</script>
+</html>

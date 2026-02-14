@@ -1,0 +1,607 @@
+
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <title>
+        Mediador - Extrato Conven&#231;&#227;o Coletiva
+    </title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G"></script>
+
+    <script src='/sistemas/mediador/WebResource.axd?d=mrsqBfycVuLUXNl1cBgBTS5e_zgKGT_ydqPRFYm385YpdfzTzxV6hshOewYDoLiqkOG5xDMpMwYkPFkVGOCk3Y5dYguSzi7CobMhisYHUM9t2KtHWNt2XO-WPVQxtFvj_Ojdds3d9AEuk1uzZDngf1CaMeTRwhhvrPWLN68FVwx2MKay9IB88DnjaO5EJfVu0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=tg4c3d9DGBdyY2FRFNUysRw8BXR2FCFKN2Hxucxv7I7uKRxf5xlBbt8q4jssOn7PMwhXsRCvSVq8IleJdeUJ1A0jkOo7a8JXMC2JQHv6bhTagXEFqDiP6DCJQzeQIlBcVUCVNmMDykvbzsZc5IPFPFKK4p5OM1lwI6yLnAw1qI72yFrvDsK7Bk7gZAnjMQRPb1VBubasmLNB2yshW-BA-A2&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ci_Ef54u9rsqxctDQvgSa2Fqbu19aIC7-bvt-mrcQU0uKWQrI1aDKWlhPhhcqtDD6lRJrp5X3QNdj-3105H2TUImyDa1ifpjjF5aQAr6czlicBRMTW5Iv0ij7lHhFGdhR9_fM7C0hBTz-MBAB3jNQ7E7I2ip1ncT13KBICCDctBDCCyZa671FU6tziLAWVqS0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=HhRvNPO_8EFR9zXDBtRPZ2vqDcqzTjtXWvAHwwDdGmYPxHFNGjxFIeDHPtFiIyYDQa6V4bDifrfSTevNX6oD9WP_ZoKMBiPFnlTJ5WrYBfJQwZBD6lUNGufAikMWKyj4_tO8lSJ1gxwaJ9GMePDWssPDfpV-KiTalP50xwt3a6PSYOKdgSFrlvmG-A2NxId_0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ji-F9gbs5nq8Dd3QjdkZDB9bS2ka5inEVN6mHWhVKUfaWkcBlVtZmkNsFaLeAuJxNhFZXOb9gyIabCLrea9HdUblOKZO3Lson6pi4KdqIE0-IEngSpkAkb8IzgTMdpJ_getA9JixUIOpDom6HDHOEoyUQsDgcDmnToVGbO4v1M6isu7z6oIKEkDOr9GXgUnQ0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=1oOmSykdKljldEVdM-TVR6vUbXsxyBWjItMDx4wCQf3Kabnp412nq3Nuui35243OaS0tD2owbuFN3Xilzzca8j8BcT7XSvu9Jm9w2r8ElZKT8A7wvfFpbUC5BrzB4eYkn8Uy5KZ6KPebNTIxS5doOnddihnTsMr_CWq5sXfdIOwDXL1pU0HsjpKH54ZaHW_T0&t=639040922190000000' type='text/javascript'></script>
+
+
+<script type="text/javascript">
+        var recaptchaSiteKey = '6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G';
+        var pageLoadToken = '';
+        var isPageValidated = false;
+
+        function onRecaptchaLoad() {
+            console.log('reCAPTCHA carregado, validando página...');
+            executePageLoadRecaptcha();
+        }
+
+        function executePageLoadRecaptcha() {
+            if (typeof grecaptcha === 'undefined') {
+                console.error('reCAPTCHA não carregado');
+                return;
+            }
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(recaptchaSiteKey, {
+                    action: 'page_load_resumo'
+                }).then(function(token) {
+                    console.log('Token de página gerado');
+                    pageLoadToken = token;
+
+                    // Enviar o token para o servidor
+                    validatePageLoadToken(token);
+                }).catch(function(error) {
+                    console.error('Erro no reCAPTCHA de página:', error);
+                    // Em desenvolvimento, permitir continuar
+                });
+            });
+        }
+
+        function validatePageLoadToken(token) {
+            var currentUrl = window.location.href;
+            var queryString = window.location.search;
+            var nrSolicitacao = 'MR069060/2025';
+
+            $.ajax({
+                url: '/sistemas/mediador/Resumo/ValidateResumoPageLoad',
+                type: 'POST',
+                data: {
+                    recaptchaToken: token,
+                    currentUrl: currentUrl,
+                    queryString: queryString,
+                    nrSolicitacao: nrSolicitacao
+                },
+                success: function(response) {
+                    if (response.success) {
+                        console.log('Página validada com sucesso');
+                        isPageValidated = true;
+                        showPageContent();
+                    } else {
+                        console.warn('Validação de página falhou:', response.message);
+                        handleValidationFailed(response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erro ao validar página:', error);
+                    handleValidationFailed({ message: 'Erro de comunicação com o servidor' });
+                }
+            });
+        }
+
+        function showPageContent() {
+            // Remover overlay de loading se existir
+            $('#recaptcha-loading').remove();
+            console.log('Conteúdo da página liberado');
+        }
+
+        function handleValidationFailed(response) {
+            // Mostrar mensagem de erro
+            var errorHtml = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: #d32f2f;">Validação de Segurança</h2>
+                        <p style="font-size: 16px; margin: 20px 0;">${response.message || 'Falha na validação de segurança.'}</p>
+                        <button onclick="window.location.reload()" style="padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Tentar Novamente
+                        </button>
+                        <br><br>
+                        <button onclick="window.location.href='/sistemas/mediador/'" style="padding: 8px 16px; background: #757575; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Voltar para Página Inicial
+                        </button>
+                    </div>
+                </div>
+            `;
+            $('body').prepend(errorHtml);
+        }
+
+        $(document).ready(function() {
+            console.log('Página carregada - ambiente de produção');
+
+            // Pular validação reCAPTCHA em produção
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.log('Produção - validando sem reCAPTCHA');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 1000);
+
+            // Timeout de segurança reduzido
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.warn('Timeout na validação - liberando conteúdo');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 5000); // Reduzido para 5 segundos
+        });
+
+        function Imprimir() {
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "none";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "none";
+            window.print();
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "";
+            return true;
+        }
+        $(function () {
+            var marcaDaguaHtml = $('.MarcaDagua').html();
+            var width = $('body').width();
+            var marcaW = $('.MarcaDagua').width();
+
+            var qtdNescessarios = Math.round((width / marcaW) + 0.4);
+            if (qtdNescessarios > 0)
+                for (var incrementador = 0; incrementador < qtdNescessarios; incrementador++) {
+                    $('.MarcaDagua').append("<br />");
+                    $('.MarcaDagua').append(marcaDaguaHtml);
+                }
+        });
+
+
+</script>
+    <style type="text/css">
+        .titulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .Subtitulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 13px;
+        }
+        .texto
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .tituloClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .descricaoClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .textogrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .textosubgrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .textonome
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .textofuncao
+        {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pagebreak
+        {
+            page-break-after: always;
+        }
+        table.titulo
+        {
+            text-align: left;
+        }
+        @page Section2 {size:21cm 29.7cm ;mso-page-orientation:portrait;margin-top:2cm; margin-rigth:2cm; mso-paper-source:0;}
+        div.Section2 {page:Section2;}
+        pre
+        {
+            white-space: pre-wrap; /* css-3 */
+            white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+            white-space: -pre-wrap; /* Opera 4-6 */
+            white-space: -o-pre-wrap; /* Opera 7 */
+            word-wrap: break-word; /* Internet Explorer 5.5+ */
+            white-space: normal;
+        }
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+    <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+    </xml>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="Section2">
+
+        <center>
+            <table border="0" style="width: 18cm;" id="tblConteudo">
+                <tr>
+                    <td>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+
+                                                            <tr>
+                                    <td align="center" class="titulo" style="text-transform: uppercase;">
+                                        <b>
+                                            Conven&#231;&#227;o Coletiva De Trabalho 2025/2026
+                                        </b>
+                                        <br />
+                                        <br />
+                                    </td>
+                                </tr>
+                            <tr>
+                                <td>
+                                    <div style="text-align: left;">
+                                        <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <b>NÚMERO DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        SP000453/2026
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        12/01/2026
+                                                    </td>
+                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <b>NÚMERO DA SOLICITAÇÃO:</b>
+                                                </td>
+                                                <td style="width: 10px">
+                                                </td>
+                                                <td>
+                                                    MR069060/2025
+                                                </td>
+                                            </tr>
+                                                                                            <tr>
+                                                    <td>
+                                                        <b>NÚMERO DO PROCESSO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        47979.272905/2025-52
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DO PROTOCOLO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+06/11/2025                                                    </td>
+                                                </tr>
+                                        </table>
+                                        <br />
+
+                                                        <p>
+                                                            <label class="texto">
+                                                                <b>
+                                                                    Confira a autenticidade no endereço http://www3.mte.gov.br/sistemas/mediador/.
+                                                                </b>
+                                                            </label>
+                                                        </p>
+                                                    <br />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" class="texto">
+                                    <p align="justify">
+SINDICATO DOS NUTRICIONISTAS DO ESTADO DE SAO PAULO, CNPJ n. 52.399.946/0001-76, neste ato representado(a) por seu 
+
+Presidente, Sr(a). MARIA DA CONSOLACAO MACHADO FUREGATTI;
+    <br />
+&nbsp;
+    <br />
+                                        <label>
+                                            E
+                                        </label>
+                                        <br />
+                                        <br />
+SINDICATO NACIONAL DAS COOPERATIVAS DE SERVICOS MEDICOS, CNPJ n. 60.902.764/0001-02, neste ato representado(a) por seu 
+
+Presidente, Sr(a). DILSON LAMAITA MIRANDA;
+    <br />
+&nbsp;
+    <br />
+                                                                                    celebram
+                                                                                    a
+                                         presente CONVEN&#199;&#195;O COLETIVA DE TRABALHO,
+ estipulando as condi&#231;&#245;es de trabalho previstas nas cl&#225;usulas seguintes:                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA PRIMEIRA - VIG&#202;NCIA E DATA-BASE
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    As partes fixam a vigência da presente Convenção Coletiva de Trabalho no período de 01º de julho de 2025 a 30 de junho de 2026 e a data-base da categoria em 01º de julho.
+                                                </label>
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA SEGUNDA - ABRANG&#202;NCIA
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    A presente Convenção Coletiva de Trabalho abrangerá a(s) categoria(s) <b> CATEGORIA PROFISSIONAL DOS NUTRICIONISTAS QUE LABORAM NAS COOPERATIVAS DE SERVIÇOS MÉDICOS                           </b>, com abrangência territorial em <b>Adamantina/SP, Adolfo/SP, Aguaí/SP, Águas da Prata/SP, Águas de Lindóia/SP, Águas de Santa Bárbara/SP, Águas de São Pedro/SP, Agudos/SP, Alambari/SP, Alfredo Marcondes/SP, Altair/SP, Altinópolis/SP, Alto Alegre/SP, Alumínio/SP, Álvares Florence/SP, Álvares Machado/SP, Álvaro de Carvalho/SP, Alvinlândia/SP, Americana/SP, Américo Brasiliense/SP, Américo de Campos/SP, Amparo/SP, Analândia/SP, Andradina/SP, Angatuba/SP, Anhembi/SP, Anhumas/SP, Aparecida d'Oeste/SP, Aparecida/SP, Apiaí/SP, Araçariguama/SP, Araçatuba/SP, Araçoiaba da Serra/SP, Aramina/SP, Arandu/SP, Arapeí/SP, Araraquara/SP, Araras/SP, Arco-Íris/SP, Arealva/SP, Areias/SP, Areiópolis/SP, Ariranha/SP, Artur Nogueira/SP, Arujá/SP, Aspásia/SP, Assis/SP, Atibaia/SP, Auriflama/SP, Avaí/SP, Avanhandava/SP, Avaré/SP, Bady Bassitt/SP, Balbinos/SP, Bálsamo/SP, Bananal/SP, Barão de Antonina/SP, Barbosa/SP, Bariri/SP, Barra Bonita/SP, Barra do Chapéu/SP, Barra do Turvo/SP, Barretos/SP, Barrinha/SP, Barueri/SP, Bastos/SP, Batatais/SP, Bauru/SP, Bebedouro/SP, Bento de Abreu/SP, Bernardino de Campos/SP, Bertioga/SP, Bilac/SP, Birigui/SP, Biritiba Mirim/SP, Boa Esperança do Sul/SP, Bocaina/SP, Bofete/SP, Boituva/SP, Bom Jesus dos Perdões/SP, Bom Sucesso de Itararé/SP, Borá/SP, Boracéia/SP, Borborema/SP, Borebi/SP, Botucatu/SP, Bragança Paulista/SP, Braúna/SP, Brejo Alegre/SP, Brodowski/SP, Brotas/SP, Buri/SP, Buritama/SP, Buritizal/SP, Cabrália Paulista/SP, Cabreúva/SP, Caçapava/SP, Cachoeira Paulista/SP, Caconde/SP, Cafelândia/SP, Caiabu/SP, Caieiras/SP, Caiuá/SP, Cajamar/SP, Cajati/SP, Cajobi/SP, Cajuru/SP, Campina do Monte Alegre/SP, Campinas/SP, Campo Limpo Paulista/SP, Campos do Jordão/SP, Campos Novos Paulista/SP, Cananéia/SP, Canas/SP, Cândido Mota/SP, Cândido Rodrigues/SP, Canitar/SP, Capão Bonito/SP, Capela do Alto/SP, Capivari/SP, Caraguatatuba/SP, Carapicuíba/SP, Cardoso/SP, Casa Branca/SP, Cássia dos Coqueiros/SP, Castilho/SP, Catanduva/SP, Catiguá/SP, Cedral/SP, Cerqueira César/SP, Cerquilho/SP, Cesário Lange/SP, Charqueada/SP, Chavantes/SP, Clementina/SP, Colina/SP, Colômbia/SP, Conchal/SP, Conchas/SP, Cordeirópolis/SP, Coroados/SP, Coronel Macedo/SP, Corumbataí/SP, Cosmópolis/SP, Cosmorama/SP, Cotia/SP, Cravinhos/SP, Cristais Paulista/SP, Cruzália/SP, Cruzeiro/SP, Cubatão/SP, Cunha/SP, Descalvado/SP, Diadema/SP, Dirce Reis/SP, Divinolândia/SP, Dobrada/SP, Dois Córregos/SP, Dolcinópolis/SP, Dourado/SP, Dracena/SP, Duartina/SP, Dumont/SP, Echaporã/SP, Eldorado/SP, Elias Fausto/SP, Elisiário/SP, Embaúba/SP, Embu das Artes/SP, Embu-Guaçu/SP, Emilianópolis/SP, Engenheiro Coelho/SP, Espírito Santo do Pinhal/SP, Espírito Santo do Turvo/SP, Estiva Gerbi/SP, Estrela do Norte/SP, Estrela d'Oeste/SP, Euclides da Cunha Paulista/SP, Fartura/SP, Fernando Prestes/SP, Fernandópolis/SP, Fernão/SP, Ferraz de Vasconcelos/SP, Flora Rica/SP, Floreal/SP, Flórida Paulista/SP, Florínea/SP, Franca/SP, Francisco Morato/SP, Franco da Rocha/SP, Gabriel Monteiro/SP, Gália/SP, Garça/SP, Gastão Vidigal/SP, Gavião Peixoto/SP, General Salgado/SP, Getulina/SP, Glicério/SP, Guaiçara/SP, Guaimbê/SP, Guaíra/SP, Guapiaçu/SP, Guapiara/SP, Guará/SP, Guaraçaí/SP, Guaraci/SP, Guarani d'Oeste/SP, Guarantã/SP, Guararapes/SP, Guararema/SP, Guaratinguetá/SP, Guareí/SP, Guariba/SP, Guarujá/SP, Guarulhos/SP, Guatapará/SP, Guzolândia/SP, Herculândia/SP, Holambra/SP, Hortolândia/SP, Iacanga/SP, Iacri/SP, Iaras/SP, Ibaté/SP, Ibirá/SP, Ibirarema/SP, Ibitinga/SP, Ibiúna/SP, Icém/SP, Iepê/SP, Igaraçu do Tietê/SP, Igarapava/SP, Igaratá/SP, Iguape/SP, Ilha Comprida/SP, Ilha Solteira/SP, Ilhabela/SP, Indaiatuba/SP, Indiana/SP, Indiaporã/SP, Inúbia Paulista/SP, Ipaussu/SP, Iperó/SP, Ipeúna/SP, Ipiguá/SP, Iporanga/SP, Ipuã/SP, Iracemápolis/SP, Irapuã/SP, Irapuru/SP, Itaberá/SP, Itaí/SP, Itajobi/SP, Itaju/SP, Itanhaém/SP, Itaoca/SP, Itapecerica da Serra/SP, Itapetininga/SP, Itapeva/SP, Itapevi/SP, Itapira/SP, Itapirapuã Paulista/SP, Itápolis/SP, Itaporanga/SP, Itapuí/SP, Itapura/SP, Itaquaquecetuba/SP, Itararé/SP, Itariri/SP, Itatiba/SP, Itatinga/SP, Itirapina/SP, Itirapuã/SP, Itobi/SP, Itu/SP, Itupeva/SP, Ituverava/SP, Jaborandi/SP, Jaboticabal/SP, Jacareí/SP, Jaci/SP, Jacupiranga/SP, Jaguariúna/SP, Jales/SP, Jambeiro/SP, Jandira/SP, Jardinópolis/SP, Jarinu/SP, Jaú/SP, Jeriquara/SP, Joanópolis/SP, João Ramalho/SP, José Bonifácio/SP, Júlio Mesquita/SP, Jumirim/SP, Jundiaí/SP, Junqueirópolis/SP, Juquiá/SP, Juquitiba/SP, Lagoinha/SP, Laranjal Paulista/SP, Lavínia/SP, Lavrinhas/SP, Leme/SP, Lençóis Paulista/SP, Limeira/SP, Lindóia/SP, Lins/SP, Lorena/SP, Lourdes/SP, Louveira/SP, Lucélia/SP, Lucianópolis/SP, Luís Antônio/SP, Luiziânia/SP, Lupércio/SP, Lutécia/SP, Macatuba/SP, Macaubal/SP, Macedônia/SP, Magda/SP, Mairinque/SP, Mairiporã/SP, Manduri/SP, Marabá Paulista/SP, Maracaí/SP, Marapoama/SP, Mariápolis/SP, Marília/SP, Marinópolis/SP, Martinópolis/SP, Matão/SP, Mauá/SP, Mendonça/SP, Meridiano/SP, Mesópolis/SP, Miguelópolis/SP, Mineiros do Tietê/SP, Mira Estrela/SP, Miracatu/SP, Mirandópolis/SP, Mirante do Paranapanema/SP, Mirassol/SP, Mirassolândia/SP, Mococa/SP, Mogi das Cruzes/SP, Mogi Guaçu/SP, Mogi Mirim/SP, Mombuca/SP, Monções/SP, Mongaguá/SP, Monte Alegre do Sul/SP, Monte Alto/SP, Monte Aprazível/SP, Monte Azul Paulista/SP, Monte Castelo/SP, Monte Mor/SP, Monteiro Lobato/SP, Morro Agudo/SP, Morungaba/SP, Motuca/SP, Murutinga do Sul/SP, Nantes/SP, Narandiba/SP, Natividade da Serra/SP, Nazaré Paulista/SP, Neves Paulista/SP, Nhandeara/SP, Nipoã/SP, Nova Aliança/SP, Nova Campina/SP, Nova Canaã Paulista/SP, Nova Castilho/SP, Nova Europa/SP, Nova Granada/SP, Nova Guataporanga/SP, Nova Independência/SP, Nova Luzitânia/SP, Nova Odessa/SP, Novais/SP, Novo Horizonte/SP, Nuporanga/SP, Ocauçu/SP, Óleo/SP, Olímpia/SP, Onda Verde/SP, Oriente/SP, Orindiúva/SP, Orlândia/SP, Osasco/SP, Oscar Bressane/SP, Osvaldo Cruz/SP, Ourinhos/SP, Ouro Verde/SP, Ouroeste/SP, Pacaembu/SP, Palestina/SP, Palmares Paulista/SP, Palmeira d'Oeste/SP, Palmital/SP, Panorama/SP, Paraguaçu Paulista/SP, Paraibuna/SP, Paraíso/SP, Paranapanema/SP, Paranapuã/SP, Parapuã/SP, Pardinho/SP, Pariquera-Açu/SP, Parisi/SP, Patrocínio Paulista/SP, Paulicéia/SP, Paulínia/SP, Paulistânia/SP, Paulo de Faria/SP, Pederneiras/SP, Pedra Bela/SP, Pedranópolis/SP, Pedregulho/SP, Pedreira/SP, Pedrinhas Paulista/SP, Pedro de Toledo/SP, Penápolis/SP, Pereira Barreto/SP, Pereiras/SP, Peruíbe/SP, Piacatu/SP, Piedade/SP, Pilar do Sul/SP, Pindamonhangaba/SP, Pindorama/SP, Pinhalzinho/SP, Piquerobi/SP, Piquete/SP, Piracaia/SP, Piracicaba/SP, Piraju/SP, Pirajuí/SP, Pirangi/SP, Pirapora do Bom Jesus/SP, Pirapozinho/SP, Pirassununga/SP, Piratininga/SP, Pitangueiras/SP, Planalto/SP, Platina/SP, Poá/SP, Poloni/SP, Pompéia/SP, Pongaí/SP, Pontal/SP, Pontalinda/SP, Pontes Gestal/SP, Populina/SP, Porangaba/SP, Porto Feliz/SP, Porto Ferreira/SP, Potim/SP, Potirendaba/SP, Pracinha/SP, Pradópolis/SP, Praia Grande/SP, Pratânia/SP, Presidente Alves/SP, Presidente Bernardes/SP, Presidente Epitácio/SP, Presidente Prudente/SP, Presidente Venceslau/SP, Promissão/SP, Quadra/SP, Quatá/SP, Queiroz/SP, Queluz/SP, Quintana/SP, Rafard/SP, Rancharia/SP, Redenção da Serra/SP, Regente Feijó/SP, Reginópolis/SP, Registro/SP, Restinga/SP, Ribeira/SP, Ribeirão Bonito/SP, Ribeirão Branco/SP, Ribeirão Corrente/SP, Ribeirão do Sul/SP, Ribeirão dos Índios/SP, Ribeirão Grande/SP, Ribeirão Pires/SP, Ribeirão Preto/SP, Rifaina/SP, Rincão/SP, Rinópolis/SP, Rio Claro/SP, Rio das Pedras/SP, Rio Grande da Serra/SP, Riolândia/SP, Riversul/SP, Rosana/SP, Roseira/SP, Rubiácea/SP, Rubinéia/SP, Sabino/SP, Sagres/SP, Sales Oliveira/SP, Sales/SP, Salesópolis/SP, Salmourão/SP, Saltinho/SP, Salto de Pirapora/SP, Salto Grande/SP, Salto/SP, Sandovalina/SP, Santa Adélia/SP, Santa Albertina/SP, Santa Bárbara d'Oeste/SP, Santa Branca/SP, Santa Clara d'Oeste/SP, Santa Cruz da Conceição/SP, Santa Cruz da Esperança/SP, Santa Cruz das Palmeiras/SP, Santa Cruz do Rio Pardo/SP, Santa Ernestina/SP, Santa Fé do Sul/SP, Santa Gertrudes/SP, Santa Isabel/SP, Santa Lúcia/SP, Santa Maria da Serra/SP, Santa Mercedes/SP, Santa Rita do Passa Quatro/SP, Santa Rita d'Oeste/SP, Santa Rosa de Viterbo/SP, Santa Salete/SP, Santana da Ponte Pensa/SP, Santana de Parnaíba/SP, Santo Anastácio/SP, Santo André/SP, Santo Antônio da Alegria/SP, Santo Antônio de Posse/SP, Santo Antônio do Aracanguá/SP, Santo Antônio do Jardim/SP, Santo Antônio do Pinhal/SP, Santo Expedito/SP, Santópolis do Aguapeí/SP, Santos/SP, São Bento do Sapucaí/SP, São Bernardo do Campo/SP, São Caetano do Sul/SP, São Carlos/SP, São Francisco/SP, São João da Boa Vista/SP, São João das Duas Pontes/SP, São João de Iracema/SP, São João do Pau d'Alho/SP, São Joaquim da Barra/SP, São José da Bela Vista/SP, São José do Barreiro/SP, São José do Rio Pardo/SP, São José do Rio Preto/SP, São José dos Campos/SP, São Lourenço da Serra/SP, São Luiz do Paraitinga/SP, São Manuel/SP, São Miguel Arcanjo/SP, São Paulo/SP, São Pedro do Turvo/SP, São Pedro/SP, São Roque/SP, São Sebastião da Grama/SP, São Sebastião/SP, São Simão/SP, São Vicente/SP, Sarapuí/SP, Sarutaiá/SP, Sebastianópolis do Sul/SP, Serra Azul/SP, Serra Negra/SP, Serrana/SP, Sertãozinho/SP, Sete Barras/SP, Severínia/SP, Silveiras/SP, Socorro/SP, Sorocaba/SP, Sud Mennucci/SP, Sumaré/SP, Suzanápolis/SP, Suzano/SP, Tabapuã/SP, Tabatinga/SP, Taboão da Serra/SP, Taciba/SP, Taguaí/SP, Taiaçu/SP, Taiúva/SP, Tambaú/SP, Tanabi/SP, Tapiraí/SP, Tapiratiba/SP, Taquaral/SP, Taquaritinga/SP, Taquarituba/SP, Taquarivaí/SP, Tarabai/SP, Tarumã/SP, Tatuí/SP, Taubaté/SP, Tejupá/SP, Teodoro Sampaio/SP, Terra Roxa/SP, Tietê/SP, Timburi/SP, Torre de Pedra/SP, Torrinha/SP, Trabiju/SP, Tremembé/SP, Três Fronteiras/SP, Tuiuti/SP, Tupã/SP, Tupi Paulista/SP, Turiúba/SP, Turmalina/SP, Ubarana/SP, Ubatuba/SP, Ubirajara/SP, Uchoa/SP, União Paulista/SP, Urânia/SP, Uru/SP, Urupês/SP, Valentim Gentil/SP, Valinhos/SP, Valparaíso/SP, Vargem Grande do Sul/SP, Vargem Grande Paulista/SP, Vargem/SP, Várzea Paulista/SP, Vera Cruz/SP, Vinhedo/SP, Viradouro/SP, Vista Alegre do Alto/SP, Vitória Brasil/SP, Votorantim/SP, Votuporanga/SP e Zacarias/SP</b>.
+                                                </label>
+                                                <br />
+                                    </p>
+
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Salários, Reajustes e Pagamento
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Piso Salarial
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA TERCEIRA - PISO SALARIAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">A partir de 1&ordm; de julho de <strong>2025</strong>, o piso salarial da categoria ser&aacute; corrigido com o mesmo &iacute;ndice que corrigir&aacute; os sal&aacute;rios em geral, ou seja, <strong>5.18% (cinco inteiros v&iacute;rgulas dezoito por cento)</strong> conforme abaixo:</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">A partir de <strong>1&ordm; de julho de 2025</strong>, o piso salarial da categoria ser&aacute; de <strong>R$ 3.894,88 (tr&ecirc;s mil, oitocentos e noventa e quatro reais e oitenta e oito centavos) mensais, a partir de 01/07/25</strong> considerando-se jornada de trabalho correspondente a 220 horas mensais.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>Par&aacute;grafo 1&ordm;</strong> - As partes convencionam que o piso salarial previsto acima ser&aacute; aplicado a partir de 1&ordm; de julho de <strong>2025</strong>, eventuais diferen&ccedil;as salariais oriundas da presente Norma Coletiva de Trabalho, poder&aacute; ser paga, em folha de pagamento, at&eacute; o m&ecirc;s seguinte ao registro desta CCT no &oacute;rg&atilde;o do Minist&eacute;rio do Trabalho e emprego.</span></p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Reajustes/Correções Salariais
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUARTA - REAJUSTE SALARIAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">Fica estabelecido o reajuste salarial total de <strong>5.18% (cinco inteiros v&iacute;rgulas dezoito por cento)</strong> que incidir&aacute; sobre os sal&aacute;rios de junho de <strong>2025</strong>.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>Par&aacute;grafo 1&ordm; - </strong>O &iacute;ndice acima estabelecido ser&aacute; aplicado aos sal&aacute;rios at&eacute; o valor correspondente a <strong><span style="text-decoration: underline;">R$ 8.157,41</span></strong>, que corresponde a um teto da previd&ecirc;ncia social, e acima desse valor, o reajuste ser&aacute; o que resultar de livre negocia&ccedil;&atilde;o entre o nutricionista e o empregador.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>Par&aacute;grafo 2&ordm; -</strong> As partes convencionam que ser&atilde;o compensadas todas as antecipa&ccedil;&otilde;es legais, convencionais ou espont&acirc;neas concedidas no per&iacute;odo revisando, sendo igualmente adotados os crit&eacute;rios de compensa&ccedil;&otilde;es estabelecidos na categoria preponderante.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>Par&aacute;grafo 3&ordm; - </strong>As partes convencionam que as diferen&ccedil;as decorrentes da aplica&ccedil;&atilde;o desta cl&aacute;usula ser&atilde;o pagas, sem qualquer tipo de multa, corre&ccedil;&atilde;o monet&aacute;ria&nbsp;ou acr&eacute;scimo, poder&aacute; ser paga, em folha de pagamento, at&eacute; o m&ecirc;s seguinte ao registro desta CCT no &oacute;rg&atilde;o do Minist&eacute;rio do Trabalho e emprego.</span></p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Outras normas referentes a salários, reajustes, pagamentos e critérios para cálculo
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUINTA - CORRE&#199;&#195;O SALARIAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">Aos admitidos ap&oacute;s a data-base, ser&aacute; aplicado o reajuste salarial proporcional ao n&uacute;mero de meses efetivamente trabalhados.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>Par&aacute;grafo &uacute;nico</strong>:- considerar como 01 (um) m&ecirc;s trabalhado quando o nutricionista laborar 15 ou mais dias no m&ecirc;s.</span></p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA SEXTA - COMPENSA&#199;&#195;O
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">N&atilde;o ser&atilde;o compensados os aumentos reais, bem como aqueles concedidos a t&iacute;tulo de promo&ccedil;&atilde;o, transfer&ecirc;ncia, equipara&ccedil;&atilde;o salarial e de m&eacute;rito, e, na ocorr&ecirc;ncia dos mesmos, sobre eles ser&atilde;o aplicados os percentuais fixados na presente Norma Coletiva.</span></p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Relações Sindicais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Contribuições Sindicais
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA S&#201;TIMA - CONTRIBUI&#199;&#195;O ASSISTENCIAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">As cooperativas de servi&ccedil;os m&eacute;dico descontar&atilde;o do sal&aacute;rio j&aacute; reajustado de todos os nutricionistas abrangidos por esta Conven&ccedil;&atilde;o, <span style="text-decoration: underline;">desde que devidamente autorizado individualmente e por escrito pelos mesmos</span>, na forma de legisla&ccedil;&atilde;o em vigor, perante o departamento de pessoal ou RH do hospital, ao sindicato dos empregados, uma Contribui&ccedil;&atilde;o Assistencial, conforme discrimina&ccedil;&atilde;o abaixo:</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>a-&nbsp;&nbsp;&nbsp; 1,0%</strong> (um por cento) do sal&aacute;rio do empregado por m&ecirc;s, caso o nutricionista emita autoriza&ccedil;&atilde;o individual e por escrito, autorizando o desconto da contribui&ccedil;&atilde;o sindical ou na forma da legisla&ccedil;&atilde;o em vigor na ocasi&atilde;o, tendo por limite m&aacute;ximo (teto) de desconto o valor de <strong>R$ 158,00 (cento e cinquenta e oito reais).</strong></span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>b-&nbsp;&nbsp;&nbsp; </strong>&Eacute; garantido o direito de oposi&ccedil;&atilde;o ao Nutricionista n&atilde;o filiado, mediante manifesta&ccedil;&atilde;o <strong>pessoal, individual e escrita na sede sindical</strong> (Av. Paulista, 453, 13&ordm; andar, cj. 134, S&atilde;o Paulo/SP, CEP 01311-907), <strong>em at&eacute; 10 (dez) dias contados da data da assinatura.</strong> Para profissionais de fora da capital e da regi&atilde;o metropolitana, admite-se oposi&ccedil;&atilde;o por correspond&ecirc;ncia com aviso de Av. Paulista 453, 13&ordm; andar, cj. 134 &ndash; Bela Vista - S&atilde;o Paulo/SP &ndash; CEP 01311-907 Tel: (11) 3337.5263 / 96400.0745 - recepcao@sindinutrisp.org.br - www.sindinutrisp.org.br SINDICATO DOS NUTRICIONISTAS DO ESTADO DE S&Atilde;O PAULO recebimento. <strong>S&atilde;o nulas as oposi&ccedil;&otilde;es por listas coletivas</strong>.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">Caso haja filia&ccedil;&atilde;o posterior ao sindicato, a oposi&ccedil;&atilde;o fica automaticamente retratada no prazo de 10 (dez) dias a contar da assinatura da presente Conven&ccedil;&atilde;o. <strong>c-&nbsp;&nbsp;&nbsp; </strong>Oposi&ccedil;&otilde;es levadas a efeito mediante listas ou cartas, mesmo enviadas ao Sindicato Profissional atrav&eacute;s de Cart&oacute;rios, ser&atilde;o consideradas desconformes ao disposto na Assembleia Geral.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>d-&nbsp;&nbsp;&nbsp; </strong>As empresas efetuar&atilde;o o recolhimento dos valores descontados, a favor do Sindicato da categoria profissional liberal, em qualquer ag&ecirc;ncia do Banco do Brasil, para cr&eacute;dito na ag&ecirc;ncia n&ordm; <strong>4307-9, c/c n&ordm; 120.550-1</strong>, at&eacute; o 5&ordm; (quinto) dia &uacute;til do m&ecirc;s subsequente ao do desconto.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>e-&nbsp;&nbsp;&nbsp; </strong>Na hip&oacute;tese de j&aacute; ter sido descontada Contribui&ccedil;&atilde;o Assistencial, ou equivalente, relativa ao ano de <strong>2025</strong>, o empregado beneficiado pela presente Conven&ccedil;&atilde;o Coletiva n&atilde;o sofrer&aacute; novo desconto.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>f-&nbsp;&nbsp;&nbsp; </strong>A falta do recolhimento no prazo citado implicar&aacute; em multa de 3% (tr&ecirc;s por cento) sobre o valor do d&eacute;bito.</span></p>
+<p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;"><strong>g-&nbsp;&nbsp;&nbsp; </strong>A Contribui&ccedil;&atilde;o Assistencial prevista nesta cl&aacute;usula atende inteiramente ao disposto no artigo 5&ordm;, inciso X, artigo 8&ordm;, inciso IV, da CF.</span></p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Disposições Gerais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Outras Disposições
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA OITAVA - NORMA DA CATEGORIA PREPONDERANTE
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;"><span style="font-family: 'times new roman', times; font-size: small;">Respeitadas as cl&aacute;usulas objeto da presente Norma Coletiva, ficam estendidas aos empregados Nutricionistas, que exer&ccedil;am suas fun&ccedil;&otilde;es em ambulat&oacute;rios, cl&iacute;nicas, laborat&oacute;rios, pronto atendimento, pronto socorro ou hospitais pertencentes as cooperativas de servi&ccedil;os m&eacute;dicos, as demais cl&aacute;usulas gerais e respectivos benef&iacute;cios constantes de eventuais normas coletivas de trabalho existentes e que estejam em vigor em<strong> 1&ordm; de julho de 2025</strong>, aplic&aacute;veis para a categoria profissional preponderante nas empresas, respeitando-se as respectivas localidades da presta&ccedil;&atilde;o dos servi&ccedil;os.</span></p>
+                                                </label>
+                                                <br />
+                                    }
+                                    <br />
+                                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                        <tr>
+                                            <td align="center">
+                                                    <br />
+    <br />
+    <label class="textonome">
+        MARIA DA CONSOLACAO MACHADO FUREGATTI
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SINDICATO DOS NUTRICIONISTAS DO ESTADO DE SAO PAULO
+        <br />
+        <br />
+    </label>
+
+    <br />
+    <br />
+    <label class="textonome">
+        DILSON LAMAITA MIRANDA
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SINDICATO NACIONAL DAS COOPERATIVAS DE SERVICOS MEDICOS
+        <br />
+        <br />
+    </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                        <br />
+                                        <center>
+                                            <label class="textogrupo">
+                                                <b>ANEXOS </b>
+                                            </label>
+                                        </center>
+                                                        <label>
+                                                            <b>
+                                                                <center>
+                                                                    <label class="textogrupo">
+                                                                        ANEXO I - ATA
+                                                                    </label>
+                                                                </center>
+                                                                <label class="tituloClausula">
+                                                                                                                                    </label>
+                                                            </b>
+                                                        </label>
+                                                        <b>
+                                                            <label>
+
+                                                            </label>
+                                                        </b>
+                                                        <br />
+                                                        <label class="descricaoClausula" >
+                                                            <p><a href="https://www3.mte.gov.br/sistemas/mediador/imagemAnexo/MR069060_20252025_11_06T09_07_24.pdf" target="_blank">Anexo (PDF)</a></p>
+                                                        </label>
+                                                        <br />
+                                        <!--****************************************** FIM - Anexos ******************************************-->
+                                            <label class="texto">
+                                                &#160;&#160;&#160;&#160;A autenticidade deste documento poderá ser confirmada na
+                                                página do Ministerio do Trabalho e Emprego na Internet, no endereço http://www.mte.gov.br.
+                                            </label>
+                                            <br />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
+</body>
+<script>
+    setTimeout(function () {
+        window.history.replaceState({}, '', window.location.pathname);
+    }, 0);
+</script>
+</html>

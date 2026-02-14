@@ -1,0 +1,1744 @@
+
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <title>
+        Mediador - Extrato Acordo Coletivo
+    </title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G"></script>
+
+    <script src='/sistemas/mediador/WebResource.axd?d=mrsqBfycVuLUXNl1cBgBTS5e_zgKGT_ydqPRFYm385YpdfzTzxV6hshOewYDoLiqkOG5xDMpMwYkPFkVGOCk3Y5dYguSzi7CobMhisYHUM9t2KtHWNt2XO-WPVQxtFvj_Ojdds3d9AEuk1uzZDngf1CaMeTRwhhvrPWLN68FVwx2MKay9IB88DnjaO5EJfVu0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=tg4c3d9DGBdyY2FRFNUysRw8BXR2FCFKN2Hxucxv7I7uKRxf5xlBbt8q4jssOn7PMwhXsRCvSVq8IleJdeUJ1A0jkOo7a8JXMC2JQHv6bhTagXEFqDiP6DCJQzeQIlBcVUCVNmMDykvbzsZc5IPFPFKK4p5OM1lwI6yLnAw1qI72yFrvDsK7Bk7gZAnjMQRPb1VBubasmLNB2yshW-BA-A2&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ci_Ef54u9rsqxctDQvgSa2Fqbu19aIC7-bvt-mrcQU0uKWQrI1aDKWlhPhhcqtDD6lRJrp5X3QNdj-3105H2TUImyDa1ifpjjF5aQAr6czlicBRMTW5Iv0ij7lHhFGdhR9_fM7C0hBTz-MBAB3jNQ7E7I2ip1ncT13KBICCDctBDCCyZa671FU6tziLAWVqS0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=HhRvNPO_8EFR9zXDBtRPZ2vqDcqzTjtXWvAHwwDdGmYPxHFNGjxFIeDHPtFiIyYDQa6V4bDifrfSTevNX6oD9WP_ZoKMBiPFnlTJ5WrYBfJQwZBD6lUNGufAikMWKyj4_tO8lSJ1gxwaJ9GMePDWssPDfpV-KiTalP50xwt3a6PSYOKdgSFrlvmG-A2NxId_0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ji-F9gbs5nq8Dd3QjdkZDB9bS2ka5inEVN6mHWhVKUfaWkcBlVtZmkNsFaLeAuJxNhFZXOb9gyIabCLrea9HdUblOKZO3Lson6pi4KdqIE0-IEngSpkAkb8IzgTMdpJ_getA9JixUIOpDom6HDHOEoyUQsDgcDmnToVGbO4v1M6isu7z6oIKEkDOr9GXgUnQ0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=1oOmSykdKljldEVdM-TVR6vUbXsxyBWjItMDx4wCQf3Kabnp412nq3Nuui35243OaS0tD2owbuFN3Xilzzca8j8BcT7XSvu9Jm9w2r8ElZKT8A7wvfFpbUC5BrzB4eYkn8Uy5KZ6KPebNTIxS5doOnddihnTsMr_CWq5sXfdIOwDXL1pU0HsjpKH54ZaHW_T0&t=639040922190000000' type='text/javascript'></script>
+
+
+<script type="text/javascript">
+        var recaptchaSiteKey = '6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G';
+        var pageLoadToken = '';
+        var isPageValidated = false;
+
+        function onRecaptchaLoad() {
+            console.log('reCAPTCHA carregado, validando página...');
+            executePageLoadRecaptcha();
+        }
+
+        function executePageLoadRecaptcha() {
+            if (typeof grecaptcha === 'undefined') {
+                console.error('reCAPTCHA não carregado');
+                return;
+            }
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(recaptchaSiteKey, {
+                    action: 'page_load_resumo'
+                }).then(function(token) {
+                    console.log('Token de página gerado');
+                    pageLoadToken = token;
+
+                    // Enviar o token para o servidor
+                    validatePageLoadToken(token);
+                }).catch(function(error) {
+                    console.error('Erro no reCAPTCHA de página:', error);
+                    // Em desenvolvimento, permitir continuar
+                });
+            });
+        }
+
+        function validatePageLoadToken(token) {
+            var currentUrl = window.location.href;
+            var queryString = window.location.search;
+            var nrSolicitacao = 'MR061121/2025';
+
+            $.ajax({
+                url: '/sistemas/mediador/Resumo/ValidateResumoPageLoad',
+                type: 'POST',
+                data: {
+                    recaptchaToken: token,
+                    currentUrl: currentUrl,
+                    queryString: queryString,
+                    nrSolicitacao: nrSolicitacao
+                },
+                success: function(response) {
+                    if (response.success) {
+                        console.log('Página validada com sucesso');
+                        isPageValidated = true;
+                        showPageContent();
+                    } else {
+                        console.warn('Validação de página falhou:', response.message);
+                        handleValidationFailed(response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erro ao validar página:', error);
+                    handleValidationFailed({ message: 'Erro de comunicação com o servidor' });
+                }
+            });
+        }
+
+        function showPageContent() {
+            // Remover overlay de loading se existir
+            $('#recaptcha-loading').remove();
+            console.log('Conteúdo da página liberado');
+        }
+
+        function handleValidationFailed(response) {
+            // Mostrar mensagem de erro
+            var errorHtml = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: #d32f2f;">Validação de Segurança</h2>
+                        <p style="font-size: 16px; margin: 20px 0;">${response.message || 'Falha na validação de segurança.'}</p>
+                        <button onclick="window.location.reload()" style="padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Tentar Novamente
+                        </button>
+                        <br><br>
+                        <button onclick="window.location.href='/sistemas/mediador/'" style="padding: 8px 16px; background: #757575; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Voltar para Página Inicial
+                        </button>
+                    </div>
+                </div>
+            `;
+            $('body').prepend(errorHtml);
+        }
+
+        $(document).ready(function() {
+            console.log('Página carregada - ambiente de produção');
+
+            // Pular validação reCAPTCHA em produção
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.log('Produção - validando sem reCAPTCHA');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 1000);
+
+            // Timeout de segurança reduzido
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.warn('Timeout na validação - liberando conteúdo');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 5000); // Reduzido para 5 segundos
+        });
+
+        function Imprimir() {
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "none";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "none";
+            window.print();
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "";
+            return true;
+        }
+        $(function () {
+            var marcaDaguaHtml = $('.MarcaDagua').html();
+            var width = $('body').width();
+            var marcaW = $('.MarcaDagua').width();
+
+            var qtdNescessarios = Math.round((width / marcaW) + 0.4);
+            if (qtdNescessarios > 0)
+                for (var incrementador = 0; incrementador < qtdNescessarios; incrementador++) {
+                    $('.MarcaDagua').append("<br />");
+                    $('.MarcaDagua').append(marcaDaguaHtml);
+                }
+        });
+
+
+</script>
+    <style type="text/css">
+        .titulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .Subtitulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 13px;
+        }
+        .texto
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .tituloClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .descricaoClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .textogrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .textosubgrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .textonome
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .textofuncao
+        {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pagebreak
+        {
+            page-break-after: always;
+        }
+        table.titulo
+        {
+            text-align: left;
+        }
+        @page Section2 {size:21cm 29.7cm ;mso-page-orientation:portrait;margin-top:2cm; margin-rigth:2cm; mso-paper-source:0;}
+        div.Section2 {page:Section2;}
+        pre
+        {
+            white-space: pre-wrap; /* css-3 */
+            white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+            white-space: -pre-wrap; /* Opera 4-6 */
+            white-space: -o-pre-wrap; /* Opera 7 */
+            word-wrap: break-word; /* Internet Explorer 5.5+ */
+            white-space: normal;
+        }
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+    <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+    </xml>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="Section2">
+
+        <center>
+            <table border="0" style="width: 18cm;" id="tblConteudo">
+                <tr>
+                    <td>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+
+                                                            <tr>
+                                    <td align="center" class="titulo" style="text-transform: uppercase;">
+                                        <b>
+                                            Acordo Coletivo De Trabalho 2025/2026
+                                        </b>
+                                        <br />
+                                        <br />
+                                    </td>
+                                </tr>
+                            <tr>
+                                <td>
+                                    <div style="text-align: left;">
+                                        <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <b>NÚMERO DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        SP000369/2026
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        09/01/2026
+                                                    </td>
+                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <b>NÚMERO DA SOLICITAÇÃO:</b>
+                                                </td>
+                                                <td style="width: 10px">
+                                                </td>
+                                                <td>
+                                                    MR061121/2025
+                                                </td>
+                                            </tr>
+                                                                                            <tr>
+                                                    <td>
+                                                        <b>NÚMERO DO PROCESSO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        10260.224794/2025-54
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DO PROTOCOLO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+05/11/2025                                                    </td>
+                                                </tr>
+                                        </table>
+                                        <br />
+
+                                                        <p>
+                                                            <label class="texto">
+                                                                <b>
+                                                                    Confira a autenticidade no endereço http://www3.mte.gov.br/sistemas/mediador/.
+                                                                </b>
+                                                            </label>
+                                                        </p>
+                                                    <br />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" class="texto">
+                                    <p align="justify">
+SIND EMPREGADOS EMPRESAS LAVA RAPIDO E SIMIL DO EST SP, CNPJ n. 00.526.123/0001-60, neste ato representado(a) por seu 
+
+Presidente, Sr(a). ROSANGELA JACIRA COSTA;
+    <br />
+&nbsp;
+    <br />
+                                        <label>
+                                            E
+                                        </label>
+                                        <br />
+                                        <br />
+NHL - SERVICOS AUTOMOTIVOS LTDA, CNPJ n. 23.774.963/0001-48, neste ato representado(a) por seu 
+
+Empresário, Sr(a). EDISON BELTRAME;
+    <br />
+&nbsp;
+    <br />
+                                                                                    celebram
+                                                                                    o
+                                         presente ACORDO COLETIVO DE TRABALHO,
+ estipulando as condi&#231;&#245;es de trabalho previstas nas cl&#225;usulas seguintes:                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA PRIMEIRA - VIG&#202;NCIA E DATA-BASE
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    As partes fixam a vigência do presente Acordo Coletivo de Trabalho no período de 10 de maio de 2025 a 09 de maio de 2026 e a data-base da categoria em 01º de janeiro.
+                                                </label>
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA SEGUNDA - ABRANG&#202;NCIA
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    O presente Acordo Coletivo de Trabalho, aplicável no âmbito da(s) empresa(s) acordante(s), abrangerá a(s) categoria(s) <b>dos Empregados nas Empresas de Lava Rápido e Similares, inclusive os administrativos, exceto, os de Postos de Gasolina e Derivados de Petróleo       </b>, com abrangência territorial em <b>São Paulo/SP</b>.
+                                                </label>
+                                                <br />
+                                    </p>
+
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Gratificações, Adicionais, Auxílios e Outros
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Participação nos Lucros e/ou Resultados
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA TERCEIRA - CONDI&#199;&#213;ES PARA IMPLEMENTA&#199;&#195;O DO ACORDO DE PARTICIPA&#199;&#195;O NOS RESULTADOS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 17pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">Condi&ccedil;&otilde;es Fundamentais que Nortear&atilde;o, Exclusivamente, a Pol&iacute;tica, o Objeto, a Implanta&ccedil;&atilde;o e a Consecu&ccedil;&atilde;o do Acordo de Participa&ccedil;&atilde;o nos Resultados:</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 17pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">I- Das Condi&ccedil;&otilde;es</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">As cl&aacute;usulas estabelecidas no presente Acordo Coletivo ter&atilde;o dura&ccedil;&atilde;o pelo prazo de 1 (um) ano ap&oacute;s o qual cessar&aacute; a sua vig&ecirc;ncia. Nova estipula&ccedil;&atilde;o de Planos de Participa&ccedil;&atilde;o nos Resultados depender&aacute; da pactua&ccedil;&atilde;o de outro instrumento coletivo a ser negociado pelas partes e segundo as possibilidades da empresa nessa ocasi&atilde;o. <strong><span style="margin-left: 0px; mso-tab-count: 1;">&nbsp;&nbsp; </span></strong></span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">II- Do Objeto e dos Indicadores de Resultados</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O objeto do presente acordo &eacute; dispor de um instrumento que referencie, d&ecirc; par&acirc;metros e sirva como base para que o <strong>SINDICATO PROFISSIONAL,</strong> a empresa<span>&nbsp;<span>&nbsp;&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA<span style="margin-left: 0px; font-family: Arial;">, </span></strong></strong><span style="margin-left: 0px; font-family: Arial;">PROMOVAM A MELHORIA DOS SEUS RESULTADOS</span><span style="margin-left: 0px; font-family: Arial;">, incentivando a produtividade, conjuntamente produzida pela empresa e seus empregados,</span><span style="margin-left: 0px; font-family: Arial;"> SENDO ALVOS PRINCIPAIS DO ACORDO OS SEGUINTES INDICADORES DE RESULTADOS:</span></span></span></span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">a- Aumento dos &iacute;ndices de produtividade;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">b - Aprimoramento dos n&iacute;veis de qualidade dos servi&ccedil;os executados.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">III- Princ&iacute;pio do Autofinanciamento</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O programa estar&aacute; alicer&ccedil;ado no <strong>PRINC&Iacute;PIO DO AUTOFINANCIAMENTO,</strong> significando que durante o per&iacute;odo de apura&ccedil;&atilde;o o programa dever&aacute; gerar resultados, como pressuposto absoluto e condicional, para que possa existir distribui&ccedil;&atilde;o dos resultados. Desta forma o acordo estar&aacute; <strong>VINCULADO AO CONCEITO DE ALCANCE DE METAS</strong>, cuja defini&ccedil;&atilde;o ser&aacute;:</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">a- AUMENTO DOS INDICADORES POSITIVOS</span></strong><span style="margin-left: 0px; font-family: Arial;">, sendo exemplo o aumento dos &iacute;ndices de produtividade;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">b- DIMINUI&Ccedil;&Atilde;O DOS INDICADORES NEGATIVOS</span></strong><span style="margin-left: 0px; font-family: Arial;">, sendo exemplo a diminui&ccedil;&atilde;o dos &iacute;ndices de absente&iacute;smo.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O princ&iacute;pio do <strong>autofinanciamento</strong> somente e exclusivamente contemplar&aacute; distribui&ccedil;&atilde;o de valores na hip&oacute;tese de, ao final do per&iacute;odo de apura&ccedil;&atilde;o, tiver ocorrido aumento dos indicadores positivos ou diminui&ccedil;&atilde;o dos indicadores negativos que concretamente tenham produzido economia direta nos custos dos servi&ccedil;os.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">IV- Tributa&ccedil;&atilde;o do Imposto de Renda</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A legisla&ccedil;&atilde;o pr&oacute;pria do imposto de renda estabelece a forma incidente sobre os valores pagos em decorr&ecirc;ncia de programa de participa&ccedil;&atilde;o em resultados, como tamb&eacute;m est&aacute; indicado no par&aacute;grafo quinto do artigo terceiro da Lei 10.101/2000; sendo mencion&aacute;vel para submiss&atilde;o e provid&ecirc;ncias das partes.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">V- Do Estabelecimento das Metas</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A Empresa&nbsp;<span>&nbsp;<span>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA&nbsp;</strong>e </span></span>o Sindicato Profissional estabelecem o programa de metas para o per&iacute;odo de 01 de Agosto de 2021 a 31 de Julho de 2022, ao qual fica subordinado o pagamento da <strong>Participa&ccedil;&atilde;o nos Resultados.</strong></span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O programa de metas ora estabelecido, observar&aacute; as regras que se seguem quanto &agrave; forma, o m&eacute;todo e o processo de elabora&ccedil;&atilde;o, consecu&ccedil;&atilde;o e apura&ccedil;&atilde;o aos quais, a Empresa&nbsp;<span>&nbsp;<span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS&nbsp; LTDA&nbsp;</strong></strong>e </span></span>o Sindicato Profissional se basearam para a defini&ccedil;&atilde;o do programa.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">V.1-<span style="margin-left: 0px; mso-spacerun: yes;">&nbsp; </span>Atividades ou Fun&ccedil;&otilde;es Geradoras de Resultados Econ&ocirc;micos</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Para efeito de defini&ccedil;&atilde;o dos valores de refer&ecirc;ncia, dos indicadores de resultados, das metas de melhoria de desempenho e das metas de redu&ccedil;&atilde;o dos custos, visando implementar um programa de participa&ccedil;&atilde;o em resultados <strong>autofinanci&aacute;vel</strong> na empresa&nbsp;<span>&nbsp;<span>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong>&nbsp;</span></span>ser&atilde;o abrangidas as seguintes atividades ou fun&ccedil;&otilde;es que contribu&iacute;rem diretamente para a gera&ccedil;&atilde;o de resultados econ&ocirc;micos:</span><span style="margin-left: 0px; font-family: Arial; mso-fareast-font-family: Arial;"><span style="margin-left: 0px; mso-list: Ignore;"><span style="margin-left: 0px; font-family: 'Arial','sans-serif';">&nbsp;</span></span></span></p>
+<p style="margin-left: 30px;"><strong>a)&nbsp;</strong>&nbsp; <strong>Auxiliar de Aplicador T&eacute;cnico e Auxiliar de Equipe</strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o - Limpeza externa e ou Interna do ve&iacute;culo (exceto polimento)</p>
+<p style="margin-left: 30px;"><strong>b)</strong>&nbsp;&nbsp; <strong>Auxiliar de Aplicador S&ecirc;nior e Auxiliar de Equipe S&ecirc;nior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Limpeza externa e ou Interna do ve&iacute;culo (exceto polimento); Aux. trein. novos colaboradores</p>
+<p style="margin-left: 30px;"><strong>c)</strong> <strong>Aplicador T&eacute;cnico e Recepcionista Automotivo</strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Limpeza externa incluindo polimento; Respons&aacute;vel pelo treinamento de novos colaboradores</p>
+<p style="margin-left: 30px;"><strong>d) Aplicador T&eacute;cnico S&ecirc;nior</strong><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o - Limpeza externa incluindo polimento; Respons&aacute;vel pelo treinamento de novos aplicadores</p>
+<p style="margin-left: 30px;"><strong>e) Supervisor T&eacute;cnico e Assemelhado&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Faz a supervis&atilde;o do servi&ccedil;o; controle de estoque e&nbsp; treinamento em geral</p>
+<p style="margin-left: 30px;">&nbsp;<strong>f)&nbsp; Supervisor T&eacute;cnico Senior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Faz a supervis&atilde;o do servi&ccedil;o e treinamento dos supervisores t&eacute;cnicos</p>
+<p style="margin-left: 30px;"><strong>&nbsp;g</strong><strong>) Consultor T&eacute;cnico I ou Consultor T&eacute;cnico Trainee&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Atendimento e vendas a clientes</p>
+<p style="margin-left: 30px;">&nbsp;h<strong>) Consultor T&eacute;cnico II ou Consultor T&eacute;cnico Junior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Atendimento e vendas a clientes, experi&ecirc;ncia de 01 ano como Consultor Trainee</p>
+<p style="margin-left: 30px;">&nbsp;i<strong>) Consultor T&eacute;cnico III ou Consultor T&eacute;cnico S&ecirc;nior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Atendimento e vendas a clientes, Respons&aacute;vel em treinar novos Consultores T&eacute;cnicos</p>
+<p style="margin-left: 30px;"><strong>&nbsp;j) Consultor Respons&aacute;vel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Atendimento e vendas a clientes, Respons&aacute;vel em treinar novos Consultores e adm. das lojas</p>
+<p style="margin-left: 30px;"><strong>&nbsp;</strong><strong>k) Supervisor de Treinamento&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Coordena os treinadores e Ministra treinamentos</p>
+<p style="margin-left: 30px;">&nbsp;<strong>l) Treinador&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Ministra treinamentos, Desenvolve novos treinadores e Coordena gastos com treinamentos</p>
+<p style="margin-left: 30px;">&nbsp;<strong>m) Treinador Junior&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Ministra treinamentos</p>
+<p style="margin-left: 30px;"><strong>n) Consultor Comercial&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Ministra treinamentos de vendas</p>
+<p style="margin-left: 30px;"><strong>&nbsp;</strong><strong>o) Supervisor de UPS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p>
+<p style="margin-left: 30px;">Descri&ccedil;&atilde;o &ndash; Supervisiona lojas</p>
+<p><strong>&nbsp;</strong></p>
+<p><strong>V.2 - Hist&oacute;rico para Compara&ccedil;&atilde;o do Desempenho</strong></p>
+<p>Para efeito de aferir o aumento ou diminui&ccedil;&atilde;o dos indicadores de resultados, a empresa adotar&aacute; como base o hist&oacute;rico de desempenho do per&iacute;odo de 12 (doze) meses referentes ao ano de 2023.</p>
+<p><strong>V.3 - Indicador de Produtividade</strong></p>
+<p>Para o c&aacute;lculo do Indicador de Produtividade, considerou-se o n&uacute;mero de carros lavados, de servi&ccedil;os executados, e revitaliza&ccedil;&otilde;es realizadas durante o ano de 2017, fez-se a m&eacute;dia ponderada</p>
+<p><strong>V.4 - Indicador de Qualidade</strong></p>
+<p>Ser&aacute; considerado como indicador de qualidade o n&uacute;mero de reclama&ccedil;&otilde;es&nbsp; feitas atrav&eacute;s do site da DRYWASH, no e-mail&nbsp; <span style="text-decoration: underline;">falecom@drywash.com.br</span>. S&oacute; ser&atilde;o consideradas as reclama&ccedil;&otilde;es dos clientes, gerando um RAC (Relat&oacute;rio de A&ccedil;&atilde;o Corretiva) nos seguintes casos: Colis&atilde;o do ve&iacute;culo, roubo, furto, avaria no ve&iacute;culo, erros sistem&aacute;ticos do processo. A meta de satisfa&ccedil;&atilde;o do cliente medida pelo Falecom e Telemarketing &eacute; de 5% m&ecirc;s (reclama&ccedil;&otilde;es por carros atendidos)</p>
+<p><strong>V.5 - Apura&ccedil;&atilde;o do Desempenho</strong></p>
+<p>A apura&ccedil;&atilde;o do desempenho e a conseq&uuml;ente economia gerada, que financiar&aacute; o Programa de Participa&ccedil;&atilde;o nos Resultados, far-se-&aacute; mediante a compara&ccedil;&atilde;o dos resultados obtidos em rela&ccedil;&atilde;o aos &iacute;ndices e coeficientes de refer&ecirc;ncia pactuados na cl&aacute;usula estabelecimento de metas</p>
+<div id="icpbravoaccess_loaded">&nbsp;</div>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUARTA - ESTABELECIMENTO DE METAS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O SINDICATO PROFISSIONAL, e a Empresa&nbsp;<span>&nbsp;<span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong></strong></span></span>, ajustar&atilde;o o seguinte programa de metas para o per&iacute;odo estabelecido na cl&aacute;usula "Condi&ccedil;&otilde;es para implementa&ccedil;&atilde;o do Acordo de Participa&ccedil;&atilde;o nos Resultados", em rela&ccedil;&atilde;o aos indicadores que seguem, cujos &iacute;ndices e ou coeficientes de refer&ecirc;ncia estar&atilde;o condensados pelas partes, observadas as regras abaixo:<span style="margin-left: 0px; mso-spacerun: yes;">&nbsp; </span></span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none; tab-stops: 39.3pt;"><strong>a -&nbsp;Produtividade</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none; tab-stops: 39.3pt;"><strong><span style="font-family: 'Arial','sans-serif'; font-size: 12pt; margin-left: 0px;">&nbsp;</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;"><span style="font-family: 'Arial','sans-serif'; font-size: small; margin-left: 0px;">S&oacute; ser&aacute; eleg&iacute;vel para receber o b&ocirc;nus o empregado que atingir 80% da meta estabelecida para cada tipo de servi&ccedil;o.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;"><span style="font-size: small;"><span style="font-family: 'Arial','sans-serif'; margin-left: 0px;">&nbsp;</span><span style="font-family: 'Arial','sans-serif'; margin-left: 0px;">Acima de 80% a valor recebido ser&aacute; proporcional &agrave;s metas atingidas, n&atilde;o tendo limite pr&eacute;vio estabelecido.</span></span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;"><span style="font-size: small;">&nbsp;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Auxiliar de Equipe</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 590px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td width="114">
+<p align="center"><strong>Carros Grandes</strong></p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">200</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">0</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">35</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p style="text-align: center;">165,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">55,00</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">160</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">28</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">132,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p style="text-align: center;">00,00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">44,80</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre o PPR gerado individualmente</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade - Decr&eacute;scimo de 20% sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Auxiliar de Aplicador T&eacute;cnico </strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 590px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td width="114">
+<p align="center"><strong>Carros Grandes</strong></p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td style="text-align: center;" nowrap="nowrap" width="102">
+<p>150</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">0</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">50</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR</p>
+</td>
+<td style="text-align: center;" nowrap="nowrap" width="102">
+<p>165,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">55,00</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">120</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">40</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">132,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p style="text-align: center;">00,00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">44,00</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre o PPR gerado individualmente</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade - Decr&eacute;scimo de 20% sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>&nbsp;</strong><strong>Auxiliar de Equipe Senior</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 590px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td width="114">
+<p align="center"><strong>Carros Grandes</strong></p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">200</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">0</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">35</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p style="text-align: center;">187,50</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">62,50</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">160</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">28</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">150,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p style="text-align: center;">00,00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">50,00</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre o PPR gerado</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade - Decr&eacute;scimo de 20% sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Auxiliar de Aplicador T&eacute;cnico Senior</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 590px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td width="114">
+<p align="center"><strong>Carros Grandes</strong></p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td style="text-align: center;" nowrap="nowrap" width="102">
+<p>150</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">0</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">50</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR</p>
+</td>
+<td style="text-align: center;" nowrap="nowrap" width="102">
+<p>187,50</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">62,50</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">120</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">40</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="105">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="102">
+<p align="center">150,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p style="text-align: center;">00,00</p>
+</td>
+<td nowrap="nowrap" width="116">
+<p align="center">50,00</p>
+</td>
+<td nowrap="nowrap" width="153">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre o PPR gerado individualmente</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade - Decr&eacute;scimo de 20% sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Aplicador T&eacute;cnico</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 425px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">90</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">31</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">39</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">PPR</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p style="text-align: center;">195,00</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">33,00</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">65,00</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">72</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">25</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">31</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">156,00</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">27,00</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">52,00</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre a PPR gerada sobre a equipe.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> ? N&atilde;o &nbsp;atinge a meta de qualidade -&nbsp;&nbsp;Decr&eacute;scimo de 20% sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>&nbsp;</strong><strong>Aplicador T&eacute;cnico Senior</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 425px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center"><strong>Carros</strong></p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center"><strong>Servi&ccedil;os </strong></p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center"><strong>Revitaliza&ccedil;&otilde;es</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center"><strong>Meta 100%</strong></p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">90</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">31</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">39</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">PPR</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">180,00</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">45,00</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">75,00</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center"><strong>Meta 80%</strong></p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">72</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">25</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">31</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">PPR 80%</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">144,00</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">26,00</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">60,00</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="96">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="109">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="129">
+<p align="center">&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre a PPR gerada sobre a equipe.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade -&nbsp;&nbsp;Decr&eacute;scimo de 20% sobre o PPR gerado individualmente</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Supervisor T&eacute;cnico</strong> <strong>e Assemelhado</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>Ir&aacute; receber PPR sobre a o alcance de numero de carros estipulado para cada &nbsp;m&ecirc;s, &nbsp;seguindo os seguintes crit&eacute;rios:</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>80% (do numero de carros da loja)= R$ 200</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>90% (do numero de carros da loja) = R$ 300</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>100%(do numero de carros da loja) = R$400</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre a PPR gerada N&atilde;o atinge a meta de faturamento &ndash; Decr&eacute;scimo de 20% sobre a PPR gerada.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade -&nbsp;&nbsp;Decr&eacute;scimo de R$ 100,00 sobre o PPR gerado &nbsp;individualmente. Atingiu a qualidade &ndash; Acr&eacute;scimo de R$ 100,00 sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Supervisor T&eacute;cnico</strong> <strong>Senior</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>Ir&aacute; receber PPR sobre a o alcance de numero de carros estipulado para cada&nbsp; m&ecirc;s,&nbsp; seguindo os seguintes crit&eacute;rios:</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>80% (do numero de carros da loja)= R$ 300</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>90% (do numero de carros da loja) = R$ 400</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>100%(do numero de carros da loja) = R$500</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 1</strong> &ndash; Atinge a meta de Faturamento &agrave; Acr&eacute;scimo de 20% sobre a PPR gerada N&atilde;o atinge a meta de faturamento &ndash; Decr&eacute;scimo de 20% sobre a PPR gerada.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Condi&ccedil;&atilde;o 2</strong> &ndash; N&atilde;o &nbsp;atinge a meta de qualidade -&nbsp;&nbsp;Decr&eacute;scimo de R$ 200,00 sobre o PPR gerado individualmente. Atingiu a qualidade &ndash; Acr&eacute;scimo de R$ 200,00 sobre o PPR gerado individualmente.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;<strong>&nbsp;</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Consultor T&eacute;cnico I ; II; III; Consultor Respons&aacute;vel&nbsp;</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>Ir&aacute; receber um percentual sobre o faturamento gerado pelas vendas individuais</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 507px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td nowrap="nowrap" width="98">
+<p align="center">&nbsp;</p>
+</td>
+<td nowrap="nowrap" width="93">
+<p align="center"><strong>Nenhuma meta atingida</strong></p>
+</td>
+<td width="114">
+<p align="center"><strong>Atinge a meta de numero de carros/ticket medi ou qualidade)</strong></p>
+</td>
+<td nowrap="nowrap" width="112">
+<p align="center"><strong>Atinge Meta de Qualidade + Faturamento + numero de carros/ticket medio</strong></p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center"><strong>Atinge meta de Faturament+</strong></p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="98">
+<p align="center"><strong>Menos que 90% da meta individual</strong></p>
+</td>
+<td nowrap="nowrap" width="93">
+<p align="center">0,00</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">0,00</p>
+</td>
+<td nowrap="nowrap" width="112">
+<p align="center">0,00</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">0,00</p>
+</td>
+</tr>
+<tr>
+<td nowrap="nowrap" width="98">
+<p align="center"><strong>A partir de 90% da meta (carros /ticket m&eacute;dio) individual</strong></p>
+</td>
+<td nowrap="nowrap" width="93">
+<p align="center">1,2%</p>
+</td>
+<td nowrap="nowrap" width="114">
+<p align="center">1,5%</p>
+</td>
+<td nowrap="nowrap" width="112">
+<p align="center">2,0%</p>
+</td>
+<td nowrap="nowrap" width="91">
+<p align="center">Vale Refei&ccedil;&atilde;o de R$ 17,50/dia</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>&nbsp;</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>A meta individual ser&aacute; dividida de acordo com a meta de faturamento de cada loja / pelo numero de consultores considerando a tabela abaixo (de acordo com os hor&aacute;rios):</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 737px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="246">&nbsp;</td>
+<td valign="bottom" nowrap="nowrap" width="90">&nbsp;</td>
+<td valign="bottom" nowrap="nowrap" width="76">&nbsp;</td>
+<td colspan="2" valign="bottom" nowrap="nowrap" width="226">&nbsp;</td>
+<td valign="bottom" nowrap="nowrap" width="98">&nbsp;</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="246">
+<p>&nbsp;</p>
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="245">
+<p>Gatilho Inicial Faturamento Loja</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="bottom" nowrap="nowrap" width="90">
+<p align="center">90% da meta Individual</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="76">&nbsp;</td>
+<td colspan="2" valign="bottom" nowrap="nowrap" width="226">&nbsp;</td>
+<td valign="bottom" nowrap="nowrap" width="98">&nbsp;</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="246">
+<p>&nbsp;</p>
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="245">
+<p>Divis&atilde;o de metas 2 consultores</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="bottom" nowrap="nowrap" width="90">
+<p align="center">Manh&atilde; = 60%</p>
+</td>
+<td colspan="2" valign="bottom" nowrap="nowrap" width="160">
+<p align="center">Noite = 40%</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="143">&nbsp;</td>
+<td valign="bottom" nowrap="nowrap" width="98">&nbsp;</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="246">
+<p>&nbsp;</p>
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="245">
+<p>Divis&atilde;o de metas 3 consultores</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="bottom" nowrap="nowrap" width="90">
+<p align="center">Manh&atilde; = 40%</p>
+</td>
+<td colspan="2" valign="bottom" nowrap="nowrap" width="160">
+<p align="center">&nbsp;</p>
+<p align="center">Intermediario= 35%</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="143">
+<p style="text-align: center;" align="center">&nbsp;Noite&nbsp;=&nbsp;&nbsp;25&nbsp;%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="98">&nbsp;</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="246">
+<p>&nbsp;</p>
+<table border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="245">
+<p>Divis&atilde;o de metas 4 consultores</p>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="bottom" nowrap="nowrap" width="90">
+<p align="center">Manha =30%</p>
+</td>
+<td colspan="2" valign="bottom" nowrap="nowrap" width="160">
+<p align="center">Intermediario=25%</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="143">
+<p align="center">Intermediario=25%</p>
+</td>
+<td valign="bottom" nowrap="nowrap" width="98">
+<p align="center">Noite=</p>
+<p align="center">20%</p>
+</td>
+</tr>
+<tr>
+<td width="257">&nbsp;</td>
+<td width="90">&nbsp;</td>
+<td width="76">&nbsp;</td>
+<td width="84">&nbsp;</td>
+<td width="143">&nbsp;</td>
+<td width="98">&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>&nbsp;</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>SER&Aacute; DESCONTADO DO VALOR FINAL DA PPR, PARA OS SUPERVISORES TECNICOS; SUPERVISORES TECNICOS SR; CONSULTORES TECNICOS I ; II E III, ATE 20% DA PPR CASO N&Atilde;O ATINJAM 95% DO TOTAL DOS CHAMADOS DO &ldquo;VIA CHAMADO&rdquo;.</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Treinador/ Treinador Senior / Supervisor de Treinamento</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>Essas fun&ccedil;&otilde;es s&atilde;o medidas de &nbsp;acordo &nbsp;com &nbsp;a &nbsp;qualidade &nbsp;das &nbsp;lojas &nbsp;(5%-como meta). &nbsp;Cada unidade &nbsp;&nbsp;de&nbsp; &nbsp;servi&ccedil;o, &nbsp;atinge &nbsp;no &nbsp;final &nbsp;do &nbsp;m&ecirc;s &nbsp;um &nbsp;&iacute;ndice de qualidade &nbsp;(item 1.4) &nbsp;onde s&atilde;o estipulados valores de acordo com a fun&ccedil;&atilde;o , segundo abaixo:</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 235px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>Legenda: Treinador</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &le; &nbsp;a &nbsp;3%&nbsp; =&nbsp; 110,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 3,1% a&nbsp; 6%&nbsp; =&nbsp;&nbsp; 70,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 6,1% a 12%&nbsp; =&nbsp;&nbsp; 40,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>12,1% a 15%&nbsp; =&nbsp;&nbsp; 20,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; a 15%&nbsp; =&nbsp;&nbsp;&nbsp;&nbsp; 0,00</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>&nbsp;</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<table style="width: 235px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>Legenda: Treinador S&ecirc;nior</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &le; &nbsp;a &nbsp;3%&nbsp; =&nbsp; 125,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 3,1% a&nbsp; 6%&nbsp; =&nbsp;&nbsp; 85,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 6,1% a 12%&nbsp; =&nbsp;&nbsp; 55,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>12,1% a 15%&nbsp; =&nbsp;&nbsp; 35,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; a 15%&nbsp; =&nbsp;&nbsp;&nbsp;&nbsp; 0,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>Legenda: Supervisor de Treinamento</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &le; &nbsp;a &nbsp;3%&nbsp; =&nbsp; 135,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 3,1% a&nbsp; 6%&nbsp; =&nbsp;&nbsp; 95,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp; 6,1% a 12%&nbsp; =&nbsp;&nbsp; 65,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>12,1% a 15%&nbsp; =&nbsp;&nbsp; 45,00</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="bottom" nowrap="nowrap" width="235">
+<p align="center"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt; a 15%&nbsp; =&nbsp;&nbsp;&nbsp;&nbsp; 0,00</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Consultor Comercial</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>a)&nbsp; A m&eacute;dia de ganho de todos os consultores t&eacute;cnicos acrescido de 30%.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Supervisor de UPS</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>a) Se todas as lojas baterem a meta de faturamento + R$ 500,00.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p>b)&nbsp; Cada loja que bater FATURAMENTO + QUALIDADE , ACRESCENTAR R$ 80,00 /LOJA.</p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>&nbsp;</strong>&nbsp;</p>
+<p><strong>b- Absente&iacute;smo</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Se a media de refer&ecirc;ncia for excedida, o grupo todo ter&aacute; um desconto de 05% no valor total a ser recebido no m&ecirc;s.</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>M&eacute;dia: 5</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Meta: 3</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong>Caso a meta seja alcan&ccedil;ada ou superada, os funcion&aacute;rios (auxiliares e aplicadores) ter&atilde;o um b&ocirc;nus de 0,5% do total geral de b&ocirc;nus, distribu&iacute;dos entre os que n&atilde;o tiverem faltas.</strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: normal; margin: 0cm 0cm 0pt; mso-pagination: none;">&nbsp;</p>
+<p><strong><span style="margin-left: 0px; font-family: Arial;">c- &Iacute;ndice de Qualidade.</span></strong></p>
+<blockquote style="margin-left: 0px; margin-right: 0px;" dir="ltr">
+<p class="MsoNormal" style="text-align: justify; line-height: 14pt; margin-top: 0cm; margin-right: 25.65pt; margin-bottom: 14pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A qualidade ser&aacute; medida pelo tempo m&eacute;dio de execu&ccedil;&atilde;o de um determinado servi&ccedil;o e pelas reclama&ccedil;&otilde;es dos clientes (Falecom: RAC e TLMKT). </span></p>
+<p class="MsoNormal" style="text-align: justify; line-height: 14pt; margin-top: 0cm; margin-right: 25.65pt; margin-bottom: 14pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Caso n&atilde;o tenha nenhuma reclama&ccedil;&atilde;o de cliente ou RAC, os funcion&aacute;rios (auxiliares e aplicadores) ter&atilde;o um b&ocirc;nus de 0,5% do total geral do b&ocirc;nus, distribu&iacute;dos igualmente.</span></p>
+<p class="MsoNormal" style="text-align: justify; line-height: 14pt; margin-top: 0cm; margin-right: 25.65pt; margin-bottom: 18pt; mso-pagination: none; mso-line-height-rule: exactly;">&nbsp;<strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo &Uacute;nico - Condi&ccedil;&otilde;es Excepcionais</span></strong></p>
+</blockquote>
+<p class="MsoNormal" style="text-align: justify; line-height: 16pt; margin-top: 0cm; margin-right: 25.65pt; margin-bottom: 18pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">No caso da meta de produ&ccedil;&atilde;o n&atilde;o poder ser atingida em decorr&ecirc;ncia de significativa altera&ccedil;&atilde;o dos contratos de presta&ccedil;&atilde;o de servi&ccedil;os, que inviabilize a produ&ccedil;&atilde;o prevista no plano de metas, a empresa comunicar&aacute; o fato ao Sindicato Profissional, cabendo &agrave;s partes repactuarem<span style="margin-left: 0px; mso-spacerun: yes;">&nbsp; </span>o referido acordo, prevalecendo os ganhos obtidos a titulo de participa&ccedil;&atilde;o dos resultados at&eacute; a data do novo acordo.</span></p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUINTA - O PAGAMENTO DA PARTICIPA&#199;&#195;O NOS RESULTADOS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Ocorrendo melhoria nos resultados, conforme crit&eacute;rios j&aacute; definidos, a empresa ter&aacute; at&eacute; o dia 15 (quinze) do m&ecirc;s subseq&uuml;ente, ap&oacute;s o encerramento do per&iacute;odo de apura&ccedil;&atilde;o, para efetuar o pagamento. Esse prazo visa a concilia&ccedil;&atilde;o desse pagamento com o pagamento de sal&aacute;rios numa mesma data em raz&atilde;o de seguran&ccedil;a e programa&ccedil;&atilde;o operacional de servi&ccedil;os. Caso a data de pagamento coincida com o final de semana, o pagamento ser&aacute; antecipado para a sexta-feira anterior &agrave; data.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Primeiro - &Eacute;poca do Pagamento</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">I &ndash; Pagamento:</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;"><span style="margin-left: 0px; mso-spacerun: yes;">&nbsp;</span>A import&acirc;ncia correspondente &agrave; participa&ccedil;&atilde;o nos resultados ser&aacute; paga mensalmente:</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">O valor correspondente ao resultado apurado no per&iacute;odo de cada m&ecirc;s, conforme os crit&eacute;rios definidos na Cl&aacute;usula Quarta, ser&aacute; quitado at&eacute; o 15&ordm; dia do m&ecirc;s posterior.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Segundo - Elegibilidade</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Todos os empregados, em princ&iacute;pio, s&atilde;o eleg&iacute;veis a participar do programa n&atilde;o havendo restri&ccedil;&otilde;es de nenhuma ordem, contudo poder&aacute; haver restri&ccedil;&otilde;es para efeito do recebimento ou at&eacute; perda do direito ao recebimento.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Assim, o<strong> <em>recebimento</em></strong> n&atilde;o &eacute; um direito, mas uma expectativa de direito.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">I.1- Empregados Ativos no &Uacute;ltimo dia do m&ecirc;s de Apura&ccedil;&atilde;o.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">a- Admitido at&eacute; o dia 15 ( quinze ) do 1&ordm; m&ecirc;s:</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Receber&aacute; no prazo normal.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">b- Admitido posteriormente ao dia 15 do 1&ordm; m&ecirc;s:</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Receber&aacute; o valor proporcional ao per&iacute;odo trabalhado.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">I.2- Empregados Desligados at&eacute; o &Uacute;ltimo dia do m&ecirc;s de Apura&ccedil;&atilde;o.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">a- Dispensado sem Justa Causa.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Receber&aacute; junto com suas verbas rescis&oacute;rias, dado que s&atilde;o direitos decorrentes de fontes absolutamente distintas.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">&nbsp;</span><strong><span style="margin-left: 0px; font-family: Arial;">b- Pedido de Demiss&atilde;o e extin&ccedil;&atilde;o do contrato de trabalho no prazo de experi&ecirc;ncia.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Far&atilde;o jus ao recebimento do valor da participa&ccedil;&atilde;o.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">c- Dispensado por Justa Causa.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">N&atilde;o faz jus ao recebimento do valor da participa&ccedil;&atilde;o, cuja quota-parte permanecer&aacute; na empresa para garantia de eventual futuro lit&iacute;gio.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 14pt; margin: 0cm 25.65pt 16pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Terceiro - Descontos ou San&ccedil;&otilde;es </span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A inten&ccedil;&atilde;o do programa &eacute; promover o aumento da produtividade e conseq&uuml;entemente o aumento da remunera&ccedil;&atilde;o dos empregados e nesse sentido, o programa n&atilde;o pode desconsiderar poss&iacute;veis comportamentos ou atitudes que criem obst&aacute;culos a essa meta que, ocorrendo devem ser reprimidos para que o programa se mantenha em dire&ccedil;&atilde;o positiva.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">II &ndash; Faltas</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">As faltas injustificadas acarretar&atilde;o descontos individuais no valor a ser recebido no m&ecirc;s nas propor&ccedil;&otilde;es abaixo:</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; tab-stops: 71.4pt; mso-line-height-alt: 10.0pt;"><span style="margin-left: 0px; font-size: 7pt;"><span style="font-family: Times New Roman;"><span style="font-family: Arial;">a</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span style="margin-left: 0px; font-family: Arial;">1 falta: perde 25% do valor a ser apurado no m&ecirc;s;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; tab-stops: 71.4pt; mso-line-height-alt: 10.0pt;"><span style="margin-left: 0px; font-size: 7pt;"><span style="font-family: Times New Roman;"><span style="font-family: Arial;">b</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span style="margin-left: 0px; font-family: Arial;">2 faltas: perde 50% do valor a ser apurado no m&ecirc;s;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; tab-stops: 71.4pt; mso-line-height-alt: 10.0pt;"><span style="margin-left: 0px; font-size: 7pt;"><span style="font-family: Times New Roman;"><span style="font-family: Arial;">c</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span style="margin-left: 0px; font-family: Arial;">3 faltas: perde 75% do valor a ser apurado no m&ecirc;s;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; tab-stops: 71.4pt; mso-line-height-alt: 10.0pt;"><span style="margin-left: 0px; font-size: 7pt;"><span style="font-family: Times New Roman;"><span style="font-family: Arial;">d</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span><span style="margin-left: 0px; font-family: Arial;">4 faltas: perde 100% do valor a ser apurado no m&ecirc;s.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-alt: 10.0pt;"><span style="margin-left: 0px; font-family: Arial;">Em caso de suspens&atilde;o, ser&aacute; computada coletivamente como uma falta. Individualmente o empregado perder&aacute; todo o valor a ser recebido no m&ecirc;s.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">III- Uniforme e E.P.I.</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Os empregados se obrigam a se apresentar para o trabalho com o uniforme completo, desde que oferecido pela empresa, em condi&ccedil;&atilde;o adequada, bem como com os equipamentos de prote&ccedil;&atilde;o individual, sem o que n&atilde;o poder&atilde;o trabalhar, o que implicar&aacute; em falta injustificada com suas conseq&uuml;&ecirc;ncias.</span></p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA SEXTA - COMISS&#195;O DE EMPREGADOS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Visando assegurar maior legitimidade no processo de implanta&ccedil;&atilde;o do programa, as partes concluem pela constitui&ccedil;&atilde;o de uma comiss&atilde;o de empregados que apreciar&aacute; a fase conclusiva do programa e atuar&aacute; conforme:</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Primeiro - Constitui&ccedil;&atilde;o da Comiss&atilde;o</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Ser&aacute; constitu&iacute;da uma comiss&atilde;o de no m&iacute;nimo 2 (dois) e no m&aacute;ximo 5 (cinco) componentes, necessariamente empregados das Empresas <span>&nbsp;<span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong></strong></span></span>, que n&atilde;o gozar&atilde;o de qualquer tipo de estabilidade, nem mesmo por analogia.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Na composi&ccedil;&atilde;o da comiss&atilde;o, haver&aacute; preferencialmente, um elemento de cada fun&ccedil;&atilde;o ou setor.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;"><span style="margin-left: 0px; mso-spacerun: yes;">&nbsp;</span>Par&aacute;grafo Segundo - Atribui&ccedil;&atilde;o da Comiss&atilde;o</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">a- </span></strong><span style="margin-left: 0px; font-family: Arial;">Tomar ci&ecirc;ncia do programa de forma explicativa, antes da implanta&ccedil;&atilde;o;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">b- </span></strong><span style="margin-left: 0px; font-family: Arial;">Divulgar e apoiar a divulga&ccedil;&atilde;o do programa na fase pr&eacute;-implanta&ccedil;&atilde;o e at&eacute; 30 dias ap&oacute;s;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">c- </span></strong><span style="margin-left: 0px; font-family: Arial;">Atender a convoca&ccedil;&atilde;o, que eventualmente ocorra para algum aspecto fundamental, com a presen&ccedil;a da empresa ou por ela autorizado, durante o per&iacute;odo de apura&ccedil;&atilde;o ou do pagamento do programa.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">&nbsp;</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Terceiro - N&atilde;o Existe - Estabilidade</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Considerando que a comiss&atilde;o n&atilde;o ser&aacute; &oacute;rg&atilde;o de exposi&ccedil;&atilde;o, mas de apoio ao processo, as partes acordam n&atilde;o conceder qualquer esp&eacute;cie de estabilidade ou de privil&eacute;gios aos membros da comiss&atilde;o; exceto o abono de eventuais aus&ecirc;ncias quando convocados para alguma reuni&atilde;o, atrav&eacute;s da empresa.</span></p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA S&#201;TIMA - DIVULGA&#199;&#195;O
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">As regras e as informa&ccedil;&otilde;es do programa ser&atilde;o amplamente divulgadas no sentido de apoi&aacute;-lo, incentiv&aacute;-lo e promov&ecirc;-lo, cabendo a Empresa&nbsp;&nbsp;<span>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA&nbsp;</strong></span>e ao SINDICATO PROFISSIONAL e &agrave; Comiss&atilde;o empenhar-se para tanto.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Primeiro - Divulga&ccedil;&atilde;o na Implanta&ccedil;&atilde;o</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A Empresa <span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong>&nbsp;</strong></span>e o SINDICATO PROFISSIONAL providenciar&atilde;o a&ccedil;&otilde;es e material de divulga&ccedil;&atilde;o na fase pr&eacute; e p&oacute;s-implanta&ccedil;&atilde;o que alcance de forma adequada os empregados, conclamando-os a se engajarem no programa.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1;"><strong><span style="margin-left: 0px; font-family: Arial;">Par&aacute;grafo Segundo - Divulga&ccedil;&atilde;o Mensal</span></strong></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A Empresa&nbsp;<span>&nbsp;<span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong>&nbsp;</strong></span></span>divulgara mensalmente o <strong>escore </strong>parcial das metas pactuadas, <strong style="margin-left: 0px; mso-bidi-font-weight: normal;">inclusive ao Sindicato Laboral</strong>, preferencialmente at&eacute; o dia 05 do m&ecirc;s seguinte. No que se refere &agrave;s metas de produ&ccedil;&atilde;o, ser&atilde;o informadas as efetivas apura&ccedil;&otilde;es verificadas no m&ecirc;s imediatamente anterior e a m&eacute;dia mensal acumulada dos meses j&aacute; apurados. Havendo interesse de uma das partes em avaliar a evolu&ccedil;&atilde;o das metas, poder&aacute; ser agendada uma reuni&atilde;o sobre o assunto.<span style="margin-left: 0px; mso-spacerun: yes;">&nbsp;&nbsp; </span></span></p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA OITAVA - N&#195;O INCID&#202;NCIA DE ENCARGOS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <P style="margin-left:0px; TEXT-ALIGN: justify; LINE-HEIGHT: 17pt; MARGIN: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly" class=MsoNormal><SPAN style="margin-left:0px; FONT-FAMILY: Arial">Conforme disposto no artigo 3º da <B>Medida Provisória N.º 1.982-77,</B> <B>de 23 de Novembro de 2.000, publicada no Diário Oficial da União de 23 de Novembro de 2.000, que fora regulamentada pela Lei 10.101/2000,</B> o pagamento dessa participação nos resultados não constitui base de incidência de qualquer encargo trabalhista ou previdenciário, igualmente não se aplica o princípio da habitualidade.<?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p></o:p></SPAN></P>
+<P style="margin-left:0px; TEXT-ALIGN: justify; LINE-HEIGHT: 16pt; MARGIN: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly; mso-outline-level: 1" class=MsoNormal><B><SPAN style="margin-left:0px; FONT-FAMILY: Arial">Parágrafo Único - Alteração Futura<o:p></o:p></SPAN></B></P>
+<P style="margin-left:0px; TEXT-ALIGN: justify; LINE-HEIGHT: 16pt; MARGIN: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly" class=MsoNormal><SPAN style="margin-left:0px; FONT-FAMILY: Arial">Fica ressalvado que, na hipótese de alteração na Legislação específica que prevê<SPAN style="margin-left:0px; mso-spacerun: yes">&nbsp; </SPAN>a não incidência de encargos trabalhistas e ou previdenciários, as partes discutirão a proporcional redução do valor da participação nos resultados, previstos anteriormente.<o:p></o:p></SPAN></P>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA NONA - COMPENSA&#199;&#213;ES
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <P style="margin-left:0px; TEXT-ALIGN: justify; LINE-HEIGHT: 16pt; MARGIN: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly" class=MsoNormal><SPAN style="margin-left:0px; FONT-FAMILY: Arial">Caso, por força de legislação superveniente, seja através de Lei ou de Medida Provisória, assim como por decisão da Justiça, haja qualquer alteração nas regras de apuração do valor do pagamento ou das condições da participação nos resultados, os valores resultantes deste acordo coletivo serão devidamente compensados.<?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p></o:p></SPAN></P>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Disposições Gerais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Regras para a Negociação
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA - DISPOSI&#199;&#213;ES GERAIS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Ocorrendo quaisquer fatos ou circunst&acirc;ncias que impliquem em modifica&ccedil;&otilde;es das cl&aacute;usulas e condi&ccedil;&otilde;es aqui estabelecidas, quer para os empregados ou, quer para a empresa, relativos ao programa, ou ainda que possam alterar forma, m&eacute;todo ou processo, no todo ou em parte, relativos a condi&ccedil;&atilde;o tecnol&oacute;gica, processo produtivo ou operativo ou quanto aos equipamentos inerentes &agrave;s atividades ou ainda altera&ccedil;&atilde;o ou introdu&ccedil;&atilde;o de norma legal, os signat&aacute;rios, comprometem-se a extraordinariamente reabrir conversa&ccedil;&otilde;es visando encontrar forma de solucionar o fato novo para o restabelecimento de regras compat&iacute;veis ou mesmo declarar extinto o programa no caso de fato novo que traga obst&aacute;culos insuper&aacute;veis ao programa, por condi&ccedil;&atilde;o operacional, econ&ocirc;mica, financeira ou jur&iacute;dica.</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 16pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">Em virtude da participa&ccedil;&atilde;o no presente acordo coletivo, ser&aacute; pago pela empresa<span style="margin-left: 0px; mso-spacerun: yes;">&nbsp; <span>&nbsp;<span>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong>&nbsp;</span></span></span>ao Sielav &ndash; Sindicato dos Empregados nas Empresas de Lava R&aacute;pido e Similares do Estado de S&atilde;o Paulo, todo dia 15 de cada m&ecirc;s, atrav&eacute;s de dep&oacute;sito no Banco Bradesco (237), ag&ecirc;ncia 3130-5, conta corrente 59919-0, a quantia equivalente a 2<strong>%</strong>(dois por cento) do montante total arrecadado, quantia esta deduzida do valor destinado aos empregados, sob pena de multa de 10% (dez por cento) ao m&ecirc;s. Tal valor &eacute; decorrente da participa&ccedil;&atilde;o efetiva e permanente da entidade sindical no processo de instaura&ccedil;&atilde;o, divulga&ccedil;&atilde;o e fiscaliza&ccedil;&atilde;o do presente acordo. </span></p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Mecanismos de Solução de Conflitos
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA PRIMEIRA - DIVERG&#202;NCIAS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><span style="margin-left: 0px; font-family: Arial;">A Empresa<span>&nbsp;<span>&nbsp;<strong>&nbsp;<strong>NHL - SERVICOS AUTOMOTIVOS LTDA</strong>&nbsp;</strong></span></span>e o SINDICATO PROFISSIONAL ocorrendo diverg&ecirc;ncia comprometem-se desde j&aacute; a imperativamente solucionarem por debates pr&oacute;prios sem interfer&ecirc;ncia de terceiros. Sendo intranspon&iacute;vel a diverg&ecirc;ncia as partes eleger&atilde;o, pela ordem, da seguinte forma:</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; line-height: 15pt; margin: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly;"><strong><span style="margin-left: 0px; font-family: Arial;">a- </span></strong><span style="margin-left: 0px; font-family: Arial;">Consensualmente escolher&atilde;o os mediadores;</span></p>
+<p class="MsoNormal" style="margin-left: 0px; text-align: justify; margin: 0cm 25.5pt 18pt 9.05pt; mso-pagination: none;"><strong><span style="margin-left: 0px; font-family: Arial;">b- </span></strong><span style="margin-left: 0px; font-family: Arial;">Firmar compromisso arbitral com colegiado, escolhido de consenso, de 3 (tr&ecirc;s) membros, em S&atilde;o Paulo &ndash; CAESP.</span></p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Renovação/Rescisão do Instrumento Coletivo
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA SEGUNDA - RENOVA&#199;&#195;O
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <P style="margin-left:0px; TEXT-ALIGN: justify; LINE-HEIGHT: 15pt; MARGIN: 0cm 25.65pt 18pt 9pt; mso-pagination: none; mso-line-height-rule: exactly" class=MsoNormal><SPAN style="margin-left:0px; FONT-FAMILY: Arial">Fica facultado às partes, no período de 30 (trinta) dias que precedem a extinção, acordarem por escrito sua prorrogação ou revisão.<?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p></o:p></SPAN></P>
+                                                </label>
+                                                <br />
+                                    }
+                                    <br />
+                                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                        <tr>
+                                            <td align="center">
+                                                    <br />
+    <br />
+    <label class="textonome">
+        ROSANGELA JACIRA COSTA
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SIND EMPREGADOS EMPRESAS LAVA RAPIDO E SIMIL DO EST SP
+        <br />
+        <br />
+    </label>
+
+    <br />
+    <br />
+    <label class="textonome">
+        EDISON BELTRAME
+        <br style="height: 5px" />
+        Empres&#225;rio
+        <br style="height: 5px" />
+        NHL - SERVICOS AUTOMOTIVOS LTDA
+        <br />
+        <br />
+    </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                        <br />
+                                        <center>
+                                            <label class="textogrupo">
+                                                <b>ANEXOS </b>
+                                            </label>
+                                        </center>
+                                                        <label>
+                                                            <b>
+                                                                <center>
+                                                                    <label class="textogrupo">
+                                                                        ANEXO I - ATA E LISTA DE PRESEN&#199;A
+                                                                    </label>
+                                                                </center>
+                                                                <label class="tituloClausula">
+                                                                                                                                    </label>
+                                                            </b>
+                                                        </label>
+                                                        <b>
+                                                            <label>
+
+                                                            </label>
+                                                        </b>
+                                                        <br />
+                                                        <label class="descricaoClausula" >
+                                                            <p><a href="https://www3.mte.gov.br/sistemas/mediador/imagemAnexo/MR061121_20252025_10_01T12_06_51.pdf" target="_blank">Anexo (PDF)</a></p>
+                                                        </label>
+                                                        <br />
+                                        <!--****************************************** FIM - Anexos ******************************************-->
+                                            <label class="texto">
+                                                &#160;&#160;&#160;&#160;A autenticidade deste documento poderá ser confirmada na
+                                                página do Ministerio do Trabalho e Emprego na Internet, no endereço http://www.mte.gov.br.
+                                            </label>
+                                            <br />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
+</body>
+<script>
+    setTimeout(function () {
+        window.history.replaceState({}, '', window.location.pathname);
+    }, 0);
+</script>
+</html>

@@ -1,0 +1,844 @@
+
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <title>
+        Mediador - Extrato Termo Aditivo de Conven&#231;&#227;o Coletiva
+    </title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <script src="https://www.google.com/recaptcha/api.js?render=6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G"></script>
+
+    <script src='/sistemas/mediador/WebResource.axd?d=mrsqBfycVuLUXNl1cBgBTS5e_zgKGT_ydqPRFYm385YpdfzTzxV6hshOewYDoLiqkOG5xDMpMwYkPFkVGOCk3Y5dYguSzi7CobMhisYHUM9t2KtHWNt2XO-WPVQxtFvj_Ojdds3d9AEuk1uzZDngf1CaMeTRwhhvrPWLN68FVwx2MKay9IB88DnjaO5EJfVu0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=tg4c3d9DGBdyY2FRFNUysRw8BXR2FCFKN2Hxucxv7I7uKRxf5xlBbt8q4jssOn7PMwhXsRCvSVq8IleJdeUJ1A0jkOo7a8JXMC2JQHv6bhTagXEFqDiP6DCJQzeQIlBcVUCVNmMDykvbzsZc5IPFPFKK4p5OM1lwI6yLnAw1qI72yFrvDsK7Bk7gZAnjMQRPb1VBubasmLNB2yshW-BA-A2&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ci_Ef54u9rsqxctDQvgSa2Fqbu19aIC7-bvt-mrcQU0uKWQrI1aDKWlhPhhcqtDD6lRJrp5X3QNdj-3105H2TUImyDa1ifpjjF5aQAr6czlicBRMTW5Iv0ij7lHhFGdhR9_fM7C0hBTz-MBAB3jNQ7E7I2ip1ncT13KBICCDctBDCCyZa671FU6tziLAWVqS0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=HhRvNPO_8EFR9zXDBtRPZ2vqDcqzTjtXWvAHwwDdGmYPxHFNGjxFIeDHPtFiIyYDQa6V4bDifrfSTevNX6oD9WP_ZoKMBiPFnlTJ5WrYBfJQwZBD6lUNGufAikMWKyj4_tO8lSJ1gxwaJ9GMePDWssPDfpV-KiTalP50xwt3a6PSYOKdgSFrlvmG-A2NxId_0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=Ji-F9gbs5nq8Dd3QjdkZDB9bS2ka5inEVN6mHWhVKUfaWkcBlVtZmkNsFaLeAuJxNhFZXOb9gyIabCLrea9HdUblOKZO3Lson6pi4KdqIE0-IEngSpkAkb8IzgTMdpJ_getA9JixUIOpDom6HDHOEoyUQsDgcDmnToVGbO4v1M6isu7z6oIKEkDOr9GXgUnQ0&t=639040922190000000' type='text/javascript'></script>
+<script src='/sistemas/mediador/WebResource.axd?d=1oOmSykdKljldEVdM-TVR6vUbXsxyBWjItMDx4wCQf3Kabnp412nq3Nuui35243OaS0tD2owbuFN3Xilzzca8j8BcT7XSvu9Jm9w2r8ElZKT8A7wvfFpbUC5BrzB4eYkn8Uy5KZ6KPebNTIxS5doOnddihnTsMr_CWq5sXfdIOwDXL1pU0HsjpKH54ZaHW_T0&t=639040922190000000' type='text/javascript'></script>
+
+
+<script type="text/javascript">
+        var recaptchaSiteKey = '6LdPnewrAAAAADM60VqWAyvhreJD6Jpyr1tORg6G';
+        var pageLoadToken = '';
+        var isPageValidated = false;
+
+        function onRecaptchaLoad() {
+            console.log('reCAPTCHA carregado, validando página...');
+            executePageLoadRecaptcha();
+        }
+
+        function executePageLoadRecaptcha() {
+            if (typeof grecaptcha === 'undefined') {
+                console.error('reCAPTCHA não carregado');
+                return;
+            }
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(recaptchaSiteKey, {
+                    action: 'page_load_resumo'
+                }).then(function(token) {
+                    console.log('Token de página gerado');
+                    pageLoadToken = token;
+
+                    // Enviar o token para o servidor
+                    validatePageLoadToken(token);
+                }).catch(function(error) {
+                    console.error('Erro no reCAPTCHA de página:', error);
+                    // Em desenvolvimento, permitir continuar
+                });
+            });
+        }
+
+        function validatePageLoadToken(token) {
+            var currentUrl = window.location.href;
+            var queryString = window.location.search;
+            var nrSolicitacao = 'MR072061/2025';
+
+            $.ajax({
+                url: '/sistemas/mediador/Resumo/ValidateResumoPageLoad',
+                type: 'POST',
+                data: {
+                    recaptchaToken: token,
+                    currentUrl: currentUrl,
+                    queryString: queryString,
+                    nrSolicitacao: nrSolicitacao
+                },
+                success: function(response) {
+                    if (response.success) {
+                        console.log('Página validada com sucesso');
+                        isPageValidated = true;
+                        showPageContent();
+                    } else {
+                        console.warn('Validação de página falhou:', response.message);
+                        handleValidationFailed(response);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Erro ao validar página:', error);
+                    handleValidationFailed({ message: 'Erro de comunicação com o servidor' });
+                }
+            });
+        }
+
+        function showPageContent() {
+            // Remover overlay de loading se existir
+            $('#recaptcha-loading').remove();
+            console.log('Conteúdo da página liberado');
+        }
+
+        function handleValidationFailed(response) {
+            // Mostrar mensagem de erro
+            var errorHtml = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: #d32f2f;">Validação de Segurança</h2>
+                        <p style="font-size: 16px; margin: 20px 0;">${response.message || 'Falha na validação de segurança.'}</p>
+                        <button onclick="window.location.reload()" style="padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Tentar Novamente
+                        </button>
+                        <br><br>
+                        <button onclick="window.location.href='/sistemas/mediador/'" style="padding: 8px 16px; background: #757575; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            Voltar para Página Inicial
+                        </button>
+                    </div>
+                </div>
+            `;
+            $('body').prepend(errorHtml);
+        }
+
+        $(document).ready(function() {
+            console.log('Página carregada - ambiente de produção');
+
+            // Pular validação reCAPTCHA em produção
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.log('Produção - validando sem reCAPTCHA');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 1000);
+
+            // Timeout de segurança reduzido
+            setTimeout(function() {
+                if (!isPageValidated) {
+                    console.warn('Timeout na validação - liberando conteúdo');
+                    isPageValidated = true;
+                    showPageContent();
+                }
+            }, 5000); // Reduzido para 5 segundos
+        });
+
+        function Imprimir() {
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "none";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "none";
+            window.print();
+            document.getElementById("btnResumoVisualizarImprimir").style.display = "";
+            document.getElementById("btnResumoVisualizarSalvar").style.display = "";
+            return true;
+        }
+        $(function () {
+            var marcaDaguaHtml = $('.MarcaDagua').html();
+            var width = $('body').width();
+            var marcaW = $('.MarcaDagua').width();
+
+            var qtdNescessarios = Math.round((width / marcaW) + 0.4);
+            if (qtdNescessarios > 0)
+                for (var incrementador = 0; incrementador < qtdNescessarios; incrementador++) {
+                    $('.MarcaDagua').append("<br />");
+                    $('.MarcaDagua').append(marcaDaguaHtml);
+                }
+        });
+
+
+</script>
+    <style type="text/css">
+        .titulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .Subtitulo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 13px;
+        }
+        .texto
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .tituloClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .descricaoClausula
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        .textogrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+        }
+        .textosubgrupo
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .textonome
+        {
+            font-family: Arial, Verdana, Helvetica, sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .textofuncao
+        {
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pagebreak
+        {
+            page-break-after: always;
+        }
+        table.titulo
+        {
+            text-align: left;
+        }
+        @page Section2 {size:21cm 29.7cm ;mso-page-orientation:portrait;margin-top:2cm; margin-rigth:2cm; mso-paper-source:0;}
+        div.Section2 {page:Section2;}
+        pre
+        {
+            white-space: pre-wrap; /* css-3 */
+            white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+            white-space: -pre-wrap; /* Opera 4-6 */
+            white-space: -o-pre-wrap; /* Opera 7 */
+            word-wrap: break-word; /* Internet Explorer 5.5+ */
+            white-space: normal;
+        }
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+    <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+    </w:WordDocument>
+    </xml>
+    <![endif]-->
+</head>
+
+<body>
+    <div class="Section2">
+
+        <center>
+            <table border="0" style="width: 18cm;" id="tblConteudo">
+                <tr>
+                    <td>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0">
+
+                                                            <tr>
+                                    <td align="center" class="titulo" style="text-transform: uppercase;">
+                                        <b>
+                                            Termo Aditivo a Conven&#231;&#227;o Coletiva De Trabalho 2025/2026
+                                        </b>
+                                        <br />
+                                        <br />
+                                    </td>
+                                </tr>
+                            <tr>
+                                <td>
+                                    <div style="text-align: left;">
+                                        <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td>
+                                                        <b>NÚMERO DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        SP000153/2026
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DE REGISTRO NO MTE:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        06/01/2026
+                                                    </td>
+                                                </tr>
+                                            <tr>
+                                                <td>
+                                                    <b>NÚMERO DA SOLICITAÇÃO:</b>
+                                                </td>
+                                                <td style="width: 10px">
+                                                </td>
+                                                <td>
+                                                    MR072061/2025
+                                                </td>
+                                            </tr>
+                                                                                            <tr>
+                                                    <td>
+                                                        <b>NÚMERO DO PROCESSO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+                                                        10260.226583/2025-56
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <b>DATA DO PROTOCOLO:</b>
+                                                    </td>
+                                                    <td style="width: 10px">
+                                                    </td>
+                                                    <td>
+27/11/2025                                                    </td>
+                                                </tr>
+                                        </table>
+                                        <br />
+
+                                                    <br />
+                                                    <br />
+                                                    <table border="0" class="titulo" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td>
+                                                                <b>
+                                                                    N&#218;MERO DO PROCESSO  DA CONVEN&#199;&#195;O COLETIVA PRINCIPAL:
+                                                                </b>
+                                                            </td>
+                                                            <td style="width: 10px">
+                                                            </td>
+                                                            <td>
+                                                                10260.228784/2024-15
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <b>
+                                                                    DATA DE REGISTRO  DA CONVEN&#199;&#195;O COLETIVA PRINCIPAL:
+                                                                </b>
+                                                            </td>
+                                                            <td style="width: 10px">
+                                                            </td>
+                                                            <td>
+19/12/2024                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                        <p>
+                                                            <label class="texto">
+                                                                <b>
+                                                                    Confira a autenticidade no endereço http://www3.mte.gov.br/sistemas/mediador/.
+                                                                </b>
+                                                            </label>
+                                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" class="texto">
+                                    <p align="justify">
+SINDICATO DA CATEGORIA PROFISSIONAL DOS EMPREGADOS E DE TRAB, CNPJ n. 62.249.040/0001-29, neste ato representado(a) por seu 
+
+Presidente, Sr(a). LUIZ FERNANDES DA CRUZ JUNIOR;
+    <br />
+&nbsp;
+    <br />
+                                        <label>
+                                            E
+                                        </label>
+                                        <br />
+                                        <br />
+SINDICATO DAS EMPRESAS DETURISMO NO ESTADO DE SAO PAULO, CNPJ n. 60.748.811/0001-05, neste ato representado(a) por seu 
+
+Presidente, Sr(a). CARLOS DE SOUZA SCHWARTZMANN;
+    <br />
+&nbsp;
+    <br />
+                                                                                    celebram
+                                                                                    o
+                                         presente TERMO ADITIVO DE CONVEN&#199;&#195;O COLETIVA DE TRABALHO,
+ estipulando as condi&#231;&#245;es de trabalho previstas nas cl&#225;usulas seguintes:                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA PRIMEIRA - VIG&#202;NCIA E DATA-BASE
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    As partes fixam a vigência do presente Termo Aditivo de Convenção Coletiva de Trabalho no período de 01º de novembro de 2025 a 31 de outubro de 2026 e a data-base da categoria em 01º de novembro.
+                                                </label>
+                                                <br />
+                                                <br />
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        CL&#193;USULA SEGUNDA - ABRANG&#202;NCIA
+                                                        <br />
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula">
+                                                    O presente Termo Aditivo de Convenção Coletiva de Trabalho abrangerá a(s) categoria(s) <b>Profissional dos Empregados e de Trabalhadores em Empresas de Turismo                                      </b>, com abrangência territorial em <b>Adolfo/SP, Aguaí/SP, Alambari/SP, Altair/SP, Alto Alegre/SP, Alumínio/SP, Álvares Florence/SP, Álvaro de Carvalho/SP, Alvinlândia/SP, Américo Brasiliense/SP, Américo de Campos/SP, Analândia/SP, Anhembi/SP, Aparecida d'Oeste/SP, Apiaí/SP, Araçariguama/SP, Aramina/SP, Arandu/SP, Arapeí/SP, Araraquara/SP, Arco-Íris/SP, Areiópolis/SP, Ariranha/SP, Artur Nogueira/SP, Arujá/SP, Aspásia/SP, Atibaia/SP, Bálsamo/SP, Barão de Antonina/SP, Barra do Chapéu/SP, Barra do Turvo/SP, Barueri/SP, Bertioga/SP, Biritiba Mirim/SP, Boa Esperança do Sul/SP, Bocaina/SP, Bofete/SP, Boituva/SP, Bom Jesus dos Perdões/SP, Bom Sucesso de Itararé/SP, Borá/SP, Borebi/SP, Bragança Paulista/SP, Braúna/SP, Brejo Alegre/SP, Brotas/SP, Buri/SP, Buritizal/SP, Cabreúva/SP, Caconde/SP, Cafelândia/SP, Caieiras/SP, Cajamar/SP, Cajati/SP, Campina do Monte Alegre/SP, Campo Limpo Paulista/SP, Campos Novos Paulista/SP, Cananéia/SP, Canas/SP, Cândido Mota/SP, Cândido Rodrigues/SP, Canitar/SP, Carapicuíba/SP, Cardoso/SP, Colina/SP, Colômbia/SP, Conchal/SP, Cordeirópolis/SP, Corumbataí/SP, Cosmópolis/SP, Cosmorama/SP, Cotia/SP, Cristais Paulista/SP, Cruzália/SP, Cubatão/SP, Descalvado/SP, Diadema/SP, Dirce Reis/SP, Divinolândia/SP, Dobrada/SP, Dolcinópolis/SP, Dourado/SP, Echaporã/SP, Eldorado/SP, Elias Fausto/SP, Elisiário/SP, Embaúba/SP, Embu das Artes/SP, Embu-Guaçu/SP, Emilianópolis/SP, Engenheiro Coelho/SP, Espírito Santo do Turvo/SP, Estiva Gerbi/SP, Estrela d'Oeste/SP, Fartura/SP, Fernando Prestes/SP, Fernandópolis/SP, Fernão/SP, Ferraz de Vasconcelos/SP, Floreal/SP, Florínea/SP, Franca/SP, Francisco Morato/SP, Franco da Rocha/SP, Garça/SP, Gavião Peixoto/SP, Getulina/SP, Guaiçara/SP, Guaimbê/SP, Guaíra/SP, Guaraci/SP, Guarani d'Oeste/SP, Guarantã/SP, Guararema/SP, Guareí/SP, Guariba/SP, Guarujá/SP, Guatapará/SP, Herculândia/SP, Holambra/SP, Hortolândia/SP, Iacanga/SP, Iacri/SP, Iaras/SP, Ibaté/SP, Ibirarema/SP, Ibitinga/SP, Igaraçu do Tietê/SP, Igarapava/SP, Iguape/SP, Ilha Comprida/SP, Indaiatuba/SP, Indiaporã/SP, Ipeúna/SP, Irapuã/SP, Itajobi/SP, Itaju/SP, Itanhaém/SP, Itaoca/SP, Itapecerica da Serra/SP, Itapevi/SP, Itapirapuã Paulista/SP, Itapuí/SP, Itapura/SP, Itaquaquecetuba/SP, Itariri/SP, Itatiba/SP, Itirapina/SP, Itirapuã/SP, Itobi/SP, Itu/SP, Itupeva/SP, Ituverava/SP, Jaborandi/SP, Jaboticabal/SP, Jacupiranga/SP, Jaguariúna/SP, Jales/SP, Jandira/SP, Jarinu/SP, Jaú/SP, Jeriquara/SP, Joanópolis/SP, Júlio Mesquita/SP, Jumirim/SP, Jundiaí/SP, Juquiá/SP, Juquitiba/SP, Lourdes/SP, Louveira/SP, Lucianópolis/SP, Luiziânia/SP, Lupércio/SP, Lutécia/SP, Macaubal/SP, Macedônia/SP, Magda/SP, Mairiporã/SP, Maracaí/SP, Marapoama/SP, Marília/SP, Marinópolis/SP, Matão/SP, Mauá/SP, Mendonça/SP, Meridiano/SP, Mesópolis/SP, Miguelópolis/SP, Mineiros do Tietê/SP, Mira Estrela/SP, Miracatu/SP, Mococa/SP, Mogi das Cruzes/SP, Monções/SP, Mongaguá/SP, Monte Alegre do Sul/SP, Monte Alto/SP, Monte Aprazível/SP, Monte Mor/SP, Morungaba/SP, Motuca/SP, Nantes/SP, Nazaré Paulista/SP, Nhandeara/SP, Nipoã/SP, Nova Campina/SP, Nova Canaã Paulista/SP, Nova Castilho/SP, Nova Europa/SP, Nova Independência/SP, Nova Luzitânia/SP, Nova Odessa/SP, Novais/SP, Ocauçu/SP, Óleo/SP, Onda Verde/SP, Oriente/SP, Orindiúva/SP, Osasco/SP, Oscar Bressane/SP, Ourinhos/SP, Ouroeste/SP, Palestina/SP, Palmares Paulista/SP, Palmeira d'Oeste/SP, Palmital/SP, Paraíso/SP, Paranapuã/SP, Pariquera-Açu/SP, Parisi/SP, Patrocínio Paulista/SP, Paulínia/SP, Paulistânia/SP, Paulo de Faria/SP, Pedra Bela/SP, Pedranópolis/SP, Pedregulho/SP, Pedreira/SP, Pedrinhas Paulista/SP, Pedro de Toledo/SP, Peruíbe/SP, Pindamonhangaba/SP, Pindorama/SP, Pinhalzinho/SP, Piracaia/SP, Pirajuí/SP, Pirangi/SP, Pirapora do Bom Jesus/SP, Pirassununga/SP, Pitangueiras/SP, Platina/SP, Poá/SP, Poloni/SP, Pompéia/SP, Pongaí/SP, Pontalinda/SP, Pontes Gestal/SP, Populina/SP, Porto Ferreira/SP, Potim/SP, Pracinha/SP, Pradópolis/SP, Praia Grande/SP, Pratânia/SP, Quadra/SP, Quatá/SP, Queiroz/SP, Quintana/SP, Rafard/SP, Rancharia/SP, Redenção da Serra/SP, Registro/SP, Restinga/SP, Ribeira/SP, Ribeirão Bonito/SP, Ribeirão Corrente/SP, Ribeirão do Sul/SP, Ribeirão dos Índios/SP, Ribeirão Grande/SP, Ribeirão Pires/SP, Rifaina/SP, Rincão/SP, Rio Grande da Serra/SP, Riolândia/SP, Rubinéia/SP, Sabino/SP, Salesópolis/SP, Saltinho/SP, Salto Grande/SP, Santa Albertina/SP, Santa Clara d'Oeste/SP, Santa Cruz da Conceição/SP, Santa Cruz da Esperança/SP, Santa Cruz do Rio Pardo/SP, Santa Ernestina/SP, Santa Fé do Sul/SP, Santa Gertrudes/SP, Santa Isabel/SP, Santa Lúcia/SP, Santa Maria da Serra/SP, Santa Rita do Passa Quatro/SP, Santa Rita d'Oeste/SP, Santa Salete/SP, Santana da Ponte Pensa/SP, Santana de Parnaíba/SP, Santo André/SP, Santo Antônio da Alegria/SP, Santo Antônio de Posse/SP, Santo Antônio do Jardim/SP, Santos/SP, São Bernardo do Campo/SP, São Caetano do Sul/SP, São Carlos/SP, São Francisco/SP, São João das Duas Pontes/SP, São João de Iracema/SP, São José da Bela Vista/SP, São José do Rio Pardo/SP, São Lourenço da Serra/SP, São Paulo/SP, São Pedro do Turvo/SP, São Sebastião da Grama/SP, São Vicente/SP, Sarutaiá/SP, Sebastianópolis do Sul/SP, Sete Barras/SP, Socorro/SP, Sumaré/SP, Suzanápolis/SP, Suzano/SP, Tabatinga/SP, Taboão da Serra/SP, Taguaí/SP, Taiaçu/SP, Taiúva/SP, Tambaú/SP, Tanabi/SP, Tapiratiba/SP, Taquaral/SP, Taquarivaí/SP, Tarumã/SP, Tejupá/SP, Terra Roxa/SP, Timburi/SP, Torre de Pedra/SP, Trabiju/SP, Três Fronteiras/SP, Tuiuti/SP, Turiúba/SP, Turmalina/SP, Ubarana/SP, Ubirajara/SP, União Paulista/SP, Urânia/SP, Uru/SP, Valentim Gentil/SP, Valinhos/SP, Vargem Grande do Sul/SP, Vargem Grande Paulista/SP, Vargem/SP, Várzea Paulista/SP, Vera Cruz/SP, Vinhedo/SP, Viradouro/SP, Vista Alegre do Alto/SP, Vitória Brasil/SP, Votuporanga/SP e Zacarias/SP</b>.
+                                                </label>
+                                                <br />
+                                    </p>
+
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Salários, Reajustes e Pagamento
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Piso Salarial
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA TERCEIRA - PISOS SALARIAIS- REGIME GERAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Para as empresas <strong>n&atilde;o aderentes ao REPIS</strong> &ndash; Regime Especial de Pisos Salariais &ndash; a partir de <strong>01 de novembro de 2025</strong>, ficam estabelecidos, para a categoria profissional, os seguintes pisos salariais para admiss&atilde;o de empregados em jornadas de 44 (quarenta e quatro) horas semanais:</p>
+<p><strong>a)&nbsp;&nbsp;&nbsp;&nbsp; </strong><strong>R$ 1.930,00</strong> <strong>(mil, novecentos e trinta reais),</strong> para os empregados exercentes das fun&ccedil;&otilde;es de faxineiros, office-boys, copeiras e recepcionistas.</p>
+<p><strong>&nbsp;</strong></p>
+<p><strong>b)&nbsp;&nbsp;&nbsp;&nbsp; </strong><strong>R$ 2.145,00 (dois mil, cento e quarenta e cinco reais)</strong> - para os demais empregados.</p>
+<p><strong>Par&aacute;grafo Primeiro</strong> &ndash; Os pisos salariais aqui estabelecidos n&atilde;o poder&atilde;o ter valores inferiores aos estabelecidos para o sal&aacute;rio-m&iacute;nimo (Federal e/ou Estadual).</p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUARTA - REGIME ESPECIAL DE PISOS SALARIAIS - REPIS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Com o objetivo de conferir tratamento diferenciado &agrave;s Microempresas (ME&rsquo;s) e Empresas de Pequeno Porte (EPP&rsquo;s) conforme preconiza o Inciso IX, do Artigo 170 da Constitui&ccedil;&atilde;o Federal e a Lei Complementar 123/2006, com fundamento no princ&iacute;pio da autonomia coletiva dos particulares, na Lei 13.874/2019 e na Lei 13.467/2017, com vistas a gera&ccedil;&atilde;o de emprego, renda e produtividade nas categorias econ&ocirc;mica e profissional, fica institu&iacute;do o Regime Especial de Piso Salarial &ndash; REPIS, que ser&aacute; regido pelas normas a seguir estabelecidas.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; Para efeito do REPIS considera-se: Microempresa (ME) a pessoa jur&iacute;dica com faixa de faturamento anual de at&eacute; R$ 360.000,00 (trezentos e sessenta mil reais) e Empresa de Pequeno Porte (EPP) a pessoa jur&iacute;dica com faixa de faturamento anual at&eacute; R$ 4.800.000,00 (quatro milh&otilde;es e oitocentos mil reais), devidamente comprovado, independente do regime tribut&aacute;rio e do tipo societ&aacute;rio.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; Para ades&atilde;o ao REPIS as empresas enquadradas na forma do caput e par&aacute;grafo primeiro desta cl&aacute;usula dever&atilde;o requerer ao SINDETUR-SP a expedi&ccedil;&atilde;o de CERTIFICADO DE ADES&Atilde;O AO REPIS, atrav&eacute;s de encaminhamento de formul&aacute;rio pr&oacute;prio, que dever&aacute; estar assinado por representante legal da empresa, contendo as seguintes informa&ccedil;&otilde;es e documentos:</p>
+<p style="text-align: justify;"><strong>I</strong> &ndash; Raz&atilde;o Social; CNPJ; N&uacute;mero de Inscri&ccedil;&atilde;o no Registro de Empresas (NIRE); Capital Social registrado na JUCESP; N&uacute;mero de Empregados; C&oacute;digo Nacional de Atividades Econ&ocirc;micas (CNAE); Endere&ccedil;o Completo; Identifica&ccedil;&atilde;o do S&oacute;cio da Empresa e do Contabilista Respons&aacute;vel;</p>
+<p style="text-align: justify;"><strong>II</strong> &ndash; Declara&ccedil;&atilde;o, sob as penas da lei, acompanhado de comprova&ccedil;&atilde;o cont&aacute;bil, de que a receita auferida no ano-calend&aacute;rio vigente ou proporcional ao m&ecirc;s da declara&ccedil;&atilde;o permite enquadrar a empresa como Microempresa (ME) ou Empresa de Pequeno Porte (EPP) no Regime Especial de Piso Salarial &ndash;REPIS;</p>
+<p style="text-align: justify;"><strong>III</strong> &ndash; Declara&ccedil;&atilde;o, sob as penas da lei, de ades&atilde;o volunt&aacute;ria ao REPIS e ao cumprimento da presente Conven&ccedil;&atilde;o Coletiva de Trabalho, incluindo as cl&aacute;usulas de contribui&ccedil;&otilde;es laboral e patronal relacionadas no instrumento;</p>
+<p style="text-align: justify;"><strong>IV</strong> &ndash; Comprovante de recolhimento das contribui&ccedil;&otilde;es patronais vencidas at&eacute; a data de ades&atilde;o, de car&aacute;ter retributivo das negocia&ccedil;&otilde;es da Conven&ccedil;&atilde;o Coletiva de Trabalho, devidamente previstas em normas legais e estatut&aacute;rias, bem como aprovadas em regulares assembleias;</p>
+<p style="text-align: justify;"><strong>V</strong> &ndash; Comprovante de recolhimento das contribui&ccedil;&otilde;es dos empregados vencidas at&eacute; a data de ades&atilde;o, de car&aacute;ter retributivo das negocia&ccedil;&otilde;es da Conven&ccedil;&atilde;o Coletiva de Trabalho, devidamente previstas em normas legais e estatut&aacute;rias, bem como aprovadas em regulares assembleias (informando e comprovando, se houver, as oposi&ccedil;&otilde;es efetuadas pelos empregados);</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> &ndash; A entrega dos documentos para comprova&ccedil;&atilde;o da condi&ccedil;&atilde;o estabelecida para se enquadrar na condi&ccedil;&atilde;o de usar o REPIS ser&aacute; feita por meio do site do SINDETUR-SP ou e-mail - saa@sindetursp.org.br</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quarto</strong> &ndash; Atendidos os requisitos acima, ser&aacute; emitido no prazo de at&eacute; 15 (quinze) dias &uacute;teis o Certificado de Enquadramento no Regime Especial de Piso Salarial &ndash; CERTIFICADO DE ADES&Atilde;O AO REPIS, <strong>devidamente assinado pelo SINDETUR e SETETUR </strong>com validade coincidente com a cl&aacute;usula da presente Conven&ccedil;&atilde;o Coletiva de Trabalho, que facultar&aacute; a empresa praticar os pisos salariais com os valores diferenciados para os empregados contratados na validade do certificado, a saber:</p>
+<p style="text-align: justify;"><strong>&nbsp;a)</strong> <strong>R$ 1.804,00 (mil, oitocentos e quatro reais)</strong> para os empregados exercentes das fun&ccedil;&otilde;es de faxineiros, office&ndash;boys, copeiras e recepcionistas.</p>
+<p style="text-align: justify;"><strong>b)</strong> <strong>R$ 1.959,00 (mil, novecentos e cinquenta e nove reais)</strong> para os demais empregados.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quinto</strong> &ndash; Em se constatando qualquer irregularidade no requerimento e/ou documenta&ccedil;&atilde;o apresentada, a empresa dever&aacute; ser comunicada para que regularize sua situa&ccedil;&atilde;o no prazo de at&eacute; 10 (dez) dias &uacute;teis.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Sexto</strong> &ndash; A falsidade das declara&ccedil;&otilde;es ou descumprimento do compromisso do inciso III do par&aacute;grafo 2&ordm;, uma vez constatados, ocasionar&aacute; o imediato desenquadramento da empresa do REPIS, o cancelamento do certificado, sendo imputado &agrave; empresa requerente o pagamento de eventuais diferen&ccedil;as salariais e o cumprimento das cl&aacute;usulas normativas n&atilde;o respeitadas, sem preju&iacute;zo do pagamento da multa por descumprimento de cl&aacute;usulas normativas.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo S&eacute;timo</strong> &ndash; Nos atos de assist&ecirc;ncia de rescis&atilde;o de contrato de trabalho e/ou para comprova&ccedil;&atilde;o perante a Justi&ccedil;a do Trabalho ao direito do pagamento dos sal&aacute;rios de menor valor, a prova do empregador se far&aacute; atrav&eacute;s da apresenta&ccedil;&atilde;o do CERTIFICADO DE ADES&Atilde;O AO REPIS v&aacute;lido no per&iacute;odo da contrata&ccedil;&atilde;o.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Oitavo</strong> &ndash; As empresas que n&atilde;o aderirem ao Regime Especial de Piso Salarial &ndash; REPIS ou que tiverem o pedido de ades&atilde;o indeferido ou, ainda, o Certificado cancelado, dever&atilde;o praticar os valores dos pisos salariais estabelecidos na Cl&aacute;usula &ldquo;PISOS SALARIAIS &ndash; REGIME GERAL&rdquo;.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Nono</strong> &ndash; As empresas que contratarem empregados com os pisos salariais previstos no par&aacute;grafo quartosem o CERTIFICADO DE ADES&Atilde;O AO REPIS ou com o certificado vencido ou cancelado, ficam sujeitas ao pagamento das diferen&ccedil;as salariais apuradas entre o valor praticado e o valor estabelecido na cl&aacute;usula &ldquo;PISOS SALARIAIS &ndash; REGIME GERAL&rdquo;, sem preju&iacute;zo da multa prevista para descumprimento de Conven&ccedil;&atilde;o Coletiva de Trabalho.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo D&eacute;cimo</strong> &ndash; N&atilde;o ser&aacute; admitida a ado&ccedil;&atilde;o do REPIS de que cuida a presente cl&aacute;usula para o fim de redu&ccedil;&atilde;o salarial dos empregados com contratos j&aacute; vigentes.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo D&eacute;cimo Primeiro</strong> &ndash; Aplicar-se-&aacute; aos empregados sob o regime do REPIS todas as cl&aacute;usulas do presente termo aditivo e da conven&ccedil;&atilde;o coletiva de trabalho 2024/2026.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Reajustes/Correções Salariais
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA QUINTA - REAJUSTE SALARIAL
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Os sal&aacute;rios dos empregados abrangidos pela presente Conven&ccedil;&atilde;o Coletiva de Trabalho, com data-base em 1&ordm; (primeiro) de novembro, ter&atilde;o reajuste de <strong>5,40%</strong> <strong>(cinco e quarenta por cento),</strong> calculado sobre os sal&aacute;rios de 01/11/2024, devidamente reajustado pela Conven&ccedil;&atilde;o Coletiva de Trabalho anterior, com vig&ecirc;ncia a partir de <strong>1&ordm; de novembro de 2025.</strong></p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; Ser&atilde;o compensadas as antecipa&ccedil;&otilde;es, espont&acirc;neas ou compuls&oacute;rias, concedidas no per&iacute;odo de <strong>01/11/2024 at&eacute; 31/10/2025</strong>, exceto os aumentos decorrentes de promo&ccedil;&atilde;o, transfer&ecirc;ncia, equipara&ccedil;&atilde;o salarial, t&eacute;rmino de aprendizagem, aumento real e/ou m&eacute;rito.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; Os sal&aacute;rios dos empregados admitidos ap&oacute;s 01 de novembro de 2024, ser&atilde;o reajustados proporcionalmente ao n&uacute;mero de meses trabalhados a raz&atilde;o de 1/12 (um doze avos) por m&ecirc;s trabalhado.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> &ndash; Os empregados t&ecirc;m garantido o direito de livre negocia&ccedil;&atilde;o com o empregador para estabelecer melhores condi&ccedil;&otilde;es salariais, segundo ajuste das partes e suas conveni&ecirc;ncias, ficando vedado a aplica&ccedil;&atilde;o de reajuste em percentual inferior ao estabelecido.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quarto</strong> &ndash; Os reajustes de comiss&atilde;o ser&atilde;o pactuados livremente entre empregado e empregador e independentemente do percentual ou valor acordado, seja ele qual for, dever&aacute; constar, obrigatoriamente, no contrato de trabalho, na carteira de trabalho e nos recibos de pagamento.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quinto</strong> &ndash; As eventuais diferen&ccedil;as salariais decorrentes da aplica&ccedil;&atilde;o do presente termo aditivo, dever&atilde;o ser pagas junto com o sal&aacute;rio do m&ecirc;s subsequente da publica&ccedil;&atilde;o da Conven&ccedil;&atilde;o Coletiva de Trabalho, sem qualquer acr&eacute;scimo, inclusive eventuais pagamentos de 13&ordm; sal&aacute;rio, f&eacute;rias e verbas rescis&oacute;rias, quando for o caso.</p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Gratificações, Adicionais, Auxílios e Outros
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Prêmios
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA SEXTA - PR&#202;MIO MENSAL DE PERMAN&#202;NCIA
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Nos contratos de trabalho superiores a 36 (trinta e seis) meses, o empregado faz jus ao recebimento do pr&ecirc;mio mensal de perman&ecirc;ncia no valor de R$ <strong>44,64 (quarenta e quatro reais e sessenta e quatro centavos)</strong>, correspondente a cada ano trabalhado, cujo pr&ecirc;mio integrar&aacute; ao sal&aacute;rio para fins de f&eacute;rias, 13&ordm; sal&aacute;rio, horas extras, recolhimentos previdenci&aacute;rios, FGTS e todas as demais parcelas e verbas contratuais, inclusive nas verbas rescis&oacute;rias:</p>
+<p><strong>Exemplo:</strong></p>
+<table border="1" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="top" width="201">
+<p align="center"><strong>TEMPO DE SERVI&Ccedil;O</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>C&Aacute;LCULO</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>VALOR MENSAL</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="201">
+<p align="center"><strong>3 anos trabalhados</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>3 x R$ 44,64</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>R$ 133,92</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="201">
+<p align="center"><strong>4 anos trabalhados</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>4 x R$ 44,64</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>R$ 178,56</strong></p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="201">
+<p align="center"><strong>5 anos trabalhados</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>5 x R$ 44,64</strong></p>
+</td>
+<td valign="top" width="201">
+<p align="center"><strong>R$ 223,20</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>E, assim, sucessivamente</strong>.</p>
+                                                </label>
+                                                <br />
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Auxílio Alimentação
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA S&#201;TIMA - VALE REFEI&#199;&#195;O / VALE ALIMENTA&#199;&#195;O
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Para os empregados que trabalham nos <strong>Munic&iacute;pios de S&atilde;o Paulo (Capital), Barueri, Cotia, Diadema, Jundia&iacute;, Mogi das Cruzes, Osasco, Santana de Parna&iacute;ba, Santo Andr&eacute;, Santos, S&atilde;o Bernardo do Campo, S&atilde;o Caetano do Sul e S&atilde;o Vicente, </strong>os empregadores fornecer&atilde;o at&eacute; o 5&ordm; (quinto) dia &uacute;til de cada m&ecirc;s, a todos empregados gratuitamente, vale-refei&ccedil;&atilde;o/vale-alimenta&ccedil;&atilde;o, no valor de <strong>R$ 44,00 (quarenta e quatro reais)</strong> em n&uacute;mero id&ecirc;ntico ao de dias a serem trabalhados no m&ecirc;s, a&iacute; inclu&iacute;dos, quando for o caso, os s&aacute;bados, domingos e feriados.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; As empresas que conveniarem restaurantes pr&oacute;ximos aos locais de trabalho, para fornecimento di&aacute;rio de refei&ccedil;&otilde;es a seus funcion&aacute;rios, estar&atilde;o dispensadas do fornecimento do benef&iacute;cio de que trata o "caput" da presente cl&aacute;usula, neste caso as refei&ccedil;&otilde;es dever&atilde;o estar de acordo com o valor de <strong>R$ 44,00 (quarenta e quatro reais)</strong> e o local dever&aacute; ser asseado, arejado e bem iluminado.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; As empresas que fornecerem as refei&ccedil;&otilde;es no pr&oacute;prio local, por possu&iacute;rem cozinha e refeit&oacute;rio com instala&ccedil;&otilde;es apropriadas, estar&atilde;o dispensadas do fornecimento do benef&iacute;cio de que trata o "caput" da presente cl&aacute;usula e dever&atilde;o estar comprovadamente dentro das condi&ccedil;&otilde;es do par&aacute;grafo primeiro, com card&aacute;pio di&aacute;rio variado, cumprindo todas as normas sanit&aacute;rias do Poder P&uacute;blico.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> &ndash; O pagamento de vale-refei&ccedil;&atilde;o/vale-alimenta&ccedil;&atilde;o exonera a empresa do fornecimento do aux&iacute;lio alimenta&ccedil;&atilde;o (vale cesta) estabelecido na cl&aacute;usula de &ldquo;aux&iacute;lio alimenta&ccedil;&atilde;o&rdquo; (vale-cesta).</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quarto</strong> &ndash; Pelo n&atilde;o cumprimento da presente cl&aacute;usula, a empresa pagar&aacute; multa de 5% (cinco por cento) sobre o valor devido acumulando m&ecirc;s a m&ecirc;s, desde a primeira data do descumprimento.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quinto</strong> - O &ldquo;vale refei&ccedil;&atilde;o/vale alimenta&ccedil;&atilde;o&rdquo; de que trata o caput, poder&aacute; ser concedido em cart&atilde;o que inclua, separadamente, o &ldquo;vale alimenta&ccedil;&atilde;o/vale cesta&rdquo;, &ldquo;aux&iacute;lio alimenta&ccedil;&atilde;o&rdquo; previsto na cl&aacute;usula 8&ordf; (oitava) deste aditivo e o &ldquo;vale transporte&rdquo; ou &ldquo;aux&iacute;lio combust&iacute;vel&rdquo; previsto na cl&aacute;usula 22&ordf; (vig&eacute;sima segunda) da conven&ccedil;&atilde;o coletiva de trabalho, cujo saldo de cada benef&iacute;cio dever&aacute; ser usado &uacute;nica e exclusivamente para a finalidade espec&iacute;fica, n&atilde;o podendo ser utilizado para outras despesas, cabendo aos empregadores observ&acirc;ncia quanto &agrave;s disposi&ccedil;&otilde;es da Lei n&ordm; 6.321/1976 (Programa de Alimenta&ccedil;&atilde;o do Trabalhador), Decreto n&ordm; 10.854, de 10 de novembro de 2021, artigo 175, do Decreto 10.954/2021, Lei n&ordm; 14.442/2022 e Portaria n&ordm; 1.707 de 11/10/2024, do Minist&eacute;rio do Trabalho e Emprego.</p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA OITAVA - AUX&#205;LIO ALIMENTA&#199;&#195;O (VALE CESTA)
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Para os empregados que trabalham nos Munic&iacute;pios n&atilde;o abrangidos pela obrigatoriedade de fornecimento do vale-refei&ccedil;&atilde;o, as empresas fornecer&atilde;o, mensalmente, aux&iacute;lio alimenta&ccedil;&atilde;o (vale cesta) no valor <strong>de R$ 333,51 (trezentos e trinta e tr&ecirc;s reais e cinquenta e um centavos)</strong> a todos os empregados, gratuitamente.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; O benef&iacute;cio previsto nesta cl&aacute;usula dever&aacute; ser concedido aos empregados (as) por ocasi&atilde;o das f&eacute;rias, da licen&ccedil;a maternidade, do aux&iacute;lio-doen&ccedil;a e do acidente de trabalho, sendo que nestes dois &uacute;ltimos casos (aux&iacute;lio-doen&ccedil;a e acidente de trabalho) a concess&atilde;o do benef&iacute;cio ser&aacute; garantida por um per&iacute;odo de at&eacute; 60 (sessenta) dias.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; O aux&iacute;lio alimenta&ccedil;&atilde;o (vale cesta) dever&aacute; ser entregue ao empregado at&eacute; o 5&ordm; (quinto) dia &uacute;til de cada m&ecirc;s.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> - O &ldquo;aux&iacute;lio alimenta&ccedil;&atilde;o&rdquo; de que trata o caput, poder&aacute; ser concedido em cart&atilde;o que inclua, separadamente, o &ldquo;vale refei&ccedil;&atilde;o/vale alimenta&ccedil;&atilde;o&rdquo; de que trata a cl&aacute;usula 7&ordf; (s&eacute;tima) deste aditivo, e o &ldquo;vale transporte&rdquo; ou &ldquo;aux&iacute;lio combust&iacute;vel&rdquo; previsto na cl&aacute;usula 22&ordf; (vig&eacute;sima segunda) da conven&ccedil;&atilde;o coletiva de trabalho, cujo saldo de cada benef&iacute;cio dever&aacute; ser usado &uacute;nica e exclusivamente para a finalidade espec&iacute;fica, n&atilde;o podendo ser utilizado para outras despesas, cabendo aos empregadores observ&acirc;ncia quanto &agrave;s disposi&ccedil;&otilde;es da Lei n&ordm; 6.321/1976 (Programa de Alimenta&ccedil;&atilde;o do Trabalhador), Decreto n&ordm; 10.854, de 10 de novembro de 2021, artigo 175, do Decreto 10.954/2021, Lei n&ordm; 14.442/2022 e Portaria n&ordm; 1.707 de 11/10/2024, do Minist&eacute;rio do Trabalho e Emprego.</p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Contrato de Trabalho – Admissão, Demissão, Modalidades
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Outras normas referentes a admissão, demissão e modalidades de contratação
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA NONA - TELETRABALHO - HOME OFFICE
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">As empresas poder&atilde;o pactuar com os trabalhadores a ado&ccedil;&atilde;o do regime de teletrabalho ou home office, especificando em contrato individual as atividades que ser&atilde;o realizadas pelo empregado, podendo ainda alterar o trabalho presencial para remoto e vice-versa, registrando tais altera&ccedil;&otilde;es por aditivo contratual.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; A ado&ccedil;&atilde;o ou altera&ccedil;&atilde;o do regime de teletrabalho para o presencial ou vice-versa observar&aacute; o prazo m&iacute;nimo de 15 dias para in&iacute;cio ou encerramento do regime.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; O comparecimento &agrave;s depend&ecirc;ncias do empregador para a realiza&ccedil;&atilde;o de atividades espec&iacute;ficas que exijam a presen&ccedil;a do empregado no estabelecimento n&atilde;o descaracteriza o regime de teletrabalho ou home office.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> &ndash; As disposi&ccedil;&otilde;es relativas &agrave; responsabilidade pela aquisi&ccedil;&atilde;o, manuten&ccedil;&atilde;o ou fornecimento dos equipamentos tecnol&oacute;gicos e da infraestrutura, ser&atilde;o previstas em contrato individual escrito, cujo eventual fornecimento pelo empregador n&atilde;o integram a remunera&ccedil;&atilde;o do empregado, que ainda responsabilizar-se-&aacute; pelo uso adequado e conserva&ccedil;&atilde;o dos equipamentos fornecidos pelo empregador, com base no &sect; 2&ordm; do art. 457 da CLT.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quarto</strong> &ndash; As empresas representadas acordar&atilde;o com os trabalhadores ajuda de custo mensal no valor de, no m&iacute;nimo <strong>R$ 149,00 (cento e quarenta e nove reais),</strong> com a finalidade de cobrir as despesas de internet, telefone e energia el&eacute;trica. Ficam asseguradas as condi&ccedil;&otilde;es mais favor&aacute;veis aos empregados, em cada empresa, com preserva&ccedil;&atilde;o dos valores superiores ao estabelecido neste par&aacute;grafo.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quinto</strong> &ndash; O empregador dever&aacute; instruir os empregados, de maneira expressa e ostensiva, quanto &agrave;s precau&ccedil;&otilde;es a tomar a fim de evitar doen&ccedil;as e acidentes de trabalho.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Sexto</strong> &ndash; Visando a prote&ccedil;&atilde;o de dados a que tenha acesso em fun&ccedil;&atilde;o de seu contrato de trabalho, o empregado dever&aacute; assinar termo de responsabilidade e termo de confidencialidade e sigilo desses dados, comprometendo-se a seguir as instru&ccedil;&otilde;es fornecidas pelo empregador.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo S&eacute;timo</strong> &ndash; N&atilde;o ser&aacute; devido ao trabalhador em home office o vale transporte, salvo nas situa&ccedil;&otilde;es previstas no par&aacute;grafo segundo e na hip&oacute;tese de trabalho h&iacute;brido quando dever&aacute; ser fornecido o vale transporte para os dias de trabalho presencial.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Oitavo</strong> &ndash; Ser&aacute; devido ao trabalhador em home office, na forma h&iacute;brida e/ou presencial, o vale refei&ccedil;&atilde;o ou vale alimenta&ccedil;&atilde;o previsto na Conven&ccedil;&atilde;o Coletiva de Trabalho.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Novo</strong> &ndash; O trabalhador em regime de teletrabalho ou home office estar&aacute; sujeito a controle de jornada, permanecendo &agrave; disposi&ccedil;&atilde;o do empregador no hor&aacute;rio contratualmente pactuado.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo D&eacute;cimo</strong> &ndash; O trabalho na modalidade home office ou h&iacute;brido n&atilde;o exclui os benef&iacute;cios constantes da presente conven&ccedil;&atilde;o coletiva.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo D&eacute;cimo Primeiro</strong> &ndash; Os empregados em regime de teletrabalho/home office que laboram em cidades fora da base de representatividade do sindicato profissional &ndash; SETETUR &ndash; aplica-se as regras e disposi&ccedil;&otilde;es constantes da presente conven&ccedil;&atilde;o coletiva de trabalho, em conformidade com o &sect; 7&ordm; do artigo 75-B da CLT.</p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Relações Sindicais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Contribuições Sindicais
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA - CONTRIBUI&#199;&#195;O ASSISTENCIAL DOS EMPREGADOS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">Conforme delibera&ccedil;&atilde;o e aprova&ccedil;&atilde;o da assembleia geral extraordin&aacute;ria do dia 23/09/2025, as empresas dever&atilde;o descontar de cada empregado, <strong>associados e n&atilde;o associados,</strong> o valor correspondente a <strong>3,0%, (tr&ecirc;s por cento)</strong> do sal&aacute;rio j&aacute; reajustado em uma <strong>&uacute;nica parcela</strong>, a t&iacute;tulo de retribui&ccedil;&atilde;o pela negocia&ccedil;&atilde;o coletiva que abrange toda a categoria profissional.</p>
+<p style="text-align: justify;">O desconto da contribui&ccedil;&atilde;o ser&aacute; efetuado na folha de pagamento do m&ecirc;s de <strong>janeiro de 2026</strong> e ser&aacute; recolhida at&eacute; o <strong>13 de fevereiro de 2026 </strong>a favor do SETETUR, cujas guias ser&atilde;o extra&iacute;das do site SETETUR (www.setetur.com.br), sendo que, no atraso ser&aacute; aplicada multa correspondente a 10% (dez por cento).</p>
+<p style="text-align: justify;"><strong>A contribui&ccedil;&atilde;o est&aacute; de acordo com o posicionamento do Supremo Tribunal Federal no tema 935: <em>&ldquo;&Eacute; constitucional a institui&ccedil;&atilde;o, por acordo ou conven&ccedil;&atilde;o coletiva, de contribui&ccedil;&otilde;es assistenciais a serem impostas a todos os empregados da categoria, ainda que n&atilde;o sindicalizados, desde que assegurado o direito de oposi&ccedil;&atilde;o</em></strong><em>&rdquo;</em> e Nota T&eacute;cnica n&ordm; 9 de 24/10/2024, da CONALIS - Coordenadoria Nacional de Promo&ccedil;&atilde;o da Liberdade Sindical do Minist&eacute;rio P&uacute;blico do Trabalho, estando ainda em conformidade com as delibera&ccedil;&otilde;es aprovadas em assembleia geral extraordin&aacute;ria do Sindicato.</p>
+<p style="text-align: justify;">O sindicato esclarece que as cl&aacute;usulas da conven&ccedil;&atilde;o coletiva favorecem toda a categoria profissional, associados e n&atilde;o associados, cujos benef&iacute;cios, tais como, reajuste salarial anual, pisos salariais, pr&ecirc;mio ao aposentado, pr&ecirc;mio mensal de perman&ecirc;ncia, di&aacute;rias de viagem, vale refei&ccedil;&atilde;o, vale alimenta&ccedil;&atilde;o, complementa&ccedil;&atilde;o de benef&iacute;cio previdenci&aacute;rio, aux&iacute;lio funeral, auxilio creche, auxilio ao filho portador de necessidade especial, aviso pr&eacute;vio especial, estabilidade ampliada da gestante, estabilidade ao empregado em aux&iacute;lio doen&ccedil;a, estabilidade pr&eacute;-aposentadoria, entre outros, n&atilde;o s&atilde;o direitos previstos na CLT, mas conquistas resultantes da atua&ccedil;&atilde;o do sindicato profissional nas negocia&ccedil;&otilde;es coletivas. A contribui&ccedil;&atilde;o assistencial visa a manuten&ccedil;&atilde;o dos servi&ccedil;os assistenciais e a manuten&ccedil;&atilde;o dos direitos previstos na conven&ccedil;&atilde;o coletiva. Portanto, a contribui&ccedil;&atilde;o tem car&aacute;ter retributivo e do necess&aacute;rio fortalecimento da entidade sindical que representa a categoria.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Primeiro</strong> &ndash; <strong>Direito de Oposi&ccedil;&atilde;o</strong> &ndash; Os empregados que n&atilde;o concordarem com o desconto da contribui&ccedil;&atilde;o assistencial, dever&atilde;o protocolar, pessoalmente, a respectiva carta de oposi&ccedil;&atilde;o escrita de pr&oacute;prio punho (em 2 vias) na sede do sindicato profissional, na Rua Bar&atilde;o de Itapetininga, n&ordm; 151, 1&ordm; andar, Rep&uacute;blica, S&atilde;o Paulo/SP, exclusivamente no per&iacute;odo de 24/11/2025 a 03/12/2025, das 10:00 horas &agrave;s 16:00 horas (de segunda a sexta), devendo entregar c&oacute;pia ao seu empregador para que este n&atilde;o proceda o desconto, cuja carta dever&aacute; mencionar o nome do empregado(a), RG, CPF, raz&atilde;o social e CNPJ da empresa onde trabalha.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Segundo</strong> &ndash; Aos empregados que trabalham nos Munic&iacute;pios fora da Capital de S&atilde;o Paulo, poder&atilde;o encaminhar a carta de oposi&ccedil;&atilde;o em uma &uacute;nica via, escrita de pr&oacute;prio punho, exclusivamente pelo correio com AR (aviso de recebimento) (individualizada), conforme estabelecido no par&aacute;grafo primeiro, com postagem dentro do per&iacute;odo estabelecido para a &nbsp;oposi&ccedil;&atilde;o, servindo o AR (aviso de recebimento) como protocolo de envio a ser apresentado ao empregador, devendo a carta indicar o nome do empregado(a), RG, CPF, raz&atilde;o social e CNPJ da empresa onde trabalha, sob pena de ser descartada pela n&atilde;o observ&acirc;ncia do aqui estabelecido.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Terceiro</strong> &ndash; As empresas dever&atilde;o encaminhar ao SETETUR, por e-mail (<a href="mailto:setetur@setetur.com.br">setetur@setetur.com.br</a>), em at&eacute; 30 (trinta) dias data do repasse da contribui&ccedil;&atilde;o assistencial, rela&ccedil;&atilde;o discriminando: a) n&uacute;mero de empregados que sofreram o desconto; b) nome dos empregados que efetuaram a contribui&ccedil;&atilde;o assistencial; c) o valor do sal&aacute;rio; d) o valor descontado de cada empregado contribuinte.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quarto</strong> &ndash; O n&atilde;o recolhimento da contribui&ccedil;&atilde;o e repasse ao Sindicato, na forma e no prazo assinalado, acarretar&aacute; para o empregador, multa de 10% (dez por cento) calculada sobre o montante devido e n&atilde;o recolhido, al&eacute;m de juros e corre&ccedil;&atilde;o na forma da lei.</p>
+<p style="text-align: justify;"><strong>Par&aacute;grafo Quinto</strong> &ndash; Na hip&oacute;tese de o Sindicato notificar o empregador (via postal) do descumprimento da cl&aacute;usula, a empresa dever&aacute; apresentar por escrito ao SETETUR os motivos de n&atilde;o ter efetivado eventuais repasse das contribui&ccedil;&otilde;es.</p>
+                                                </label>
+                                                <br />
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA PRIMEIRA - CONTRIBUI&#199;&#195;O DOS EMPREGADORES AO SINDETUR-SP
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p style="text-align: justify;">As empresas (matriz e filial) representadas recolher&atilde;o ao SINDETUR-SP, conforme deliberado na AGE-Assembleia Geral Extraordin&aacute;ria que autorizou a celebra&ccedil;&atilde;o da presente Conven&ccedil;&atilde;o Coletiva, aplic&aacute;vel aos integrantes da categoria econ&ocirc;mica, destinada ao custeio das negocia&ccedil;&otilde;es coletivas, com fulcro no Art. 513, &ldquo;e&rdquo;, da CLT, as contribui&ccedil;&otilde;es previstas na seguinte tabela de faixas de faturamento:</p>
+<table style="width: 642px;" border="1" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="top" width="292">
+<p align="center">Faixas de faturamento</p>
+</td>
+<td valign="top" width="113">
+<p align="center">Valor</p>
+</td>
+<td valign="top" width="236">
+<p align="center">Formas de pagamento &ndash; Vencimento em 15/01/2026</p>
+</td>
+</tr>
+<tr>
+<td valign="top" width="292">
+<p>Zero at&eacute; R$ 81.000,00/ano</p>
+<p>R$ 81.000,01 at&eacute; R$ 360.000,00/ano</p>
+<p>R$ 360.000,01 at&eacute; R$ 4.800.000,00/ano</p>
+<p>Acima de R$ 4.800.000,01</p>
+</td>
+<td valign="top" width="113">
+<p align="center">R$ 393,47</p>
+<p align="center">R$ 790,00</p>
+<p align="center">R$ 2.372,33</p>
+<p align="center">R$ 4.744,66</p>
+</td>
+<td valign="top" width="236">
+<p align="center">10% de desconto no boleto ou no PIX</p>
+<p align="center">05 (cinco) parcelas mensais sucessivas, sem desconto, no cart&atilde;o de cr&eacute;dito com vencimento inicial aos 15/01/2026</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: justify;">Par&aacute;grafo &Uacute;nico: O recolhimento da contribui&ccedil;&atilde;o patronal efetuado fora do prazo ser&aacute; acrescido da multa de 10% (dez por cento), juros de mora de 1% (um por cento) ao m&ecirc;s e corre&ccedil;&atilde;o monet&aacute;ria pelo &iacute;ndice IPCA ou outro &iacute;ndice que venha substitu&iacute;-lo, sem preju&iacute;zo das demais comina&ccedil;&otilde;es previstas.</p>
+                                                </label>
+                                                <br />
+                                        <center>
+                                            <br />
+                                            <b>
+                                                <label class="textogrupo">
+                                                    Disposições Gerais
+                                                    <br />
+                                                </label>
+                                            </b>
+                                        </center>
+                                            <center>
+                                                <b>
+                                                    <label class="textosubgrupo">
+                                                        Outras Disposições
+                                                        <br />
+                                                    </label>
+                                                </b>
+                                            </center>
+                                                <label class="tituloClausula">
+                                                    <b>
+                                                        <br />
+                                                        CL&#193;USULA D&#201;CIMA SEGUNDA - RATIFICA&#199;&#195;O DE CL&#193;USULAS
+                                                        <br />
+                                                                                                                                                                                                                                                                                        
+                                                    </b>
+                                                </label>
+                                                <br />
+                                                <label class="descricaoClausula" >
+                                                    <p>Permanecem v&aacute;lidas as demais cl&aacute;usulas constantes da atual Conven&ccedil;&atilde;o Coletiva de Trabalho 2024/2026, cuja vig&ecirc;ncia &eacute; at&eacute; 31 de outubro de 2026.</p>
+                                                </label>
+                                                <br />
+                                    }
+                                    <br />
+                                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+                                        <tr>
+                                            <td align="center">
+                                                    <br />
+    <br />
+    <label class="textonome">
+        LUIZ FERNANDES DA CRUZ JUNIOR
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SINDICATO DA CATEGORIA PROFISSIONAL DOS EMPREGADOS E DE TRAB
+        <br />
+        <br />
+    </label>
+
+    <br />
+    <br />
+    <label class="textonome">
+        CARLOS DE SOUZA SCHWARTZMANN
+        <br style="height: 5px" />
+        Presidente
+        <br style="height: 5px" />
+        SINDICATO DAS EMPRESAS DETURISMO NO ESTADO DE SAO PAULO
+        <br />
+        <br />
+    </label>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                        <br />
+                                        <center>
+                                            <label class="textogrupo">
+                                                <b>ANEXOS </b>
+                                            </label>
+                                        </center>
+                                                        <label>
+                                                            <b>
+                                                                <center>
+                                                                    <label class="textogrupo">
+                                                                        ANEXO I - ATA DA ASSEMBLEIA
+                                                                    </label>
+                                                                </center>
+                                                                <label class="tituloClausula">
+                                                                                                                                    </label>
+                                                            </b>
+                                                        </label>
+                                                        <b>
+                                                            <label>
+
+                                                            </label>
+                                                        </b>
+                                                        <br />
+                                                        <label class="descricaoClausula" >
+                                                            <p><a href="https://www3.mte.gov.br/sistemas/mediador/imagemAnexo/MR072061_20252025_11_19T13_04_14.pdf" target="_blank">Anexo (PDF)</a></p>
+                                                        </label>
+                                                        <br />
+                                        <!--****************************************** FIM - Anexos ******************************************-->
+                                            <label class="texto">
+                                                &#160;&#160;&#160;&#160;A autenticidade deste documento poderá ser confirmada na
+                                                página do Ministerio do Trabalho e Emprego na Internet, no endereço http://www.mte.gov.br.
+                                            </label>
+                                            <br />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
+</body>
+<script>
+    setTimeout(function () {
+        window.history.replaceState({}, '', window.location.pathname);
+    }, 0);
+</script>
+</html>

@@ -33,21 +33,22 @@ Resposta fundamentada com base nas cláusulas
 
 ---
 
-## 📂 Estrutura do Projeto
-
 RAG/
 │
-├── convencoes coletivas/ # Documentos fonte (.doc/.docx)
-├── embeddings/ # Geração de embeddings
-├── ingest/ # Parsing e chunking por cláusula
-├── prompts/ # Template de prompt
-├── vectorstore/ # FAISS + persistência
+├── convencoes_coletivas/     # Documentos fonte (.doc/.docx)
+├── embeddings/               # Geração de embeddings
+├── ingest/                   # Parsing e chunking por cláusula
+├── prompts/                  # Templates de prompt
+├── vectorstore/              # FAISS + persistência
+├── core/                     # Guardrails e utilitários centrais
+│   └── guardrails.py         # Filtros de entrada/saída + anti-jailbreak
 │
-├── build_index.py # Indexação inicial
-├── query.py # Busca semântica
-├── rag_generator.py # RAG completo (com geração)
+├── build_index.py            # Indexação inicial
+├── query.py                  # Busca semântica (somente retrieval)
+├── rag_generator.py          # RAG completo (retrieval + LLM + citações)
 ├── requirements.txt
-
+├── README.md                 # Como rodar
+└── ARCHITECTURE.md
 
 ## 🚀 Como Executar
 
@@ -77,46 +78,37 @@ Existe obrigação de seguro de vida empresarial?
 É necessário ter o Ollama instalado.
 
 Baixar modelo:
-
 ollama pull qwen2.5:1.5b
 Executar:
-
 python rag_generator.py
+
 🧠 Decisões Técnicas
 Embeddings locais com sentence-transformers/all-MiniLM-L6-v2
-
 Indexação vetorial com FAISS (similaridade por produto interno)
-
 LLM open-source rodando localmente via Ollama
-
 Separação modular de camadas (ingest, embeddings, vectorstore)
 
 🎯 Objetivo
 Demonstrar implementação completa de um pipeline RAG aplicado a documentos jurídicos, com:
-
 Recuperação semântica
-
 Fundamentação textual
-
 Independência de APIs externas
-
 Arquitetura organizada e escalável
 
 🔮 Possíveis Evoluções
 Classificação automática de cláusulas
-
 Extração estruturada de obrigações
-
 API com FastAPI
-
 Interface web com Streamlit
-
 Filtros por sindicato e categoria
 
 👩‍💻 Autor
 Allyson Aires
 Projeto desenvolvido como desafio técnico para implementação de sistema RAG aplicado a documentos jurídicos.
 
+## 📐 Arquitetura
+
+Veja o desenho completo em [ARCHITECTURE.md]
 ---
 
 # 🚀 Depois disso

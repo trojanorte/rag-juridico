@@ -1,5 +1,6 @@
 from embeddings.embedder import Embedder
 from vectorstore.faiss_store import FAISSStore
+from guadrails import check_input, safe_refusal
 import logging
 
 
@@ -56,9 +57,13 @@ def main():
             print("\nEncerrando busca.")
             break
 
+        gr = check_input(pergunta)
+        if not gr.ok:
+            print(safe_refusal(gr.reason))
+            continue
+
         resultados = search(embedder, store, pergunta)
         print_results(resultados)
-
 
 if __name__ == "__main__":
     main()

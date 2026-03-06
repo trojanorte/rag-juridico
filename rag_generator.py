@@ -3,10 +3,11 @@ import logging
 
 from embeddings.embedder import Embedder
 from vectorstore.faiss_store import FAISSStore
+from observability.decorators import measure
+from observability.telemetry import telemetry
 
 
 logging.basicConfig(level=logging.INFO)
-
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "phi3"
@@ -23,12 +24,15 @@ def load_components():
     return embedder, store
 
 
+@measure("retrieval_time")
 def retrieve_context(embedder, store, query, top_k=5, max_chars=3000):
     query_embedding = embedder.embed_texts([query])
     results = store.search(query_embedding, top_k=top_k)
 
     context = ""
     sources = []
+
+    telemetry.metrics["chunks"] = len(results)
 
     for item in results:
         trecho = item["content"][:800]
@@ -37,6 +41,9 @@ def retrieve_context(embedder, store, query, top_k=5, max_chars=3000):
 
         if len(context) >= max_chars:
             break
+
+    telemetry.logs["context"] = context
+    telemetry.logs["sources"] = sources
 
     return context, sources
 
@@ -57,25 +64,46 @@ Pergunta:
 Resposta:
 """.strip()
 
+
+@measure("generation_time")
 def generate_answer(prompt):
     payload = {
-        "model": "phi3",
+        "model": MODEL_NAME,
         "prompt": prompt,
         "stream": False
     }
 
     try:
-        response = requests.post(OLLAMA_URL, json=payload)
+        response = requests.post(OLLAMA_URL, json=payload, timeout=120)
         response.raise_for_status()
         data = response.json()
-        return data.get("response", "").strip()
+        answer = data.get("response", "").strip()
+
+        telemetry.logs["answer"] = answer
+
+        return answer
 
     except requests.exceptions.RequestException as e:
+        telemetry.metrics["error"] = str(e)
         print("\nErro ao comunicar com o Ollama:")
         print(str(e))
         if 'response' in locals():
             print("Resposta do servidor:", response.text)
         raise
+
+
+def answer_question(question):
+    telemetry.logs["question"] = question
+
+    embedder, store = load_components()
+    context, sources = retrieve_context(embedder, store, question)
+    prompt = build_prompt(context, question)
+
+    telemetry.logs["prompt"] = prompt
+
+    answer = generate_answer(prompt)
+    return answer, sources
+
 
 def main():
     embedder, store = load_components()

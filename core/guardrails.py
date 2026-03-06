@@ -84,8 +84,7 @@ def check_output(answer: str, require_citations: bool = True) -> GuardrailResult
             return GuardrailResult(False, "A resposta gerou linguagem inadequada.")
 
     if require_citations:
-        # regra simples: exigir ao menos um bloco de citação [ ... ]
-        # você pode trocar por regex mais específico depois.
+        
         if "[" not in answer or "]" not in answer:
             return GuardrailResult(False, "Resposta sem citações/evidências no formato [ ... ].")
 
@@ -102,7 +101,6 @@ def safe_refusal(reason: str) -> str:
         "Se você quiser, posso explicar o funcionamento em alto nível ou responder perguntas sobre as convenções com base em evidências."
     )
 
-
 def not_found_message() -> str:
     """
     Mensagem padrão quando o RAG não encontra evidência suficiente.
@@ -111,7 +109,6 @@ def not_found_message() -> str:
         "Não encontrei evidências suficientes nas convenções coletivas carregadas para responder com segurança. "
         "Tente reformular a pergunta (ex.: cite a categoria, o sindicato ou o benefício: seguro de vida/plano de saúde)."
     )
-
 
 def is_confident(retrieval_scores: Sequence[float], threshold: float = 0.25) -> bool:
     """

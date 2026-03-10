@@ -1,0 +1,102 @@
+[
+  {
+    "question": "Qual é a vigência do acordo coletivo?",
+    "expected_topic": "vigência do acordo"
+  },
+  {
+    "question": "Qual é o percentual de reajuste salarial previsto na convenção?",
+    "expected_topic": "reajuste salarial"
+  },
+  {
+    "question": "Existe cláusula de seguro de vida para os empregados?",
+    "expected_topic": "seguro de vida"
+  },
+  {
+    "question": "A convenção prevê auxílio alimentação?",
+    "expected_topic": "auxílio alimentação"
+  },
+  {
+    "question": "Há previsão de vale-transporte na convenção?",
+    "expected_topic": "vale transporte"
+  },
+  {
+    "question": "Qual é o valor do piso salarial da categoria?",
+    "expected_topic": "piso salarial"
+  },
+  {
+    "question": "Existe contribuição assistencial prevista para os trabalhadores?",
+    "expected_topic": "contribuição assistencial"
+  },
+  {
+    "question": "A convenção estabelece contribuição sindical?",
+    "expected_topic": "contribuição sindical"
+  },
+  {
+    "question": "Existe cláusula sobre jornada de trabalho?",
+    "expected_topic": "jornada de trabalho"
+  },
+  {
+    "question": "A convenção permite banco de horas?",
+    "expected_topic": "banco de horas"
+  },
+  {
+    "question": "Existe previsão de adicional noturno?",
+    "expected_topic": "adicional noturno"
+  },
+  {
+    "question": "Há cláusula sobre horas extras?",
+    "expected_topic": "horas extras"
+  },
+  {
+    "question": "Existe previsão de estabilidade para gestantes?",
+    "expected_topic": "estabilidade gestante"
+  },
+  {
+    "question": "A convenção trata de estabilidade pré-aposentadoria?",
+    "expected_topic": "estabilidade pré aposentadoria"
+  },
+  {
+    "question": "Existe previsão de auxílio creche?",
+    "expected_topic": "auxílio creche"
+  },
+  {
+    "question": "Há cláusula sobre fornecimento de uniformes?",
+    "expected_topic": "uniformes"
+  },
+  {
+    "question": "Existe obrigação de fornecimento de equipamentos de proteção individual?",
+    "expected_topic": "EPI"
+  },
+  {
+    "question": "A convenção prevê licença para casamento?",
+    "expected_topic": "licença casamento"
+  },
+  {
+    "question": "Existe licença prevista em caso de falecimento de familiar?",
+    "expected_topic": "licença falecimento"
+  },
+  {
+    "question": "A convenção estabelece regras para férias?",
+    "expected_topic": "férias"
+  },
+  {
+    "question": "Existe cláusula sobre participação nos lucros e resultados?",
+    "expected_topic": "PLR"
+  },
+  {
+    "question": "A convenção trata de assistência médica ou plano de saúde?",
+    "expected_topic": "plano de saúde"
+  },
+  {
+    "question": "Existe cláusula sobre treinamento ou qualificação profissional?",
+    "expected_topic": "qualificação profissional"
+  },
+  {
+    "question": "A convenção prevê regras para demissão ou aviso prévio?",
+    "expected_topic": "aviso prévio"
+  },
+  {
+    "question": "Existe cláusula sobre representação sindical no local de trabalho?",
+    "expected_topic": "representação sindical"
+  }
+]

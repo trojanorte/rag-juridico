@@ -69,44 +69,44 @@ RAG/
 ├── README.md
 └── ARCHITECTURE.md
 
-## 🚀 Como Executar
+========================================
+COMO EXECUTAR
+========================================
 
-### 1️⃣ Criar ambiente virtual
-
-```bash
+1) Criar ambiente virtual
 python -m venv venv
 venv\Scripts\activate
-### 2️⃣ Instalar dependências
+
+2) Instalar dependências
 pip install -r requirements.txt
-📦 Construir o índice vetorial
+
+
+3) Construir o índice vetorial
 python build_index.py
+
 Isso irá:
+- gerar embeddings
+- criar índice FAISS
+- salvar faiss.index e metadata.pkl
 
-Gerar embeddings
 
-Criar índice FAISS
-
-Salvar faiss.index e metadata.pkl
-
-🔎 Testar busca semântica
+4) Testar busca semântica
 python query.py
 Exemplo de pergunta:
-
 Existe obrigação de seguro de vida empresarial?
-🤖 Executar RAG completo (com geração)
-É necessário ter o Ollama instalado.
 
-Baixar modelo:
-ollama pull qwen2.5:1.5b
 
----
+========================================
+EXECUTAR INTERFACE WEB
+========================================
 
-# 4️⃣ Adicionar seção de Observabilidade
+Após construir o índice vetorial, execute:
+streamlit run app.py
+A aplicação abrirá em:http://localhost:8501
 
-Adicione esta nova seção no README:
-
-```markdown
-## 📊 Observabilidade e Debug
+========================================
+OBSERVABILIDADE E DEBUG
+========================================
 
 O sistema possui um módulo de observabilidade para rastrear a execução do pipeline RAG.
 
@@ -122,61 +122,65 @@ Cada consulta registra:
 
 Essas informações são armazenadas em um banco SQLite local.
 
-### Páginas disponíveis
+Páginas disponíveis:
 
-**Debug**
-- Visualização da execução atual
-- Contexto e prompt enviados ao modelo
+DEBUG
 
-**Histórico**
-- Registro persistente de consultas
-- Identificação por `trace_id` e `session_id`
-- Métricas de execução
+- visualização da execução atual
+- contexto e prompt enviados ao modelo
 
-## 🖥️ Executar Interface Web
+HISTÓRICO
 
-Após construir o índice vetorial, execute a interface:
+- registro persistente de consultas
+- identificação por trace_id e session_id
+- métricas de execução
 
-```bash
-streamlit run app.py
+========================================
+DECISÕES TÉCNICAS
+========================================
 
-🧠 Decisões Técnicas
-Embeddings locais com sentence-transformers/all-MiniLM-L6-v2
-Indexação vetorial com FAISS (similaridade por produto interno)
-LLM open-source rodando localmente via Ollama
-Interface interativa construída com Streamlit
-Observabilidade e rastreabilidade com módulo próprio de telemetry
-Persistência de consultas em SQLite
+- Embeddings locais com sentence-transformers/all-MiniLM-L6-v2
+- Indexação vetorial com FAISS
+- LLM open-source rodando localmente via Ollama
+- Interface interativa construída com Streamlit
+- Observabilidade com módulo próprio de telemetry
+- Persistência de consultas em SQLite
 
-🎯 Objetivo
-Demonstrar implementação completa de um pipeline RAG aplicado a documentos jurídicos, com:
-Recuperação semântica
-Fundamentação textual
-Independência de APIs externas
-Arquitetura organizada e escalável
+========================================
+OBJETIVO
+========================================
 
-🔮 Possíveis Evoluções
-Autenticação de usuários
-API REST com FastAPI
-Deploy em container Docker
-Observabilidade com OpenTelemetry
-Reranking de documentos
-Extração estruturada de obrigações
+Demonstrar implementação completa de um pipeline RAG aplicado a documentos jurídicos, incluindo:
 
-👩‍💻 Autor
+- recuperação semântica
+- fundamentação textual
+- independência de APIs externas
+- arquitetura modular e escalável
+
+========================================
+POSSÍVEIS EVOLUÇÕES
+========================================
+
+- autenticação de usuários
+- API REST com FastAPI
+- deploy com Docker
+- observabilidade com OpenTelemetry
+- reranking de documentos
+- extração estruturada de obrigações
+
+========================================
+AUTOR
+========================================
+
 Allyson Aires
+
 Projeto desenvolvido como desafio técnico para implementação de sistema RAG aplicado a documentos jurídicos.
 
-## 📐 Arquitetura
 
-Veja o desenho completo em [ARCHITECTURE.md]
----
+========================================
+ARQUITETURA
+========================================
 
-# 🚀 Depois disso
+Veja o desenho completo em:
 
-Rode:
-
-```powershell
-git add README.md
-git commit -m "docs: add project README"
-git push
+ARCHITECTURE.md

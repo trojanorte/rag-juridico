@@ -4,7 +4,9 @@ import uuid
 
 class Telemetry:
     def __init__(self):
-        self.reset()
+        self.trace_id = str(uuid.uuid4())
+        self.metrics = {}
+        self.logs = {}
 
     def reset(self):
         self.trace_id = str(uuid.uuid4())
@@ -18,16 +20,17 @@ class Telemetry:
         self.logs = {
             "question": "",
             "answer": "",
-            "context": "",
             "sources": [],
+            "context": "",
             "prompt": "",
         }
 
     def start_timer(self):
-        return time.time()
+        return time.perf_counter()
 
-    def stop_timer(self, start):
-        return round(time.time() - start, 3)
+    def stop_timer(self, start_time):
+        return round(time.perf_counter() - start_time, 4)
 
 
 telemetry = Telemetry()
+telemetry.reset()

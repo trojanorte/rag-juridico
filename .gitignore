@@ -11,3 +11,9 @@ __pycache__/
 
 # Huggingface cache
 .cache/
+
+# documentos originais
+convencoes coletivas/
+
+# debug database
+observability/debug_history.db

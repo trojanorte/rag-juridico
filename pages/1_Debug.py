@@ -1,5 +1,5 @@
 import streamlit as st
-from observability.telemetry import telemetry
+from observability.debug_store import init_db, get_recent_logs, get_log_by_id
 
 st.set_page_config(
     page_title="Debug do RAG",
@@ -7,82 +7,83 @@ st.set_page_config(
     page_icon="🛠"
 )
 
-
-def safe_metric(key, default=0):
-    return telemetry.metrics.get(key, default)
-
-
-def safe_log(key, default=""):
-    return telemetry.logs.get(key, default)
-
+init_db()
 
 st.title("🛠 Debug do RAG")
-st.caption("Página técnica para acompanhamento interno da execução.")
+st.caption("Inspeção detalhada de consultas específicas registradas no histórico.")
+
+limit = st.slider("Quantidade de registros carregados", 10, 200, 50, 10)
+logs = get_recent_logs(limit=limit)
+
+if not logs:
+    st.info("Nenhum registro encontrado.")
+    st.stop()
+
+options = {}
+for log in logs:
+    label = f"#{log['id']} | {log['timestamp']} | {log['question'][:80]}"
+    options[label] = log["id"]
+
+selected_label = st.selectbox(
+    "Selecione uma consulta para inspecionar",
+    list(options.keys())
+)
+
+selected_id = options[selected_label]
+selected_log = get_log_by_id(selected_id)
+
+if not selected_log:
+    st.error("Não foi possível carregar os detalhes da consulta.")
+    st.stop()
+
+metrics = selected_log.get("metrics", {})
 
 st.divider()
-
-# -----------------------------
-# MÉTRICAS PRINCIPAIS
-# -----------------------------
-st.subheader("Métricas principais")
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
-total_time = safe_metric("total_time", 0)
-retrieval_time = safe_metric("retrieval_time", 0)
-generation_time = safe_metric("generation_time", 0)
-chunks = safe_metric("chunks", 0)
-trace_id = getattr(telemetry, "trace_id", "N/A")
+col1.metric("ID", selected_log["id"])
+col2.metric("Trace ID", selected_log.get("trace_id", "N/A"))
+col3.metric("Tempo total", str(metrics.get("total_time", 0)))
+col4.metric("Retrieval", str(metrics.get("retrieval_time", 0)))
+col5.metric("Geração", str(metrics.get("generation_time", 0)))
 
-col1.metric("Tempo total", f"{total_time:.2f} s" if isinstance(total_time, (int, float)) else str(total_time))
-col2.metric("Retrieval", f"{retrieval_time:.2f} s" if isinstance(retrieval_time, (int, float)) else str(retrieval_time))
-col3.metric("Geração", f"{generation_time:.2f} s" if isinstance(generation_time, (int, float)) else str(generation_time))
-col4.metric("Chunks", chunks)
-col5.metric("Trace ID", str(trace_id))
+col6, col7, col8, col9 = st.columns(4)
+col6.metric("Chunks recuperados", metrics.get("chunks_retrieved", 0))
+col7.metric("Chunks usados", metrics.get("chunks_used", 0))
+col8.metric("Top score", metrics.get("top_score", 0))
+col9.metric("Avg score", metrics.get("avg_score", 0))
 
-error_message = safe_metric("error", None)
-if error_message:
+if selected_log.get("error"):
     st.divider()
     st.subheader("Erro")
-    st.error(error_message)
+    st.error(selected_log["error"])
 
 st.divider()
 
-# -----------------------------
-# ABAS TÉCNICAS
-# -----------------------------
 tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["Execução", "Resposta", "Fontes", "Contexto", "Prompt"]
+    ["Pergunta", "Resposta", "Fontes", "Contexto", "Prompt"]
 )
 
 with tab1:
     st.subheader("Pergunta")
-    st.code(safe_log("question", "Sem pergunta registrada."), language="text")
+    st.code(selected_log.get("question", ""), language="text")
 
-    st.subheader("Resumo da execução")
-    st.markdown(
-        f"""
-        - **Trace ID:** `{trace_id}`
-        - **Tempo total:** `{total_time}`
-        - **Tempo de retrieval:** `{retrieval_time}`
-        - **Tempo de geração:** `{generation_time}`
-        - **Quantidade de chunks:** `{chunks}`
-        """
-    )
+    st.write(f"**Timestamp:** {selected_log.get('timestamp', '')}")
+    st.write(f"**Session ID:** {selected_log.get('session_id', '')}")
 
 with tab2:
-    st.subheader("Resposta gerada")
-    answer = safe_log("answer", "")
+    st.subheader("Resposta")
+    answer = selected_log.get("answer", "")
     if answer:
         st.write(answer)
-        st.caption(f"Tamanho da resposta: {len(answer)} caracteres")
+        st.caption(f"Tamanho: {len(answer)} caracteres")
     else:
         st.info("Sem resposta registrada.")
 
 with tab3:
-    st.subheader("Fontes retornadas")
-    sources = safe_log("sources", [])
-
+    st.subheader("Fontes")
+    sources = selected_log.get("sources", [])
     if sources:
         for idx, source in enumerate(sources, start=1):
             try:
@@ -101,7 +102,7 @@ with tab4:
     st.subheader("Contexto enviado ao modelo")
     st.text_area(
         "Contexto",
-        value=safe_log("context", ""),
+        value=selected_log.get("context", ""),
         height=350
     )
 
@@ -109,17 +110,11 @@ with tab5:
     st.subheader("Prompt enviado ao modelo")
     st.text_area(
         "Prompt",
-        value=safe_log("prompt", ""),
+        value=selected_log.get("prompt", ""),
         height=400
     )
 
 st.divider()
 
-with st.expander("JSON bruto da telemetria"):
-    st.json(
-        {
-            "trace_id": trace_id,
-            "metrics": telemetry.metrics,
-            "logs": telemetry.logs,
-        }
-    )
+with st.expander("JSON bruto"):
+    st.json(selected_log)

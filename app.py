@@ -4,6 +4,18 @@ import streamlit as st
 from rag_generator import answer_question
 from observability.telemetry import telemetry
 from observability.debug_store import init_db, save_query_log
+from observability.prom_metrics import (
+    start_metrics_server,
+    rag_requests_total,
+    rag_errors_total,
+    rag_total_time_seconds,
+    rag_retrieval_time_seconds,
+    rag_generation_time_seconds,
+    rag_chunks_retrieved,
+    rag_chunks_used,
+    rag_top_score,
+    rag_avg_score,
+)
 
 
 st.set_page_config(
@@ -107,8 +119,41 @@ def render_sources(sources) -> None:
             st.markdown(f"**Trecho:** {excerpt}")
 
 
+def update_prometheus_metrics() -> None:
+    rag_requests_total.inc()
+
+    rag_total_time_seconds.observe(
+        float(telemetry.metrics.get("total_time", 0) or 0)
+    )
+
+    rag_retrieval_time_seconds.observe(
+        float(telemetry.metrics.get("retrieval_time", 0) or 0)
+    )
+
+    rag_generation_time_seconds.observe(
+        float(telemetry.metrics.get("generation_time", 0) or 0)
+    )
+
+    rag_chunks_retrieved.set(
+        float(telemetry.metrics.get("chunks_retrieved", 0) or 0)
+    )
+
+    rag_chunks_used.set(
+        float(telemetry.metrics.get("chunks_used", 0) or 0)
+    )
+
+    rag_top_score.set(
+        float(telemetry.metrics.get("top_score", 0) or 0)
+    )
+
+    rag_avg_score.set(
+        float(telemetry.metrics.get("avg_score", 0) or 0)
+    )
+
+
 def main() -> None:
     init_db()
+    start_metrics_server(8000)
 
     if "session_id" not in st.session_state:
         st.session_state["session_id"] = str(uuid.uuid4())
@@ -137,6 +182,8 @@ def main() -> None:
             telemetry.logs["answer"] = answer
             telemetry.logs["sources"] = sources
 
+            update_prometheus_metrics()
+
             save_query_log(
                 session_id=st.session_state["session_id"],
                 trace_id=telemetry.trace_id,
@@ -158,6 +205,9 @@ def main() -> None:
         except Exception as exc:
             telemetry.metrics["total_time"] = telemetry.stop_timer(start)
             telemetry.metrics["error"] = str(exc)
+
+            rag_requests_total.inc()
+            rag_errors_total.inc()
 
             save_query_log(
                 session_id=st.session_state["session_id"],

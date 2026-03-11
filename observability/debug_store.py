@@ -1,6 +1,5 @@
 import json
 import sqlite3
-from datetime import datetime
 from pathlib import Path
 
 
@@ -45,7 +44,7 @@ def save_query_log(
     metrics: dict,
     error: str = None,
 ) -> None:
-    timestamp = datetime.now().isoformat(timespec="seconds")
+    timestamp = __import__("datetime").datetime.now().isoformat(timespec="seconds")
 
     with get_connection() as conn:
         conn.execute(
@@ -118,3 +117,44 @@ def get_recent_logs(limit: int = 50):
             }
         )
     return results
+
+
+def get_log_by_id(log_id: int):
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            SELECT
+                id,
+                timestamp,
+                session_id,
+                trace_id,
+                question,
+                answer,
+                sources_json,
+                context,
+                prompt,
+                metrics_json,
+                error
+            FROM query_logs
+            WHERE id = ?
+            """,
+            (log_id,),
+        )
+        row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    return {
+        "id": row[0],
+        "timestamp": row[1],
+        "session_id": row[2],
+        "trace_id": row[3],
+        "question": row[4],
+        "answer": row[5],
+        "sources": json.loads(row[6]) if row[6] else [],
+        "context": row[7] or "",
+        "prompt": row[8] or "",
+        "metrics": json.loads(row[9]) if row[9] else {},
+        "error": row[10],
+    }

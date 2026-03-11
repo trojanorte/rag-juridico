@@ -14,9 +14,10 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL_NAME = "phi3"
 
 TOP_K = 4
-MAX_CHARS = 2500
-MAX_CHUNK_CHARS = 700
+MAX_CHARS = 2200
+MAX_CHUNK_CHARS = 600
 MIN_SCORE = 0.20
+MIN_ACCEPTABLE_TOP_SCORE = 0.15
 
 
 @lru_cache(maxsize=1)
@@ -36,6 +37,40 @@ def normalize_score(score):
         return float(score)
     except (TypeError, ValueError):
         return 0.0
+
+
+def is_in_scope(question: str) -> bool:
+    keywords = [
+        "acordo", "convenção", "convencao", "cláusula", "clausula",
+        "salário", "salario", "vigência", "vigencia", "jornada",
+        "sindicato", "sindical", "benefício", "beneficio", "empresa",
+        "empregado", "trabalho", "categoria", "piso", "vale",
+        "adicional", "estabilidade", "férias", "ferias", "horas extras",
+        "banco de horas", "creche", "uniforme", "epi", "plr",
+        "aviso prévio", "aviso previo", "seguro", "licença", "licenca"
+    ]
+    q = question.lower()
+    return any(k in q for k in keywords)
+
+
+def clean_answer(answer: str) -> str:
+    answer = (answer or "").strip()
+
+    stop_markers = [
+        "\nPergunta:",
+        "\n\nPergunta:",
+        "\nResposta:",
+        "\n\nResposta:",
+        "\nUsuário:",
+        "\nUsuario:",
+    ]
+
+    cleaned = answer
+    for marker in stop_markers:
+        if marker in cleaned:
+            cleaned = cleaned.split(marker)[0].strip()
+
+    return cleaned
 
 
 @measure("retrieval_time")
@@ -83,7 +118,6 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
             f"[Fonte {idx}]\n"
             f"Arquivo: {filename}\n"
             f"Título: {titulo}\n"
-            f"Score: {score:.4f}\n"
             f"Trecho: {trecho}\n"
         )
 
@@ -114,12 +148,15 @@ Regras obrigatórias:
 - Se o contexto não contiver evidência suficiente para responder, diga exatamente:
   "Não encontrei informação suficiente no contexto recuperado."
 - Não invente cláusulas, valores, datas ou obrigações.
+- Responda apenas uma única vez à pergunta do usuário.
+- Não gere novas perguntas.
+- Não continue o texto após a resposta final.
 - Sempre cite as fontes no formato [Fonte X] quando houver evidência.
 
 Formato obrigatório da resposta:
-1. Resposta objetiva à pergunta
-2. Explicação curta baseada no contexto
-3. Fontes utilizadas no formato [Fonte X]
+Resposta objetiva: ...
+Fundamentação: ...
+Fontes: [Fonte 1], [Fonte 2]
 
 Contexto:
 {context}
@@ -132,7 +169,7 @@ Resposta:
 
 
 def postprocess_answer(answer, sources):
-    answer = (answer or "").strip()
+    answer = clean_answer(answer)
 
     weak_answers = {"sim", "não", "nao", "sim.", "não.", "nao."}
 
@@ -143,7 +180,7 @@ def postprocess_answer(answer, sources):
         if sources:
             return (
                 f"{answer.capitalize()}, mas a resposta gerada ficou incompleta. "
-                "Revise os trechos recuperados nas fontes apresentadas."
+                "Consulte também as fontes recuperadas para validação."
             )
         return "Não encontrei informação suficiente no contexto recuperado."
 
@@ -166,7 +203,7 @@ def generate_answer(prompt):
         "stream": False,
         "options": {
             "temperature": 0.1,
-            "num_predict": 300,
+            "num_predict": 220,
         },
     }
 
@@ -182,14 +219,38 @@ def generate_answer(prompt):
     except requests.exceptions.RequestException as e:
         telemetry.metrics["error"] = str(e)
         logging.exception("Erro ao comunicar com o Ollama")
+
+        if "response" in locals():
+            logging.error("Resposta bruta do Ollama: %s", response.text)
+
         raise
 
 
 def answer_question(question):
     telemetry.logs["question"] = question
 
+    if not is_in_scope(question):
+        answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
+        telemetry.logs["answer"] = answer
+        telemetry.logs["context"] = ""
+        telemetry.logs["sources"] = []
+        telemetry.metrics["chunks_retrieved"] = 0
+        telemetry.metrics["chunks_used"] = 0
+        telemetry.metrics["top_score"] = 0
+        telemetry.metrics["avg_score"] = 0
+        return answer, []
+
     embedder, store = load_components()
     context, sources = retrieve_context(embedder, store, question)
+
+    top_score = telemetry.metrics.get("top_score", 0)
+
+    if not context.strip() or top_score < MIN_ACCEPTABLE_TOP_SCORE:
+        answer = "Não encontrei informação suficiente no contexto recuperado."
+        telemetry.logs["prompt"] = ""
+        telemetry.logs["answer"] = answer
+        return answer, sources
+
     prompt = build_prompt(context, question)
 
     telemetry.logs["prompt"] = prompt
@@ -215,7 +276,20 @@ def main():
         telemetry.reset()
         telemetry.logs["question"] = question
 
+        if not is_in_scope(question):
+            answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
+            print("\n" + answer)
+            continue
+
         context, sources = retrieve_context(embedder, store, question)
+        top_score = telemetry.metrics.get("top_score", 0)
+
+        if not context.strip() or top_score < MIN_ACCEPTABLE_TOP_SCORE:
+            answer = "Não encontrei informação suficiente no contexto recuperado."
+            telemetry.logs["answer"] = answer
+            print("\n" + answer)
+            continue
+
         prompt = build_prompt(context, question)
 
         telemetry.logs["prompt"] = prompt

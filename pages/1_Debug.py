@@ -40,19 +40,17 @@ metrics = selected_log.get("metrics", {})
 
 st.divider()
 
-col1, col2, col3, col4, col5 = st.columns(5)
-
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("ID", selected_log["id"])
 col2.metric("Trace ID", selected_log.get("trace_id", "N/A"))
 col3.metric("Tempo total", str(metrics.get("total_time", 0)))
-col4.metric("Retrieval", str(metrics.get("retrieval_time", 0)))
-col5.metric("Geração", str(metrics.get("generation_time", 0)))
+col4.metric("Top score", str(metrics.get("top_score", 0)))
 
-col6, col7, col8, col9 = st.columns(4)
-col6.metric("Chunks recuperados", metrics.get("chunks_retrieved", 0))
-col7.metric("Chunks usados", metrics.get("chunks_used", 0))
-col8.metric("Top score", metrics.get("top_score", 0))
-col9.metric("Avg score", metrics.get("avg_score", 0))
+col5, col6, col7, col8 = st.columns(4)
+col5.metric("Retrieval", str(metrics.get("retrieval_time", 0)))
+col6.metric("Geração", str(metrics.get("generation_time", 0)))
+col7.metric("Chunks recuperados", metrics.get("chunks_retrieved", 0))
+col8.metric("Chunks usados", metrics.get("chunks_used", 0))
 
 if selected_log.get("error"):
     st.divider()
@@ -61,28 +59,35 @@ if selected_log.get("error"):
 
 st.divider()
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["Pergunta", "Resposta", "Fontes", "Contexto", "Prompt"]
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    ["Pergunta", "Reescrita", "Resposta", "Fontes", "Contexto", "Prompt"]
 )
 
 with tab1:
-    st.subheader("Pergunta")
+    st.subheader("Pergunta original")
     st.code(selected_log.get("question", ""), language="text")
-
     st.write(f"**Timestamp:** {selected_log.get('timestamp', '')}")
     st.write(f"**Session ID:** {selected_log.get('session_id', '')}")
 
 with tab2:
-    st.subheader("Resposta")
+    st.subheader("Pergunta reescrita")
+    rewritten_question = selected_log.get("rewritten_question", "")
+    if rewritten_question:
+        st.code(rewritten_question, language="text")
+    else:
+        st.info("Nenhuma pergunta reescrita registrada para esta consulta.")
+
+with tab3:
+    st.subheader("Resposta gerada")
     answer = selected_log.get("answer", "")
     if answer:
         st.write(answer)
-        st.caption(f"Tamanho: {len(answer)} caracteres")
+        st.caption(f"Tamanho da resposta: {len(answer)} caracteres")
     else:
         st.info("Sem resposta registrada.")
 
-with tab3:
-    st.subheader("Fontes")
+with tab4:
+    st.subheader("Fontes retornadas")
     sources = selected_log.get("sources", [])
     if sources:
         for idx, source in enumerate(sources, start=1):
@@ -98,7 +103,7 @@ with tab3:
     else:
         st.info("Sem fontes registradas.")
 
-with tab4:
+with tab5:
     st.subheader("Contexto enviado ao modelo")
     st.text_area(
         "Contexto",
@@ -106,7 +111,7 @@ with tab4:
         height=350
     )
 
-with tab5:
+with tab6:
     st.subheader("Prompt enviado ao modelo")
     st.text_area(
         "Prompt",
@@ -116,5 +121,5 @@ with tab5:
 
 st.divider()
 
-with st.expander("JSON bruto"):
+with st.expander("JSON bruto do registro"):
     st.json(selected_log)

@@ -58,12 +58,10 @@ def check_input(user_text: str, max_len: int = 800) -> GuardrailResult:
     if len(t) > max_len:
         return GuardrailResult(False, f"Pergunta muito longa (>{max_len} chars). Resuma.")
 
-    # blocklist (substring)
     for bad in BLOCKLIST_SUBSTRINGS:
         if bad in t:
             return GuardrailResult(False, "Linguagem inadequada detectada no pedido.")
 
-    # jailbreak patterns
     for pat in JAILBREAK_PATTERNS:
         if re.search(pat, t):
             return GuardrailResult(False, "Tentativa de contornar regras (prompt injection).")

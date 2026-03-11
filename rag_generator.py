@@ -47,11 +47,12 @@ def is_in_scope(question: str) -> bool:
         "empregado", "trabalho", "categoria", "piso", "vale",
         "adicional", "estabilidade", "férias", "ferias", "horas extras",
         "banco de horas", "creche", "uniforme", "epi", "plr",
-        "aviso prévio", "aviso previo", "seguro", "licença", "licenca"
+        "aviso prévio", "aviso previo", "seguro", "licença", "licenca",
+        "reajuste", "desconto", "descontos", "valor", "valores",
+        "contribuição", "contribuicao", "cláusulas", "clausulas"
     ]
     q = question.lower()
     return any(k in q for k in keywords)
-
 
 def clean_answer(answer: str) -> str:
     answer = (answer or "").strip()
@@ -71,6 +72,64 @@ def clean_answer(answer: str) -> str:
             cleaned = cleaned.split(marker)[0].strip()
 
     return cleaned
+
+
+def needs_rewrite(question: str) -> bool:
+    q = question.lower().strip()
+
+    continuation_starts = [
+        "e ",
+        "e o ",
+        "e a ",
+        "e os ",
+        "e as ",
+        "sobre isso",
+        "sobre esse",
+        "sobre essa",
+        "quanto a",
+        "e quanto",
+    ]
+
+    if len(q) <= 25:
+        return True
+
+    return any(q.startswith(prefix) for prefix in continuation_starts)
+
+
+def rewrite_question(question: str, conversation_context: str = "") -> str:
+    if not conversation_context or not needs_rewrite(question):
+        return question
+
+    history_lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
+    last_user_question = None
+
+    for line in reversed(history_lines):
+        if line.lower().startswith("pergunta anterior"):
+            parts = line.split(":", 1)
+            if len(parts) == 2:
+                last_user_question = parts[1].strip()
+                break
+
+    q = question.strip()
+
+    if not last_user_question:
+        return question
+
+    lowered = q.lower()
+
+    if lowered.startswith("e o reajuste") or lowered == "e o reajuste?":
+        return f"Qual é o reajuste salarial previsto na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+
+    if lowered.startswith("e o seguro") or lowered == "e o seguro?":
+        return f"Existe cláusula de seguro na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+
+    if lowered.startswith("e a vigência") or lowered == "e a vigência?":
+        return f"Qual é a vigência da mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+
+    if lowered.startswith("e o piso") or lowered == "e o piso?":
+        return f"Qual é o piso salarial previsto na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+
+    return f"Reescrevendo a pergunta com contexto da conversa anterior: {q} Referência anterior: {last_user_question}"
 
 
 @measure("retrieval_time")
@@ -112,7 +171,6 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
         trecho = item.get("content", "")[:MAX_CHUNK_CHARS].strip()
         filename = item.get("filename", "arquivo_desconhecido")
         titulo = item.get("titulo", "trecho_sem_titulo")
-        score = normalize_score(item.get("score", 0))
 
         block = (
             f"[Fonte {idx}]\n"
@@ -137,23 +195,21 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
     return context, sources
 
 
-def build_prompt(context, question):
-    return f"""
+def build_prompt(context, question, conversation_context=""):
+    prompt_base = f"""
 Você é um assistente jurídico especializado em convenções coletivas de trabalho.
 
 Regras obrigatórias:
 - Responda SOMENTE com base no contexto fornecido.
 - Não use conhecimento externo.
-- Não faça inferências além do que estiver escrito.
-- Se o contexto não contiver evidência suficiente para responder, diga exatamente:
-  "Não encontrei informação suficiente no contexto recuperado."
-- Não invente cláusulas, valores, datas ou obrigações.
-- Responda apenas uma única vez à pergunta do usuário.
-- Não gere novas perguntas.
-- Não continue o texto após a resposta final.
+- Não invente cláusulas, datas, valores ou obrigações.
+- Se não houver evidência suficiente, diga:
+"Não encontrei informação suficiente no contexto recuperado."
+- Responda apenas à pergunta atual.
+- Não continue a conversa sozinho.
 - Sempre cite as fontes no formato [Fonte X] quando houver evidência.
 
-Formato obrigatório da resposta:
+Formato obrigatório:
 Resposta objetiva: ...
 Fundamentação: ...
 Fontes: [Fonte 1], [Fonte 2]
@@ -165,7 +221,17 @@ Pergunta:
 {question}
 
 Resposta:
-""".strip()
+"""
+
+    if conversation_context:
+        prompt_base = f"""
+Histórico recente da conversa:
+{conversation_context}
+
+{prompt_base}
+"""
+
+    return prompt_base
 
 
 def postprocess_answer(answer, sources):
@@ -226,10 +292,13 @@ def generate_answer(prompt):
         raise
 
 
-def answer_question(question):
+def answer_question(question, conversation_context=""):
     telemetry.logs["question"] = question
 
-    if not is_in_scope(question):
+    rewritten_question = rewrite_question(question, conversation_context)
+    telemetry.logs["rewritten_question"] = rewritten_question
+
+    if not is_in_scope(rewritten_question):
         answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
         telemetry.logs["answer"] = answer
         telemetry.logs["context"] = ""
@@ -241,7 +310,7 @@ def answer_question(question):
         return answer, []
 
     embedder, store = load_components()
-    context, sources = retrieve_context(embedder, store, question)
+    context, sources = retrieve_context(embedder, store, rewritten_question)
 
     top_score = telemetry.metrics.get("top_score", 0)
 
@@ -251,7 +320,7 @@ def answer_question(question):
         telemetry.logs["answer"] = answer
         return answer, sources
 
-    prompt = build_prompt(context, question)
+    prompt = build_prompt(context, rewritten_question, conversation_context)
 
     telemetry.logs["prompt"] = prompt
     telemetry.metrics["prompt_chars"] = len(prompt)
@@ -276,12 +345,15 @@ def main():
         telemetry.reset()
         telemetry.logs["question"] = question
 
-        if not is_in_scope(question):
+        rewritten_question = rewrite_question(question)
+        telemetry.logs["rewritten_question"] = rewritten_question
+
+        if not is_in_scope(rewritten_question):
             answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
             print("\n" + answer)
             continue
 
-        context, sources = retrieve_context(embedder, store, question)
+        context, sources = retrieve_context(embedder, store, rewritten_question)
         top_score = telemetry.metrics.get("top_score", 0)
 
         if not context.strip() or top_score < MIN_ACCEPTABLE_TOP_SCORE:
@@ -290,7 +362,7 @@ def main():
             print("\n" + answer)
             continue
 
-        prompt = build_prompt(context, question)
+        prompt = build_prompt(context, rewritten_question)
 
         telemetry.logs["prompt"] = prompt
         telemetry.metrics["prompt_chars"] = len(prompt)

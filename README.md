@@ -1,55 +1,66 @@
-# 📚 RAG Jurídico — Convenções Coletivas
+====================================================
+LexRAG — Legal RAG for Collective Labor Agreements
+====================================================
 
 Sistema de Retrieval-Augmented Generation (RAG) aplicado à análise de Convenções Coletivas de Trabalho.
 
-O projeto realiza:
+O projeto implementa um pipeline completo de busca semântica e geração de respostas fundamentadas a partir de documentos jurídicos, utilizando embeddings locais, indexação vetorial e um LLM executado localmente.
 
-- 📄 Ingestão de documentos .doc/.docx
-- 🧠 Extração estruturada por cláusulas
-- 🔎 Embeddings semânticos locais (MiniLM)
-- 📦 Indexação vetorial com FAISS
-- 💬 Busca semântica
-- 🤖 Geração de respostas fundamentadas com LLM local (Ollama)
+Principais funcionalidades:
 
----
+- Ingestão de documentos .doc/.docx
+- Extração estruturada de cláusulas
+- Embeddings semânticos locais (MiniLM)
+- Indexação vetorial com FAISS
+- Busca semântica por similaridade
+- Geração de respostas com LLM local (Ollama)
+- Observabilidade do pipeline
+- Sistema de debug e histórico de consultas
+- Avaliação automática da qualidade das respostas
 
-## 🏗️ Arquitetura do Sistema
 
-Fluxo do RAG:
+====================================================
+ARQUITETURA DO SISTEMA
+====================================================
+
+Fluxo do pipeline RAG:
 
 Pergunta do usuário
 ↓
-Interface Streamlit (app.py)
+Interface Web (Streamlit)
 ↓
 Embedding da pergunta (MiniLM)
 ↓
 Busca vetorial no FAISS
 ↓
-Recuperação dos chunks relevantes
+Recuperação dos chunks mais relevantes
 ↓
-Montagem do contexto
+Construção do contexto
 ↓
-LLM local (Ollama)
+Geração de resposta (LLM via Ollama)
 ↓
-Resposta fundamentada
+Resposta fundamentada com fontes
 ↓
-Registro de execução (telemetry)
+Registro de execução (Telemetry)
 ↓
-Persistência em SQLite (debug_store)
+Persistência em SQLite
 ↓
-Consulta via páginas Debug / Histórico
+Visualização em páginas Debug / Histórico
 
----
+
+====================================================
+ESTRUTURA DO PROJETO
+====================================================
 
 RAG/
 │
-├── convencoes_coletivas/      # Documentos fonte (.doc/.docx)
+├── convencoes_coletivas/      # Documentos fonte (.doc/.docx) - não versionados
 │
 ├── embeddings/                # Geração de embeddings
 ├── ingest/                    # Parsing e chunking por cláusula
 ├── prompts/                   # Templates de prompt
 │
-├── vectorstore/               # FAISS + persistência do índice vetorial
+├── vectorstore/               # Índice vetorial FAISS
 │   ├── faiss.index
 │   ├── metadata.pkl
 │   └── faiss_store.py
@@ -57,71 +68,86 @@ RAG/
 ├── core/                      # Guardrails e utilitários centrais
 │   └── guardrails.py
 │
-├── observability/             # Telemetria e rastreamento de execução
+├── observability/             # Telemetria e observabilidade
 │   ├── telemetry.py
 │   ├── decorators.py
-│   └── debug_store.py
+│   ├── debug_store.py
+│   └── prom_metrics.py
 │
-├── evaluation/                # Avaliação do sistema RAG
+├── evaluation/                # Avaliação automática do RAG
 │   ├── evaluation_set.json
 │   ├── evaluate_rag.py
 │   ├── evaluate_rag_v2.py
 │   ├── evaluation_results.json
 │   └── evaluation_results_v2.json
 │
-├── pages/                     # Páginas Streamlit
+├── pages/                     # Páginas da interface Streamlit
 │   ├── 1_Debug.py
-│   └── 2_Histórico.py
+│   └── 2_Historico.py
 │
-├── app.py                     # Interface Streamlit principal
+├── app.py                     # Interface principal
 ├── build_index.py             # Construção do índice vetorial
-├── query.py                   # Busca sem geração (retrieval)
+├── query.py                   # Retrieval sem geração
 ├── rag_generator.py           # Pipeline completo de RAG
 │
 ├── requirements.txt
 ├── README.md
 └── ARCHITECTURE.md
 
-========================================
-COMO EXECUTAR
-========================================
+
+====================================================
+COMO EXECUTAR O PROJETO
+====================================================
 
 1) Criar ambiente virtual
+
 python -m venv venv
 venv\Scripts\activate
 
+
 2) Instalar dependências
+
 pip install -r requirements.txt
 
 
 3) Construir o índice vetorial
+
 python build_index.py
 
-Isso irá:
+Este processo irá:
+
 - gerar embeddings
 - criar índice FAISS
 - salvar faiss.index e metadata.pkl
 
 
 4) Testar busca semântica
+
 python query.py
+
 Exemplo de pergunta:
+
 Existe obrigação de seguro de vida empresarial?
 
 
-========================================
+====================================================
 EXECUTAR INTERFACE WEB
-========================================
+====================================================
 
 Após construir o índice vetorial, execute:
+
 streamlit run app.py
-A aplicação abrirá em:http://localhost:8501
 
-========================================
-OBSERVABILIDADE E DEBUG
-========================================
+A aplicação abrirá em:
 
-O sistema possui um módulo de observabilidade para rastrear a execução do pipeline RAG.
+http://localhost:8501
+
+
+====================================================
+OBSERVABILIDADE DO SISTEMA
+====================================================
+
+O sistema possui observabilidade completa do pipeline RAG.
 
 Cada consulta registra:
 
@@ -133,28 +159,64 @@ Cada consulta registra:
 - Prompt final
 - Métricas de tempo
 
-Essas informações são armazenadas em um banco SQLite local.
+Os dados são armazenados em um banco SQLite local.
 
-Páginas disponíveis:
+Páginas disponíveis na interface:
 
 DEBUG
-
-- visualização da execução atual
-- contexto e prompt enviados ao modelo
+- inspeção detalhada de uma consulta específica
+- visualização do contexto e prompt enviados ao modelo
 
 HISTÓRICO
-
 - registro persistente de consultas
-- identificação por trace_id e session_id
-- métricas de execução
+- filtragem por trace_id e session_id
+- análise de métricas da execução
 
-## 📊 Avaliação do Sistema (RAG Evaluation)
 
-O sistema possui um conjunto de testes para avaliar a qualidade das respostas geradas pelo pipeline RAG.
+====================================================
+OBSERVABILIDADE COM PROMETHEUS E GRAFANA
+====================================================
 
-### Dataset de avaliação
+O sistema também exporta métricas para Prometheus.
 
-Foi criado um conjunto de 25 perguntas jurídicas típicas encontradas em convenções coletivas de trabalho, cobrindo temas como:
+Métricas disponíveis:
+
+- rag_requests_total
+- rag_errors_total
+- rag_total_time_seconds
+- rag_retrieval_time_seconds
+- rag_generation_time_seconds
+- rag_chunks_retrieved
+- rag_chunks_used
+- rag_top_score
+- rag_avg_score
+
+Essas métricas podem ser visualizadas em:
+
+http://localhost:8000/metrics
+
+
+Grafana pode ser utilizado para criar dashboards de monitoramento com:
+
+- latência média de resposta
+- latência de retrieval
+- latência de geração
+- taxa de erro
+- qualidade média do retrieval
+- volume de consultas
+
+
+====================================================
+AVALIAÇÃO DO SISTEMA (RAG EVALUATION)
+====================================================
+
+O projeto inclui um framework de avaliação automática para medir a qualidade das respostas.
+
+Dataset de avaliação:
+
+25 perguntas jurídicas típicas encontradas em convenções coletivas de trabalho.
+
+Temas avaliados:
 
 - vigência do acordo
 - reajuste salarial
@@ -165,36 +227,24 @@ Foi criado um conjunto de 25 perguntas jurídicas típicas encontradas em conven
 - estabilidade
 - benefícios trabalhistas
 
-### Avaliação quantitativa
 
-Script:
+Scripts disponíveis:
 
 python evaluation/evaluate_rag.py
-
-Este script mede:
-
-- presença de fontes
-- aderência ao tópico esperado
-- penalização para respostas fracas
-
-### Avaliação qualitativa
-
-Script:
-
 python evaluation/evaluate_rag_v2.py
 
-Este avaliador classifica as respostas em categorias:
 
-- correct
-- correct_but_contaminated
-- partial
-- wrong
-- no_evidence
-- error
+Categorias de avaliação:
 
-### Resultado atual
+correct
+correct_but_contaminated
+partial
+wrong
+no_evidence
+error
 
-Última avaliação:
+
+Resultados atuais:
 
 Total de perguntas: 25
 
@@ -205,47 +255,53 @@ wrong: 1
 no_evidence: 2
 error: 0
 
-Isso indica aproximadamente:
 
-- 44% respostas corretas limpas
-- 64% respostas corretas com evidência
-- aproximadamente 88–90% de acerto substantivo
+Isso representa aproximadamente:
 
-### Interpretação
+44% respostas corretas limpas
+64% respostas corretas com evidência
+≈ 88–90% de acerto substantivo
 
-A maioria dos erros restantes está relacionada a:
 
-- continuação indevida da resposta pelo modelo
-- recuperação parcial de contexto
-- formatação da saída
-
-O conteúdo jurídico gerado tende a ser correto quando há evidência suficiente no contexto recuperado.
-
-========================================
+====================================================
 DECISÕES TÉCNICAS
-========================================
+====================================================
 
-- Embeddings locais com sentence-transformers/all-MiniLM-L6-v2
-- Indexação vetorial com FAISS
-- LLM open-source rodando localmente via Ollama
-- Interface interativa construída com Streamlit
-- Observabilidade com módulo próprio de telemetry
-- Persistência de consultas em SQLite
+Embeddings:
+sentence-transformers/all-MiniLM-L6-v2
 
-========================================
-OBJETIVO
-========================================
+Vector Store:
+FAISS
 
-Demonstrar implementação completa de um pipeline RAG aplicado a documentos jurídicos, incluindo:
+LLM:
+Modelo open-source executado localmente via Ollama
+
+Interface:
+Streamlit
+
+Observabilidade:
+Prometheus + Grafana
+
+Persistência:
+SQLite
+
+
+====================================================
+OBJETIVO DO PROJETO
+====================================================
+
+Demonstrar a implementação completa de um pipeline RAG aplicado a documentos jurídicos, incluindo:
 
 - recuperação semântica
 - fundamentação textual
-- independência de APIs externas
+- observabilidade do sistema
+- avaliação automática de respostas
 - arquitetura modular e escalável
 
-========================================
+
+====================================================
 POSSÍVEIS EVOLUÇÕES
-========================================
+====================================================
 
 - autenticação de usuários
 - API REST com FastAPI
@@ -253,19 +309,21 @@ POSSÍVEIS EVOLUÇÕES
 - observabilidade com OpenTelemetry
 - reranking de documentos
 - extração estruturada de obrigações
+- suporte a múltiplas convenções coletivas
 
-========================================
+
+====================================================
 AUTOR
-========================================
+====================================================
 
 Allyson Aires
 
-Projeto desenvolvido como desafio técnico para implementação de sistema RAG aplicado a documentos jurídicos.
+Projeto desenvolvido como implementação técnica de um sistema RAG aplicado à análise de documentos jurídicos.
 
 
-========================================
-ARQUITETURA
-========================================
+====================================================
+ARQUITETURA DETALHADA
+====================================================
 
 Veja o desenho completo em:
 

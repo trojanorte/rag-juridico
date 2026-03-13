@@ -17,3 +17,5 @@ convencoes coletivas/
 
 # debug database
 observability/debug_history.db
+
+.streamlit/secrets.toml

@@ -1,36 +1,74 @@
 import json
-import sqlite3
+import os
 from pathlib import Path
+from datetime import datetime
+
+from sqlalchemy import create_engine, text
 
 
 DB_PATH = Path("observability/debug_history.db")
 
 
+def get_database_url():
+    return os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
+
+
+def get_engine():
+    db_url = get_database_url()
+
+    if db_url.startswith("sqlite"):
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+        return create_engine(
+            db_url,
+            future=True,
+            connect_args={"check_same_thread": False},
+        )
+
+    return create_engine(db_url, future=True, pool_pre_ping=True)
+
+
 def get_connection():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    return sqlite3.connect(DB_PATH)
+    return get_engine().begin()
 
 
 def init_db() -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS query_logs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT NOT NULL,
-                session_id TEXT,
-                trace_id TEXT,
-                question TEXT,
-                answer TEXT,
-                sources_json TEXT,
-                context TEXT,
-                prompt TEXT,
-                metrics_json TEXT,
-                error TEXT
-            )
-            """
+    engine = get_engine()
+
+    if engine.dialect.name == "sqlite":
+        create_sql = """
+        CREATE TABLE IF NOT EXISTS query_logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT NOT NULL,
+            session_id TEXT,
+            trace_id TEXT,
+            question TEXT,
+            answer TEXT,
+            sources_json TEXT,
+            context TEXT,
+            prompt TEXT,
+            metrics_json TEXT,
+            error TEXT
         )
-        conn.commit()
+        """
+    else:
+        create_sql = """
+        CREATE TABLE IF NOT EXISTS query_logs (
+            id SERIAL PRIMARY KEY,
+            timestamp TEXT NOT NULL,
+            session_id TEXT,
+            trace_id TEXT,
+            question TEXT,
+            answer TEXT,
+            sources_json TEXT,
+            context TEXT,
+            prompt TEXT,
+            metrics_json TEXT,
+            error TEXT
+        )
+        """
+
+    with engine.begin() as conn:
+        conn.execute(text(create_sql))
 
 
 def save_query_log(
@@ -44,62 +82,71 @@ def save_query_log(
     metrics: dict,
     error: str = None,
 ) -> None:
-    timestamp = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+    timestamp = datetime.now().isoformat(timespec="seconds")
 
-    with get_connection() as conn:
-        conn.execute(
-            """
-            INSERT INTO query_logs (
-                timestamp,
-                session_id,
-                trace_id,
-                question,
-                answer,
-                sources_json,
-                context,
-                prompt,
-                metrics_json,
-                error
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                timestamp,
-                session_id,
-                trace_id,
-                question,
-                answer,
-                json.dumps(sources, ensure_ascii=False),
-                context,
-                prompt,
-                json.dumps(metrics, ensure_ascii=False),
-                error,
-            ),
+    insert_sql = text("""
+        INSERT INTO query_logs (
+            timestamp,
+            session_id,
+            trace_id,
+            question,
+            answer,
+            sources_json,
+            context,
+            prompt,
+            metrics_json,
+            error
         )
-        conn.commit()
+        VALUES (
+            :timestamp,
+            :session_id,
+            :trace_id,
+            :question,
+            :answer,
+            :sources_json,
+            :context,
+            :prompt,
+            :metrics_json,
+            :error
+        )
+    """)
+
+    payload = {
+        "timestamp": timestamp,
+        "session_id": session_id,
+        "trace_id": trace_id,
+        "question": question,
+        "answer": answer,
+        "sources_json": json.dumps(sources, ensure_ascii=False),
+        "context": context,
+        "prompt": prompt,
+        "metrics_json": json.dumps(metrics, ensure_ascii=False),
+        "error": error,
+    }
+
+    with get_engine().begin() as conn:
+        conn.execute(insert_sql, payload)
 
 
 def get_recent_logs(limit: int = 50):
-    with get_connection() as conn:
-        cursor = conn.execute(
-            """
-            SELECT
-                id,
-                timestamp,
-                session_id,
-                trace_id,
-                question,
-                answer,
-                sources_json,
-                metrics_json,
-                error
-            FROM query_logs
-            ORDER BY id DESC
-            LIMIT ?
-            """,
-            (limit,),
-        )
-        rows = cursor.fetchall()
+    query = text("""
+        SELECT
+            id,
+            timestamp,
+            session_id,
+            trace_id,
+            question,
+            answer,
+            sources_json,
+            metrics_json,
+            error
+        FROM query_logs
+        ORDER BY id DESC
+        LIMIT :limit
+    """)
+
+    with get_engine().begin() as conn:
+        rows = conn.execute(query, {"limit": limit}).fetchall()
 
     results = []
     for row in rows:
@@ -120,27 +167,25 @@ def get_recent_logs(limit: int = 50):
 
 
 def get_log_by_id(log_id: int):
-    with get_connection() as conn:
-        cursor = conn.execute(
-            """
-            SELECT
-                id,
-                timestamp,
-                session_id,
-                trace_id,
-                question,
-                answer,
-                sources_json,
-                context,
-                prompt,
-                metrics_json,
-                error
-            FROM query_logs
-            WHERE id = ?
-            """,
-            (log_id,),
-        )
-        row = cursor.fetchone()
+    query = text("""
+        SELECT
+            id,
+            timestamp,
+            session_id,
+            trace_id,
+            question,
+            answer,
+            sources_json,
+            context,
+            prompt,
+            metrics_json,
+            error
+        FROM query_logs
+        WHERE id = :log_id
+    """)
+
+    with get_engine().begin() as conn:
+        row = conn.execute(query, {"log_id": log_id}).fetchone()
 
     if not row:
         return None

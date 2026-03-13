@@ -1,41 +1,70 @@
 ```mermaid
 flowchart TB
 
-%% ======================
-%% INDEXACAO
-%% ======================
+%% ==================================================
+%% ETAPA 1 — INDEXAÇÃO (OFFLINE)
+%% ==================================================
 
-subgraph INDEXACAO
+subgraph INDEXACAO_OFFLINE["Indexação de Documentos (Offline)"]
 direction TB
-A1[Documentos .doc/.docx]
-A2[Parsing]
-A3[Chunking por clausula]
-A4[Embeddings]
-A5[(FAISS Index)]
 
-A1 --> A2 --> A3 --> A4 --> A5
+D1[Documentos .doc / .docx<br>Convenções Coletivas]
+D2[Parsing de texto]
+D3[Chunking por cláusula]
+D4[Geração de embeddings]
+D5[(FAISS Vector Index)]
+
+D1 --> D2 --> D3 --> D4 --> D5
+
 end
 
-%% ======================
-%% CONSULTA
-%% ======================
 
-subgraph CONSULTA_RAG
+%% ==================================================
+%% ETAPA 2 — CONSULTA (ONLINE)
+%% ==================================================
+
+subgraph CONSULTA_RAG["Pipeline RAG (Online)"]
 direction TB
-B1[Usuario pergunta]
-B2[Guardrail Input]
-B3[Embedding da pergunta]
-B4[Retrieval Top-K]
-B5{Gate de confianca}
-B6[LLM]
-B7[Guardrail Output]
-B8[Resposta + Citacoes]
 
-B1 --> B2 --> B3 --> B4 --> B5
-B5 -- Sim --> B6
-B5 -- Nao --> B8
-B6 --> B7 --> B8
+Q1[Usuário envia pergunta]
+Q2[Guardrail de entrada<br>validação da pergunta]
+Q3[Embedding da pergunta]
+Q4[Busca vetorial Top-K]
+Q5{Gate de confiança<br>score mínimo}
+Q6[Construção do contexto]
+Q7[Construção do prompt]
+Q8[LLM - GPT]
+Q9[Guardrail de saída]
+Q10[Resposta final + citações]
+
+Q1 --> Q2 --> Q3 --> Q4 --> Q5
+Q5 -- Contexto suficiente --> Q6
+Q5 -- Sem evidência --> Q10
+Q6 --> Q7 --> Q8 --> Q9 --> Q10
+
 end
 
-A5 --> B4
-```
+
+%% ==================================================
+%% ETAPA 3 — OBSERVABILITY
+%% ==================================================
+
+subgraph OBSERVABILITY["Observabilidade e Monitoramento"]
+direction TB
+
+M1[Captura de métricas]
+M2[(SQLite / Database)]
+M3[Dashboard Streamlit]
+
+M1 --> M2 --> M3
+
+end
+
+
+%% ==================================================
+%% CONEXÕES ENTRE SISTEMAS
+%% ==================================================
+
+D5 --> Q4
+Q8 --> M1
+Q10 --> M1

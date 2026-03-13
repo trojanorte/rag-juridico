@@ -1,16 +1,10 @@
-import sqlite3
-from pathlib import Path
 import json
 
 import pandas as pd
 import streamlit as st
+from sqlalchemy import text
 
-
-DB_PATH = Path("observability/debug_history.db")
-
-
-def get_connection():
-    return sqlite3.connect(DB_PATH)
+from observability.debug_store import get_engine, init_db
 
 
 def parse_metrics(metrics_json):
@@ -24,11 +18,10 @@ def parse_metrics(metrics_json):
 
 
 def load_monitoring_data(limit: int = 500):
-    if not DB_PATH.exists():
-        return pd.DataFrame()
+    init_db()
+    engine = get_engine()
 
-    with get_connection() as conn:
-        query = """
+    query = text("""
         SELECT
             id,
             timestamp,
@@ -39,9 +32,11 @@ def load_monitoring_data(limit: int = 500):
             metrics_json
         FROM query_logs
         ORDER BY id DESC
-        LIMIT ?
-        """
-        df = pd.read_sql_query(query, conn, params=(limit,))
+        LIMIT :limit
+    """)
+
+    with engine.connect() as conn:
+        df = pd.read_sql_query(query, conn, params={"limit": limit})
 
     if df.empty:
         return df

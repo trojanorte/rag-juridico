@@ -2,6 +2,7 @@ import logging
 import os
 from functools import lru_cache
 
+import streamlit as st
 from openai import OpenAI
 
 from embeddings.embedder import Embedder
@@ -23,13 +24,19 @@ MIN_ACCEPTABLE_TOP_SCORE = 0.15
 
 @lru_cache(maxsize=1)
 def get_openai_client():
-    api_key = os.getenv("OPENAI_API_KEY")
+
+    if "OPENAI_API_KEY" in st.secrets:
+        api_key = st.secrets["OPENAI_API_KEY"]
+
+    else:
+        api_key = os.getenv("OPENAI_API_KEY")
+
     if not api_key:
         raise RuntimeError(
-            "OPENAI_API_KEY não encontrada. Defina a variável de ambiente antes de rodar o app."
+            "OPENAI_API_KEY não encontrada. Defina nos Secrets do Streamlit ou como variável de ambiente."
         )
-    return OpenAI(api_key=api_key)
 
+    return OpenAI(api_key=api_key)
 
 @lru_cache(maxsize=1)
 def load_components():
@@ -41,7 +48,6 @@ def load_components():
     store.load()
 
     return embedder, store
-
 
 def normalize_score(score):
     try:

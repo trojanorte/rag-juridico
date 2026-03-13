@@ -92,6 +92,9 @@ RAG/
 ├── query.py                   # Retrieval sem geração
 ├── rag_generator.py           # Pipeline completo de RAG
 │
+├── .streamlit/
+│   └── secrets.toml
+│
 ├── requirements.txt
 ├── README.md
 └── ARCHITECTURE.md
@@ -350,6 +353,12 @@ Projeto desenvolvido como implementação técnica de um sistema RAG aplicado à
 ====================================================
 ARQUITETURA DETALHADA
 ====================================================
+
+O sistema segue uma arquitetura de Recuperação-Geração Aumentada (RAG) com três camadas principais:
+
+1. Indexação de documentos (pipeline offline)
+2. Recuperação e geração (pipeline online)
+3. Observabilidade e monitoramento
 
 Veja o desenho completo em:
 

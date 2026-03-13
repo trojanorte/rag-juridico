@@ -28,9 +28,9 @@ st.set_page_config(
 
 
 SUGGESTED_QUESTIONS = [
-    "Qual é a vigência do acordo coletivo?",
-    "Existe cláusula de seguro obrigatório?",
-    "Qual é o reajuste salarial?"
+    "Existe adicional de insalubridade?",
+    "Qual é a jornada de trabalho?",
+    "Qual é o valor do auxílio alimentação?"
 ]
 
 

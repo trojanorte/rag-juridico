@@ -4,7 +4,9 @@ LexRAG — Legal RAG for Collective Labor Agreements
 
 Sistema de Retrieval-Augmented Generation (RAG) aplicado à análise de Convenções Coletivas de Trabalho.
 
-O projeto implementa um pipeline completo de busca semântica e geração de respostas fundamentadas a partir de documentos jurídicos, utilizando embeddings locais, indexação vetorial e um LLM executado localmente.
+O projeto implementa um pipeline completo de busca semântica e geração de respostas fundamentadas a partir de documentos jurídicos, utilizando embeddings locais, indexação vetorial e um LLM avançado para geração de respostas.
+
+O objetivo é permitir consultas jurídicas rápidas e fundamentadas em documentos de convenções coletivas, mantendo rastreabilidade das fontes utilizadas e observabilidade completa do sistema.
 
 Principais funcionalidades:
 
@@ -13,7 +15,7 @@ Principais funcionalidades:
 - Embeddings semânticos locais (MiniLM)
 - Indexação vetorial com FAISS
 - Busca semântica por similaridade
-- Geração de respostas com LLM local (Ollama)
+- Geração de respostas com LLM (OpenAI GPT)
 - Observabilidade do pipeline
 - Sistema de debug e histórico de consultas
 - Avaliação automática da qualidade das respostas
@@ -37,7 +39,7 @@ Recuperação dos chunks mais relevantes
 ↓
 Construção do contexto
 ↓
-Geração de resposta (LLM via Ollama)
+Geração de resposta (LLM via OpenAI API)
 ↓
 Resposta fundamentada com fontes
 ↓
@@ -141,6 +143,23 @@ streamlit run app.py
 A aplicação abrirá em:
 
 http://localhost:8501
+
+
+====================================================
+CONFIGURAÇÃO DA API OPENAI
+====================================================
+
+Para utilizar o modelo GPT na geração das respostas, é necessário definir uma chave de API da OpenAI.
+
+Defina a variável de ambiente:
+
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
+
+No Windows PowerShell:
+
+$env:OPENAI_API_KEY="sua_chave_aqui"
+
+Essa chave é utilizada pelo módulo rag_generator.py para acessar o modelo de linguagem responsável pela geração das respostas.
 
 
 ====================================================
@@ -274,7 +293,7 @@ Vector Store:
 FAISS
 
 LLM:
-Modelo open-source executado localmente via Ollama
+OpenAI GPT (via API)
 
 Interface:
 Streamlit
@@ -310,6 +329,8 @@ POSSÍVEIS EVOLUÇÕES
 - reranking de documentos
 - extração estruturada de obrigações
 - suporte a múltiplas convenções coletivas
+- fine-tuning de prompts
+- cache de respostas
 
 
 ====================================================

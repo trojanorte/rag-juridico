@@ -1,6 +1,8 @@
 import logging
-import requests
+import os
 from functools import lru_cache
+
+from openai import OpenAI
 
 from embeddings.embedder import Embedder
 from vectorstore.faiss_store import FAISSStore
@@ -10,14 +12,23 @@ from observability.telemetry import telemetry
 
 logging.basicConfig(level=logging.INFO)
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "phi3"
+MODEL_NAME = "gpt-4.1-mini"
 
 TOP_K = 4
 MAX_CHARS = 2200
 MAX_CHUNK_CHARS = 600
 MIN_SCORE = 0.20
 MIN_ACCEPTABLE_TOP_SCORE = 0.15
+
+
+@lru_cache(maxsize=1)
+def get_openai_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "OPENAI_API_KEY não encontrada. Defina a variável de ambiente antes de rodar o app."
+        )
+    return OpenAI(api_key=api_key)
 
 
 @lru_cache(maxsize=1)
@@ -53,6 +64,7 @@ def is_in_scope(question: str) -> bool:
     ]
     q = question.lower()
     return any(k in q for k in keywords)
+
 
 def clean_answer(answer: str) -> str:
     answer = (answer or "").strip()
@@ -263,32 +275,25 @@ def postprocess_answer(answer, sources):
 
 @measure("generation_time")
 def generate_answer(prompt):
-    payload = {
-        "model": MODEL_NAME,
-        "prompt": prompt,
-        "stream": False,
-        "options": {
-            "temperature": 0.1,
-            "num_predict": 220,
-        },
-    }
+    client = get_openai_client()
 
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=180)
-        response.raise_for_status()
-        data = response.json()
-        answer = data.get("response", "").strip()
+        response = client.responses.create(
+            model=MODEL_NAME,
+            input=prompt,
+            temperature=0.1,
+            max_output_tokens=300,
+        )
+
+        answer = getattr(response, "output_text", "") or ""
+        answer = answer.strip()
 
         telemetry.logs["raw_answer"] = answer
         return answer
 
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
         telemetry.metrics["error"] = str(e)
-        logging.exception("Erro ao comunicar com o Ollama")
-
-        if "response" in locals():
-            logging.error("Resposta bruta do Ollama: %s", response.text)
-
+        logging.exception("Erro ao comunicar com a OpenAI")
         raise
 
 

@@ -75,7 +75,7 @@ def render_sidebar() -> None:
 
         st.subheader("Status do sistema")
         st.success("RAG ativo")
-        st.write("Embeddings + FAISS + Ollama")
+        st.write("Embeddings + FAISS + OpenAI")
 
         st.divider()
 

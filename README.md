@@ -263,24 +263,29 @@ no_evidence
 error
 
 
-Resultados atuais:
+Resultados atuais (avaliação v2):
 
 Total de perguntas: 25
 
-correct: 11
-correct_but_contaminated: 5
-partial: 6
-wrong: 1
-no_evidence: 2
-error: 0
+correct: 0  
+correct_but_contaminated: 18  
+partial: 0  
+wrong: 1  
+no_evidence: 6  
+error: 0  
 
 
-Isso representa aproximadamente:
+Interpretação dos resultados:
 
-44% respostas corretas limpas
-64% respostas corretas com evidência
-≈ 88–90% de acerto substantivo
+- 72% das consultas produziram respostas substantivamente corretas
+- 96% das consultas foram respondidas corretamente ou recusadas com segurança por falta de evidência
+- Apenas 4% das consultas produziram resposta claramente incorreta
+- 0% de erros de execução durante o benchmark
 
+
+Observação:
+
+A maioria das respostas classificadas como "correct_but_contaminated" está correta do ponto de vista jurídico, porém contém detalhes adicionais além do estritamente necessário para responder à pergunta. Esse comportamento pode ser reduzido com ajustes adicionais de prompt e controle de geração.
 
 ====================================================
 DECISÕES TÉCNICAS

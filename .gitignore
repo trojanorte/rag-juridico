@@ -1,10 +1,6 @@
 # Ambiente virtual
 venv/
 
-# Arquivos do FAISS
-vectorstore/*.index
-vectorstore/*.pkl
-
 # Cache do Python
 __pycache__/
 *.pyc

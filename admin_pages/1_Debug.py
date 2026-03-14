@@ -91,15 +91,28 @@ with tab4:
     sources = selected_log.get("sources", [])
     if sources:
         for idx, source in enumerate(sources, start=1):
-            try:
-                file_name, excerpt = source
-            except Exception:
-                file_name, excerpt = str(source), ""
+            if isinstance(source, dict):
+                arquivo = source.get("arquivo", "arquivo_desconhecido")
+                titulo = source.get("titulo", "trecho_sem_titulo")
+                score = source.get("score", None)
+                label = source.get("label", f"Fonte {idx}")
 
-            with st.container(border=True):
-                st.markdown(f"**Fonte {idx}**")
-                st.write(f"**Arquivo:** {file_name}")
-                st.write(f"**Trecho:** {excerpt}")
+                with st.container(border=True):
+                    st.markdown(f"**{label}**")
+                    st.write(f"**Documento:** {arquivo}")
+                    st.write(f"**Cláusula/Título:** {titulo}")
+                    if score is not None:
+                        st.write(f"**Relevância:** {score}")
+            else:
+                try:
+                    file_name, excerpt = source
+                except Exception:
+                    file_name, excerpt = str(source), ""
+
+                with st.container(border=True):
+                    st.markdown(f"**Fonte {idx}**")
+                    st.write(f"**Arquivo:** {file_name}")
+                    st.write(f"**Trecho:** {excerpt}")
     else:
         st.info("Sem fontes registradas.")
 

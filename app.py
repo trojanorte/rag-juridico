@@ -32,7 +32,12 @@ SUGGESTED_QUESTIONS = [
 ]
 
 
+# --------------------------------------------------
+# SESSION STATE
+# --------------------------------------------------
+
 def init_session_state() -> None:
+
     if "session_id" not in st.session_state:
         st.session_state["session_id"] = str(uuid.uuid4())
 
@@ -45,12 +50,15 @@ def init_session_state() -> None:
     if "metrics_started" not in st.session_state:
         st.session_state["metrics_started"] = False
 
-    if "observability_unlocked" not in st.session_state:
-        st.session_state["observability_unlocked"] = False
 
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
 
 def render_sidebar() -> None:
+
     with st.sidebar:
+
         st.header("Sobre o sistema")
 
         st.write(
@@ -64,6 +72,7 @@ def render_sidebar() -> None:
         st.divider()
 
         st.subheader("Tipos de perguntas")
+
         st.markdown(
             """
             Exemplos:
@@ -79,6 +88,7 @@ def render_sidebar() -> None:
         st.divider()
 
         st.subheader("Status do sistema")
+
         st.success("RAG ativo")
         st.write("Embeddings + FAISS + OpenAI")
 
@@ -90,55 +100,10 @@ def render_sidebar() -> None:
             st.rerun()
 
 
-def render_observability_unlock() -> None:
-    with st.sidebar:
-        st.divider()
-        st.subheader("Área restrita")
-
-        password_input = st.text_input(
-            "Senha da observabilidade",
-            type="password",
-            key="obs_password_input"
-        )
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("Desbloquear", use_container_width=True):
-                expected_password = st.secrets.get("OBSERVABILITY_PASSWORD", "")
-
-                if password_input and password_input == expected_password:
-                    st.session_state["observability_unlocked"] = True
-                    st.success("Observabilidade desbloqueada.")
-                else:
-                    st.error("Senha incorreta.")
-
-        with col2:
-            if st.button("Bloquear", use_container_width=True):
-                st.session_state["observability_unlocked"] = False
-                st.info("Observabilidade bloqueada.")
-
-
-def render_observability_panel() -> None:
-    if not st.session_state.get("observability_unlocked", False):
-        return
-
-    st.divider()
-    st.subheader("🔐 Observabilidade")
-
-    st.markdown("**Trace ID**")
-    st.code(str(getattr(telemetry, "trace_id", "")))
-
-    st.markdown("**Métricas**")
-    st.json(telemetry.metrics)
-
-    if st.checkbox("Mostrar logs técnicos", value=False):
-        st.markdown("**Logs**")
-        st.json(telemetry.logs)
-
-
 def render_header() -> None:
+
     st.title("📚 LexRAG")
+
     st.markdown(
         """
         **Assistente de Convenções Coletivas**
@@ -149,20 +114,27 @@ def render_header() -> None:
         e gera respostas fundamentadas nas fontes encontradas.
         """
     )
+
     st.divider()
 
 
+
 def render_suggested_questions() -> None:
+
     st.subheader("Perguntas sugeridas")
+
     cols = st.columns(len(SUGGESTED_QUESTIONS))
 
     for col, example in zip(cols, SUGGESTED_QUESTIONS):
+
         if col.button(example, use_container_width=True):
             st.session_state["pending_question"] = example
             st.rerun()
 
 
+
 def render_sources(sources) -> None:
+
     if not sources:
         st.warning("Nenhuma fonte encontrada.")
         return
@@ -170,31 +142,36 @@ def render_sources(sources) -> None:
     st.markdown("**Fontes consultadas:**")
 
     for idx, src in enumerate(sources, start=1):
+
+        # formato antigo (tupla)
         if isinstance(src, (tuple, list)) and len(src) >= 2:
+
             file_name = src[0]
             excerpt = src[1]
 
             with st.container(border=True):
                 st.markdown(f"**Arquivo:** {file_name}")
                 st.markdown(f"**Trecho/Cláusula:** {excerpt}")
+
             continue
 
+        # formato novo (dict)
         if isinstance(src, dict):
+
             arquivo = src.get("arquivo", "arquivo_desconhecido")
             titulo = src.get("titulo", "trecho")
             score = src.get("score", None)
             label = src.get("label", f"Fonte {idx}")
 
             with st.container(border=True):
+
                 st.markdown(f"**{label}**")
                 st.markdown(f"**Documento:** {arquivo}")
                 st.markdown(f"**Cláusula:** {titulo}")
 
                 if score is not None:
-                    try:
-                        st.markdown(f"**Relevância:** {float(score):.3f}")
-                    except (TypeError, ValueError):
-                        st.markdown(f"**Relevância:** {score}")
+                    st.markdown(f"**Relevância:** {score:.3f}")
+
             continue
 
         with st.container(border=True):
@@ -202,6 +179,7 @@ def render_sources(sources) -> None:
 
 
 def render_chat_history() -> None:
+
     history = st.session_state["chat_history"]
 
     if not history:
@@ -210,6 +188,7 @@ def render_chat_history() -> None:
     st.subheader("Histórico da conversa")
 
     for idx, item in enumerate(history, start=1):
+
         with st.chat_message("user", avatar="👤"):
             st.markdown(item["question"])
 
@@ -217,20 +196,26 @@ def render_chat_history() -> None:
             st.markdown(item["answer"])
 
             if item.get("sources"):
+
                 with st.expander(f"Fontes da resposta {idx}", expanded=False):
+
                     render_sources(item.get("sources", []))
 
 
+
 def build_conversation_context(max_turns: int = 3) -> str:
+
     history = st.session_state.get("chat_history", [])
 
     if not history:
         return ""
 
     recent = history[-max_turns:]
+
     parts = []
 
     for i, item in enumerate(recent, start=1):
+
         parts.append(
             f"Pergunta anterior {i}: {item['question']}\n"
             f"Resposta anterior {i}: {item['answer']}"
@@ -240,6 +225,7 @@ def build_conversation_context(max_turns: int = 3) -> str:
 
 
 def update_prometheus_metrics():
+
     rag_requests_total.inc()
 
     rag_total_time_seconds.observe(
@@ -272,20 +258,26 @@ def update_prometheus_metrics():
 
 
 def process_question(question: str) -> None:
+
     telemetry.reset()
+
     telemetry.logs["question"] = question
 
     conversation_context = build_conversation_context()
+
     start = telemetry.start_timer()
 
     try:
+
         with st.spinner("Consultando documentos..."):
+
             answer, sources = answer_question(
                 question=question,
                 conversation_context=conversation_context
             )
 
         telemetry.metrics["total_time"] = telemetry.stop_timer(start)
+
         telemetry.logs["answer"] = answer
         telemetry.logs["sources"] = sources
 
@@ -312,30 +304,34 @@ def process_question(question: str) -> None:
         )
 
     except Exception as exc:
+
         rag_errors_total.inc()
+
         st.error(f"Erro na consulta: {exc}")
 
 
+
 def main() -> None:
+
     init_db()
     init_session_state()
 
     if not st.session_state["metrics_started"]:
+
         try:
             start_metrics_server(8000)
-        except Exception:
+        except:
             pass
 
         st.session_state["metrics_started"] = True
 
     render_sidebar()
-    render_observability_unlock()
     render_header()
     render_suggested_questions()
     render_chat_history()
-    render_observability_panel()
 
     if st.session_state.get("pending_question"):
+
         q = st.session_state["pending_question"]
         st.session_state["pending_question"] = None
 
@@ -345,6 +341,7 @@ def main() -> None:
     question = st.chat_input("Digite sua pergunta sobre convenções coletivas...")
 
     if question:
+
         process_question(question)
         st.rerun()
 

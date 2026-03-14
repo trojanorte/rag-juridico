@@ -100,10 +100,6 @@ def render_sidebar() -> None:
             st.rerun()
 
 
-# --------------------------------------------------
-# HEADER
-# --------------------------------------------------
-
 def render_header() -> None:
 
     st.title("📚 LexRAG")
@@ -122,9 +118,6 @@ def render_header() -> None:
     st.divider()
 
 
-# --------------------------------------------------
-# SUGGESTED QUESTIONS
-# --------------------------------------------------
 
 def render_suggested_questions() -> None:
 
@@ -139,9 +132,6 @@ def render_suggested_questions() -> None:
             st.rerun()
 
 
-# --------------------------------------------------
-# RENDER SOURCES (CORRIGIDO)
-# --------------------------------------------------
 
 def render_sources(sources) -> None:
 
@@ -188,10 +178,6 @@ def render_sources(sources) -> None:
             st.write(src)
 
 
-# --------------------------------------------------
-# CHAT HISTORY
-# --------------------------------------------------
-
 def render_chat_history() -> None:
 
     history = st.session_state["chat_history"]
@@ -216,9 +202,6 @@ def render_chat_history() -> None:
                     render_sources(item.get("sources", []))
 
 
-# --------------------------------------------------
-# CONTEXT
-# --------------------------------------------------
 
 def build_conversation_context(max_turns: int = 3) -> str:
 
@@ -240,10 +223,6 @@ def build_conversation_context(max_turns: int = 3) -> str:
 
     return "\n\n".join(parts)
 
-
-# --------------------------------------------------
-# PROMETHEUS
-# --------------------------------------------------
 
 def update_prometheus_metrics():
 
@@ -277,10 +256,6 @@ def update_prometheus_metrics():
         float(telemetry.metrics.get("avg_score", 0) or 0)
     )
 
-
-# --------------------------------------------------
-# PROCESS QUESTION
-# --------------------------------------------------
 
 def process_question(question: str) -> None:
 
@@ -335,9 +310,6 @@ def process_question(question: str) -> None:
         st.error(f"Erro na consulta: {exc}")
 
 
-# --------------------------------------------------
-# MAIN
-# --------------------------------------------------
 
 def main() -> None:
 

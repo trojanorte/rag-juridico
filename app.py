@@ -263,14 +263,12 @@ def main() -> None:
     render_suggested_questions()
     render_chat_history()
 
-    # 1) pergunta enviada pelas sugestões
     if st.session_state.get("pending_question"):
         question = st.session_state["pending_question"]
         st.session_state["pending_question"] = None
         process_question(question)
         st.rerun()
 
-    # 2) pergunta digitada no chat_input
     question = st.chat_input("Digite sua pergunta sobre convenções coletivas...")
 
     if question:

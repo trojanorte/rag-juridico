@@ -1,17 +1,19 @@
-password = st.text_input("Admin password", type="password")
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-if password != st.secrets["ADMIN_PASSWORD"]:
-    st.warning("Acesso restrito.")
-    st.stop()
-    
 import json
-
 import pandas as pd
 import streamlit as st
 from sqlalchemy import text
 
 from observability.debug_store import get_engine, init_db
 
+password = st.text_input("Admin password", type="password")
+
+if password != st.secrets["ADMIN_PASSWORD"]:
+    st.warning("Acesso restrito.")
+    st.stop()
 
 def parse_metrics(metrics_json):
     if not metrics_json:

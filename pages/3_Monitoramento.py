@@ -1,3 +1,9 @@
+password = st.text_input("Admin password", type="password")
+
+if password != st.secrets["ADMIN_PASSWORD"]:
+    st.warning("Acesso restrito.")
+    st.stop()
+    
 import json
 
 import pandas as pd

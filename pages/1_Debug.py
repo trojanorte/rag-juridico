@@ -1,4 +1,11 @@
 import streamlit as st
+
+password = st.text_input("Admin password", type="password")
+
+if password != st.secrets["ADMIN_PASSWORD"]:
+    st.warning("Acesso restrito.")
+    st.stop()
+
 from observability.debug_store import init_db, get_recent_logs, get_log_by_id
 
 st.set_page_config(

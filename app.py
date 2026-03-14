@@ -17,7 +17,6 @@ from observability.prom_metrics import (
     rag_avg_score,
 )
 
-
 PROJECT_NAME = "LexRAG — Assistente de Convenções Coletivas"
 
 st.set_page_config(
@@ -26,7 +25,6 @@ st.set_page_config(
     page_icon="📚"
 )
 
-
 SUGGESTED_QUESTIONS = [
     "Existe adicional de insalubridade?",
     "Qual é a jornada de trabalho?",
@@ -34,7 +32,12 @@ SUGGESTED_QUESTIONS = [
 ]
 
 
+# --------------------------------------------------
+# SESSION STATE
+# --------------------------------------------------
+
 def init_session_state() -> None:
+
     if "session_id" not in st.session_state:
         st.session_state["session_id"] = str(uuid.uuid4())
 
@@ -44,10 +47,20 @@ def init_session_state() -> None:
     if "pending_question" not in st.session_state:
         st.session_state["pending_question"] = None
 
+    if "metrics_started" not in st.session_state:
+        st.session_state["metrics_started"] = False
+
+
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
 
 def render_sidebar() -> None:
+
     with st.sidebar:
+
         st.header("Sobre o sistema")
+
         st.write(
             """
             O **LexRAG** utiliza **RAG (Retrieval-Augmented Generation)**
@@ -59,6 +72,7 @@ def render_sidebar() -> None:
         st.divider()
 
         st.subheader("Tipos de perguntas")
+
         st.markdown(
             """
             Exemplos:
@@ -74,6 +88,7 @@ def render_sidebar() -> None:
         st.divider()
 
         st.subheader("Status do sistema")
+
         st.success("RAG ativo")
         st.write("Embeddings + FAISS + OpenAI")
 
@@ -85,40 +100,109 @@ def render_sidebar() -> None:
             st.rerun()
 
 
+# --------------------------------------------------
+# HEADER
+# --------------------------------------------------
+
 def render_header() -> None:
+
     st.title("📚 LexRAG")
+
     st.markdown(
         """
         **Assistente de Convenções Coletivas**
 
         Faça perguntas sobre **acordos e convenções coletivas**.
-        O sistema busca os **trechos mais relevantes** dos documentos e gera
-        respostas fundamentadas nas fontes encontradas.
 
-        A interface mantém um **histórico curto da conversa** para dar
-        continuidade entre perguntas relacionadas.
+        O sistema busca os **trechos mais relevantes** dos documentos
+        e gera respostas fundamentadas nas fontes encontradas.
         """
     )
+
     st.divider()
 
 
+# --------------------------------------------------
+# SUGGESTED QUESTIONS
+# --------------------------------------------------
+
 def render_suggested_questions() -> None:
+
     st.subheader("Perguntas sugeridas")
+
     cols = st.columns(len(SUGGESTED_QUESTIONS))
 
     for col, example in zip(cols, SUGGESTED_QUESTIONS):
+
         if col.button(example, use_container_width=True):
             st.session_state["pending_question"] = example
             st.rerun()
 
 
+# --------------------------------------------------
+# RENDER SOURCES (CORRIGIDO)
+# --------------------------------------------------
+
+def render_sources(sources) -> None:
+
+    if not sources:
+        st.warning("Nenhuma fonte encontrada.")
+        return
+
+    st.markdown("**Fontes consultadas:**")
+
+    for idx, src in enumerate(sources, start=1):
+
+        # formato antigo (tupla)
+        if isinstance(src, (tuple, list)) and len(src) >= 2:
+
+            file_name = src[0]
+            excerpt = src[1]
+
+            with st.container(border=True):
+                st.markdown(f"**Arquivo:** {file_name}")
+                st.markdown(f"**Trecho/Cláusula:** {excerpt}")
+
+            continue
+
+        # formato novo (dict)
+        if isinstance(src, dict):
+
+            arquivo = src.get("arquivo", "arquivo_desconhecido")
+            titulo = src.get("titulo", "trecho")
+            score = src.get("score", None)
+            label = src.get("label", f"Fonte {idx}")
+
+            with st.container(border=True):
+
+                st.markdown(f"**{label}**")
+                st.markdown(f"**Documento:** {arquivo}")
+                st.markdown(f"**Cláusula:** {titulo}")
+
+                if score is not None:
+                    st.markdown(f"**Relevância:** {score:.3f}")
+
+            continue
+
+        with st.container(border=True):
+            st.write(src)
+
+
+# --------------------------------------------------
+# CHAT HISTORY
+# --------------------------------------------------
+
 def render_chat_history() -> None:
-    if not st.session_state["chat_history"]:
+
+    history = st.session_state["chat_history"]
+
+    if not history:
         return
 
     st.subheader("Histórico da conversa")
 
-    for idx, item in enumerate(st.session_state["chat_history"], start=1):
+    for idx, item in enumerate(history, start=1):
+
         with st.chat_message("user", avatar="👤"):
             st.markdown(item["question"])
 
@@ -126,40 +210,43 @@ def render_chat_history() -> None:
             st.markdown(item["answer"])
 
             if item.get("sources"):
+
                 with st.expander(f"Fontes da resposta {idx}", expanded=False):
-                    render_sources(item["sources"])
+
+                    render_sources(item.get("sources", []))
 
 
-def render_sources(sources) -> None:
-    if not sources:
-        st.warning("Nenhuma fonte encontrada.")
-        return
-
-    st.markdown("**Fontes consultadas:**")
-    for file_name, excerpt in sources:
-        with st.container(border=True):
-            st.markdown(f"**Arquivo:** {file_name}")
-            st.markdown(f"**Trecho:** {excerpt}")
-
+# --------------------------------------------------
+# CONTEXT
+# --------------------------------------------------
 
 def build_conversation_context(max_turns: int = 3) -> str:
+
     history = st.session_state.get("chat_history", [])
+
     if not history:
         return ""
 
-    recent_history = history[-max_turns:]
+    recent = history[-max_turns:]
+
     parts = []
 
-    for idx, item in enumerate(recent_history, start=1):
+    for i, item in enumerate(recent, start=1):
+
         parts.append(
-            f"Pergunta anterior {idx}: {item['question']}\n"
-            f"Resposta anterior {idx}: {item['answer']}"
+            f"Pergunta anterior {i}: {item['question']}\n"
+            f"Resposta anterior {i}: {item['answer']}"
         )
 
     return "\n\n".join(parts)
 
 
-def update_prometheus_metrics() -> None:
+# --------------------------------------------------
+# PROMETHEUS
+# --------------------------------------------------
+
+def update_prometheus_metrics():
+
     rag_requests_total.inc()
 
     rag_total_time_seconds.observe(
@@ -191,21 +278,31 @@ def update_prometheus_metrics() -> None:
     )
 
 
+# --------------------------------------------------
+# PROCESS QUESTION
+# --------------------------------------------------
+
 def process_question(question: str) -> None:
+
     telemetry.reset()
+
     telemetry.logs["question"] = question
 
     conversation_context = build_conversation_context()
+
     start = telemetry.start_timer()
 
     try:
+
         with st.spinner("Consultando documentos..."):
+
             answer, sources = answer_question(
                 question=question,
                 conversation_context=conversation_context
             )
 
         telemetry.metrics["total_time"] = telemetry.stop_timer(start)
+
         telemetry.logs["answer"] = answer
         telemetry.logs["sources"] = sources
 
@@ -222,9 +319,9 @@ def process_question(question: str) -> None:
         save_query_log(
             session_id=st.session_state["session_id"],
             trace_id=telemetry.trace_id,
-            question=telemetry.logs.get("question", ""),
-            answer=telemetry.logs.get("answer", ""),
-            sources=telemetry.logs.get("sources", []),
+            question=question,
+            answer=answer,
+            sources=sources,
             context=telemetry.logs.get("context", ""),
             prompt=telemetry.logs.get("prompt", ""),
             metrics=telemetry.metrics,
@@ -232,31 +329,29 @@ def process_question(question: str) -> None:
         )
 
     except Exception as exc:
-        telemetry.metrics["total_time"] = telemetry.stop_timer(start)
-        telemetry.metrics["error"] = str(exc)
 
-        rag_requests_total.inc()
         rag_errors_total.inc()
-
-        save_query_log(
-            session_id=st.session_state["session_id"],
-            trace_id=telemetry.trace_id,
-            question=telemetry.logs.get("question", question),
-            answer=telemetry.logs.get("answer", ""),
-            sources=telemetry.logs.get("sources", []),
-            context=telemetry.logs.get("context", ""),
-            prompt=telemetry.logs.get("prompt", ""),
-            metrics=telemetry.metrics,
-            error=str(exc),
-        )
 
         st.error(f"Erro na consulta: {exc}")
 
 
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
+
 def main() -> None:
+
     init_db()
-    start_metrics_server(8000)
     init_session_state()
+
+    if not st.session_state["metrics_started"]:
+
+        try:
+            start_metrics_server(8000)
+        except:
+            pass
+
+        st.session_state["metrics_started"] = True
 
     render_sidebar()
     render_header()
@@ -264,14 +359,17 @@ def main() -> None:
     render_chat_history()
 
     if st.session_state.get("pending_question"):
-        question = st.session_state["pending_question"]
+
+        q = st.session_state["pending_question"]
         st.session_state["pending_question"] = None
-        process_question(question)
+
+        process_question(q)
         st.rerun()
 
     question = st.chat_input("Digite sua pergunta sobre convenções coletivas...")
 
     if question:
+
         process_question(question)
         st.rerun()
 

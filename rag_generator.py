@@ -45,8 +45,6 @@ def load_components():
     embedder = Embedder()
 
     logging.info("Carregando índice vetorial...")
-    # não fixe 384 se você trocou de modelo e já reindexou;
-    # aqui mantemos carregamento simples do store
     store = FAISSStore(768)
     store.load()
 
@@ -111,7 +109,7 @@ def is_in_scope(question: str) -> bool:
         "segmento", "setor", "convenções se aplicam", "convencoes se aplicam",
         "aplica", "aplicável", "aplicavel", "obrigação", "obrigacao",
         "deve", "deverá", "devera", "facultativo", "facultativa",
-        "obrigatório", "obrigatorio", "auxílio", "auxilio"
+        "obrigatório", "obrigatorio", "auxílio", "auxilio", "cct", "act"
     ]
     q = (question or "").lower()
     return any(k in q for k in keywords)
@@ -244,9 +242,18 @@ def needs_rewrite(question: str) -> bool:
         "e nesse caso",
         "e nessa",
         "e nesse",
+        "isso",
+        "essa",
+        "esse",
+        "ele",
+        "ela",
+        "mesma convenção",
+        "mesmo acordo",
+        "o mesmo",
+        "a mesma",
     ]
 
-    return len(q) <= 30 or any(q.startswith(prefix) for prefix in continuation_starts)
+    return any(q.startswith(prefix) for prefix in continuation_starts)
 
 
 def extract_last_user_question(conversation_context: str):
@@ -271,35 +278,37 @@ def extract_last_user_question(conversation_context: str):
 
 
 def rewrite_question(question: str, conversation_context: str = "") -> str:
-    if not conversation_context or not needs_rewrite(question):
-        return question.strip()
+    q = (question or "").strip()
+
+    if not conversation_context or not needs_rewrite(q):
+        return q
 
     last_user_question = extract_last_user_question(conversation_context)
-    q = question.strip()
-
     if not last_user_question:
         return q
 
     lowered = q.lower()
 
     explicit_patterns = {
-        ("e o reajuste", "reajuste"): "Qual é o reajuste salarial previsto na mesma convenção coletiva relacionada à pergunta anterior?",
-        ("e o seguro", "seguro"): "Existe cláusula sobre seguro na mesma convenção coletiva relacionada à pergunta anterior?",
-        ("e a vigência", "vigência", "vigencia"): "Qual é a vigência da mesma convenção coletiva relacionada à pergunta anterior?",
-        ("e o piso", "piso"): "Qual é o piso salarial previsto na mesma convenção coletiva relacionada à pergunta anterior?",
-        ("e o plano de saúde", "plano de saúde", "plano de saude"): "Há previsão de plano de saúde na mesma convenção coletiva relacionada à pergunta anterior?",
-        ("e a assistência médica", "assistência médica", "assistencia medica"): "Há previsão de assistência médica na mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e o reajuste", "reajuste"): "Qual é o reajuste salarial previsto na mesma convenção coletiva da pergunta anterior?",
+        ("e o seguro", "seguro"): "Existe cláusula sobre seguro na mesma convenção coletiva da pergunta anterior?",
+        ("e a vigência", "vigência", "vigencia"): "Qual é a vigência da mesma convenção coletiva da pergunta anterior?",
+        ("e o piso", "piso"): "Qual é o piso salarial previsto na mesma convenção coletiva da pergunta anterior?",
+        ("e o plano de saúde", "plano de saúde", "plano de saude"): "Há previsão de plano de saúde na mesma convenção coletiva da pergunta anterior?",
+        ("e a assistência médica", "assistência médica", "assistencia medica"): "Há previsão de assistência médica na mesma convenção coletiva da pergunta anterior?",
+        ("e o adicional noturno", "adicional noturno"): "Existe cláusula sobre adicional noturno na mesma convenção coletiva da pergunta anterior?",
+        ("e a insalubridade", "insalubridade"): "Existe cláusula sobre adicional de insalubridade na mesma convenção coletiva da pergunta anterior?",
+        ("e a periculosidade", "periculosidade"): "Existe cláusula sobre adicional de periculosidade na mesma convenção coletiva da pergunta anterior?",
+        ("e as horas extras", "horas extras"): "Como a mesma convenção coletiva da pergunta anterior trata as horas extras?",
+        ("e o vale alimentação", "vale alimentação", "vale-alimentação"): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
+        ("e o vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
     }
 
     for triggers, rewritten in explicit_patterns.items():
-        if any(lowered.startswith(t) or lowered == f"{t}?" for t in triggers):
-            return f"{rewritten} Pergunta anterior: {last_user_question}"
+        if any(lowered == t or lowered.startswith(t + " ") or lowered == f"{t}?" for t in triggers):
+            return rewritten
 
-    return (
-        f"Reescreva a pergunta atual considerando a continuidade da conversa. "
-        f"Pergunta atual: {q} "
-        f"Pergunta anterior: {last_user_question}"
-    )
+    return q
 
 
 def trim_text(text: str, max_chars: int) -> str:
@@ -385,8 +394,8 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
     return context, sources
 
 
-def build_prompt(context, question, conversation_context=""):
-    prompt_base = f"""
+def build_prompt(context, question):
+    return f"""
 Você é um assistente jurídico especializado em convenções coletivas de trabalho.
 
 Sua tarefa é responder APENAS com base no contexto recuperado.
@@ -394,6 +403,10 @@ Sua tarefa é responder APENAS com base no contexto recuperado.
 Regras obrigatórias:
 - Não use conhecimento externo.
 - Não invente cláusulas, datas, valores, percentuais, categorias ou obrigações.
+- Não reformule a pergunta do usuário.
+- Não mencione histórico da conversa.
+- Não escreva expressões como "considerando a continuidade da conversa" ou "no contexto da pergunta anterior".
+- Responda diretamente à pergunta do usuário com base apenas nos trechos recuperados.
 - Quando o contexto trouxer evidência parcial, explique exatamente o que foi encontrado e o que não foi encontrado.
 - Não responda apenas "não encontrei" se houver informação parcialmente útil.
 - Se houver indicação de facultatividade, manutenção de benefício já existente ou ausência de obrigação expressa, destaque isso claramente.
@@ -421,16 +434,6 @@ Pergunta do usuário:
 
 Resposta:
 """.strip()
-
-    if conversation_context:
-        prompt_base = f"""
-Histórico recente da conversa:
-{conversation_context}
-
-{prompt_base}
-""".strip()
-
-    return prompt_base
 
 
 def extract_used_source_labels(answer: str):
@@ -527,6 +530,23 @@ def format_sources_for_display(sources):
     return formatted
 
 
+def out_of_scope_answer() -> str:
+    return (
+        "Esta base é especializada em convenções coletivas de trabalho. "
+        "A pergunta enviada não parece relacionada a esse escopo. "
+        "Posso ajudar com cláusulas, piso salarial, vigência, benefícios, reajuste, jornada e obrigações previstas em convenções."
+    )
+
+
+def reset_empty_metrics():
+    telemetry.logs["context"] = ""
+    telemetry.logs["sources"] = []
+    telemetry.metrics["chunks_retrieved"] = 0
+    telemetry.metrics["chunks_used"] = 0
+    telemetry.metrics["top_score"] = 0
+    telemetry.metrics["avg_score"] = 0
+
+
 def answer_question(question, conversation_context=""):
     telemetry.reset()
     telemetry.logs["question"] = question
@@ -536,30 +556,27 @@ def answer_question(question, conversation_context=""):
     if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
         answer = preprocessed["message"]
         telemetry.logs["answer"] = answer
-        telemetry.logs["context"] = ""
-        telemetry.logs["sources"] = []
-        telemetry.metrics["chunks_retrieved"] = 0
-        telemetry.metrics["chunks_used"] = 0
-        telemetry.metrics["top_score"] = 0
-        telemetry.metrics["avg_score"] = 0
+        reset_empty_metrics()
         return answer, []
 
     effective_question = preprocessed["question"]
+
+    # Gate primário: perguntas claramente fora do escopo
+    # não devem ser "salvas" por uma reescrita artificial.
+    if not is_in_scope(effective_question) and not needs_rewrite(effective_question):
+        answer = out_of_scope_answer()
+        telemetry.logs["answer"] = answer
+        reset_empty_metrics()
+        return answer, []
+
     rewritten_question = rewrite_question(effective_question, conversation_context)
     telemetry.logs["rewritten_question"] = rewritten_question
 
+    # Gate secundário: depois da reescrita conservadora
     if not is_in_scope(rewritten_question):
-        answer = (
-            "Posso te ajudar com perguntas sobre convenções coletivas de trabalho, "
-            "como piso salarial, vigência, benefícios, reajuste, jornada e cláusulas específicas."
-        )
+        answer = out_of_scope_answer()
         telemetry.logs["answer"] = answer
-        telemetry.logs["context"] = ""
-        telemetry.logs["sources"] = []
-        telemetry.metrics["chunks_retrieved"] = 0
-        telemetry.metrics["chunks_used"] = 0
-        telemetry.metrics["top_score"] = 0
-        telemetry.metrics["avg_score"] = 0
+        reset_empty_metrics()
         return answer, []
 
     embedder, store = load_components()
@@ -579,7 +596,7 @@ def answer_question(question, conversation_context=""):
         telemetry.logs["answer"] = answer
         return answer, sources
 
-    prompt = build_prompt(context, rewritten_question, conversation_context)
+    prompt = build_prompt(context, rewritten_question)
 
     telemetry.logs["prompt"] = prompt
     telemetry.metrics["prompt_chars"] = len(prompt)
@@ -611,14 +628,19 @@ def main():
             continue
 
         effective_question = preprocessed["question"]
+
+        if not is_in_scope(effective_question) and not needs_rewrite(effective_question):
+            answer = out_of_scope_answer()
+            telemetry.logs["answer"] = answer
+            print("\n" + answer)
+            continue
+
         rewritten_question = rewrite_question(effective_question)
         telemetry.logs["rewritten_question"] = rewritten_question
 
         if not is_in_scope(rewritten_question):
-            answer = (
-                "Posso te ajudar com perguntas sobre convenções coletivas de trabalho, "
-                "como piso salarial, vigência, benefícios, reajuste, jornada e cláusulas específicas."
-            )
+            answer = out_of_scope_answer()
+            telemetry.logs["answer"] = answer
             print("\n" + answer)
             continue
 

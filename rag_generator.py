@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from functools import lru_cache
 
 import streamlit as st
@@ -15,19 +16,18 @@ logging.basicConfig(level=logging.INFO)
 
 MODEL_NAME = "gpt-4.1-mini"
 
-TOP_K = 4
-MAX_CHARS = 2200
-MAX_CHUNK_CHARS = 600
-MIN_SCORE = 0.20
-MIN_ACCEPTABLE_TOP_SCORE = 0.15
+TOP_K = 5
+MAX_CHARS = 3000
+MAX_CHUNK_CHARS = 900
+MIN_SCORE = 0.15
+MIN_ACCEPTABLE_TOP_SCORE = 0.10
+MAX_OUTPUT_TOKENS = 420
 
 
 @lru_cache(maxsize=1)
 def get_openai_client():
-
     if "OPENAI_API_KEY" in st.secrets:
         api_key = st.secrets["OPENAI_API_KEY"]
-
     else:
         api_key = os.getenv("OPENAI_API_KEY")
 
@@ -38,16 +38,20 @@ def get_openai_client():
 
     return OpenAI(api_key=api_key)
 
+
 @lru_cache(maxsize=1)
 def load_components():
     logging.info("Inicializando modelo de embeddings...")
     embedder = Embedder()
 
     logging.info("Carregando índice vetorial...")
-    store = FAISSStore(384)
+    # não fixe 384 se você trocou de modelo e já reindexou;
+    # aqui mantemos carregamento simples do store
+    store = FAISSStore(768)
     store.load()
 
     return embedder, store
+
 
 def normalize_score(score):
     try:
@@ -56,20 +60,148 @@ def normalize_score(score):
         return 0.0
 
 
+def is_greeting(text: str) -> bool:
+    if not text:
+        return False
+
+    greetings = [
+        "oi", "olá", "ola", "bom dia", "boa tarde", "boa noite",
+        "e aí", "ei", "hello", "hi"
+    ]
+
+    lowered = text.lower().strip()
+    return any(lowered == g or lowered.startswith(g + " ") for g in greetings)
+
+
+def is_small_talk(text: str) -> bool:
+    if not text:
+        return False
+
+    small_talk_patterns = [
+        "meu dia foi",
+        "tudo bem",
+        "como vai",
+        "como você está",
+        "como vc está",
+        "como esta",
+        "estou bem",
+        "que legal",
+        "legal",
+        "kkk",
+        "haha",
+    ]
+
+    lowered = text.lower().strip()
+    return any(p in lowered for p in small_talk_patterns)
+
+
 def is_in_scope(question: str) -> bool:
     keywords = [
         "acordo", "convenção", "convencao", "cláusula", "clausula",
         "salário", "salario", "vigência", "vigencia", "jornada",
         "sindicato", "sindical", "benefício", "beneficio", "empresa",
-        "empregado", "trabalho", "categoria", "piso", "vale",
+        "empregado", "trabalho", "categoria", "categorias", "piso", "vale",
         "adicional", "estabilidade", "férias", "ferias", "horas extras",
         "banco de horas", "creche", "uniforme", "epi", "plr",
         "aviso prévio", "aviso previo", "seguro", "licença", "licenca",
         "reajuste", "desconto", "descontos", "valor", "valores",
-        "contribuição", "contribuicao", "cláusulas", "clausulas"
+        "contribuição", "contribuicao", "cláusulas", "clausulas",
+        "hospital", "hospitais", "varejista", "varejo", "plano de saúde",
+        "plano de saude", "assistência médica", "assistencia medica",
+        "segmento", "setor", "convenções se aplicam", "convencoes se aplicam",
+        "aplica", "aplicável", "aplicavel", "obrigação", "obrigacao",
+        "deve", "deverá", "devera", "facultativo", "facultativa",
+        "obrigatório", "obrigatorio", "auxílio", "auxilio"
     ]
-    q = question.lower()
+    q = (question or "").lower()
     return any(k in q for k in keywords)
+
+
+def extract_legal_question(text: str) -> str:
+    if not text:
+        return ""
+
+    triggers = [
+        "existe",
+        "há",
+        "ha",
+        "qual",
+        "quais",
+        "o que",
+        "obriga",
+        "obrigatório",
+        "obrigatorio",
+        "facultativo",
+        "vigência",
+        "vigencia",
+        "reajuste",
+        "piso",
+        "cláusula",
+        "clausula",
+        "assistência médica",
+        "assistencia medica",
+        "seguro",
+        "plano de saúde",
+        "plano de saude",
+        "convenção",
+        "convencao",
+        "categoria",
+        "categorias",
+        "benefício",
+        "beneficio",
+        "jornada",
+        "vale",
+    ]
+
+    lowered = text.lower()
+    positions = [lowered.find(t) for t in triggers if lowered.find(t) != -1]
+
+    if not positions:
+        return text.strip()
+
+    start = min(positions)
+    extracted = text[start:].strip(" ,.-")
+    return extracted.strip()
+
+
+def preprocess_user_input(question: str):
+    q = (question or "").strip()
+
+    if not q:
+        return {
+            "type": "empty",
+            "message": "Digite uma pergunta sobre convenções coletivas de trabalho.",
+            "question": "",
+        }
+
+    if is_greeting(q) and not is_in_scope(q):
+        return {
+            "type": "greeting",
+            "message": "Bom dia! Pode me perguntar sobre cláusulas, benefícios, piso, vigência, reajuste e outras regras de convenções coletivas.",
+            "question": "",
+        }
+
+    extracted_question = extract_legal_question(q)
+
+    if extracted_question != q and is_in_scope(extracted_question):
+        return {
+            "type": "mixed",
+            "message": None,
+            "question": extracted_question,
+        }
+
+    if is_small_talk(q) and not is_in_scope(q):
+        return {
+            "type": "small_talk",
+            "message": "Posso te ajudar com perguntas sobre convenções coletivas de trabalho. Mande a cláusula, benefício ou obrigação que você quer verificar.",
+            "question": "",
+        }
+
+    return {
+        "type": "normal",
+        "message": None,
+        "question": q,
+    }
 
 
 def clean_answer(answer: str) -> str:
@@ -82,6 +214,8 @@ def clean_answer(answer: str) -> str:
         "\n\nResposta:",
         "\nUsuário:",
         "\nUsuario:",
+        "\nUser:",
+        "\nAssistant:",
     ]
 
     cleaned = answer
@@ -93,7 +227,7 @@ def clean_answer(answer: str) -> str:
 
 
 def needs_rewrite(question: str) -> bool:
-    q = question.lower().strip()
+    q = (question or "").lower().strip()
 
     continuation_starts = [
         "e ",
@@ -106,54 +240,81 @@ def needs_rewrite(question: str) -> bool:
         "sobre essa",
         "quanto a",
         "e quanto",
+        "e no caso",
+        "e nesse caso",
+        "e nessa",
+        "e nesse",
     ]
 
-    if len(q) <= 25:
-        return True
+    return len(q) <= 30 or any(q.startswith(prefix) for prefix in continuation_starts)
 
-    return any(q.startswith(prefix) for prefix in continuation_starts)
+
+def extract_last_user_question(conversation_context: str):
+    if not conversation_context:
+        return None
+
+    history_lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
+
+    for line in reversed(history_lines):
+        lowered = line.lower()
+        if lowered.startswith("pergunta anterior"):
+            parts = line.split(":", 1)
+            if len(parts) == 2 and parts[1].strip():
+                return parts[1].strip()
+
+        if lowered.startswith("usuário:") or lowered.startswith("usuario:"):
+            parts = line.split(":", 1)
+            if len(parts) == 2 and parts[1].strip():
+                return parts[1].strip()
+
+    return None
 
 
 def rewrite_question(question: str, conversation_context: str = "") -> str:
     if not conversation_context or not needs_rewrite(question):
-        return question
+        return question.strip()
 
-    history_lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
-    last_user_question = None
-
-    for line in reversed(history_lines):
-        if line.lower().startswith("pergunta anterior"):
-            parts = line.split(":", 1)
-            if len(parts) == 2:
-                last_user_question = parts[1].strip()
-                break
-
+    last_user_question = extract_last_user_question(conversation_context)
     q = question.strip()
 
     if not last_user_question:
-        return question
+        return q
 
     lowered = q.lower()
 
-    if lowered.startswith("e o reajuste") or lowered == "e o reajuste?":
-        return f"Qual é o reajuste salarial previsto na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+    explicit_patterns = {
+        ("e o reajuste", "reajuste"): "Qual é o reajuste salarial previsto na mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e o seguro", "seguro"): "Existe cláusula sobre seguro na mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e a vigência", "vigência", "vigencia"): "Qual é a vigência da mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e o piso", "piso"): "Qual é o piso salarial previsto na mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e o plano de saúde", "plano de saúde", "plano de saude"): "Há previsão de plano de saúde na mesma convenção coletiva relacionada à pergunta anterior?",
+        ("e a assistência médica", "assistência médica", "assistencia medica"): "Há previsão de assistência médica na mesma convenção coletiva relacionada à pergunta anterior?",
+    }
 
-    if lowered.startswith("e o seguro") or lowered == "e o seguro?":
-        return f"Existe cláusula de seguro na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+    for triggers, rewritten in explicit_patterns.items():
+        if any(lowered.startswith(t) or lowered == f"{t}?" for t in triggers):
+            return f"{rewritten} Pergunta anterior: {last_user_question}"
 
-    if lowered.startswith("e a vigência") or lowered == "e a vigência?":
-        return f"Qual é a vigência da mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
+    return (
+        f"Reescreva a pergunta atual considerando a continuidade da conversa. "
+        f"Pergunta atual: {q} "
+        f"Pergunta anterior: {last_user_question}"
+    )
 
-    if lowered.startswith("e o piso") or lowered == "e o piso?":
-        return f"Qual é o piso salarial previsto na mesma convenção coletiva da pergunta anterior: '{last_user_question}'?"
 
-    return f"Reescrevendo a pergunta com contexto da conversa anterior: {q} Referência anterior: {last_user_question}"
+def trim_text(text: str, max_chars: int) -> str:
+    text = (text or "").strip()
+    if len(text) <= max_chars:
+        return text
+
+    trimmed = text[:max_chars].rsplit(" ", 1)[0].strip()
+    return f"{trimmed}..."
 
 
 @measure("retrieval_time")
 def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
-    query_embedding = embedder.embed_texts([query])
-    results = store.search(query_embedding, top_k=top_k)
+    query_embedding = embedder.embed_query(query)
+    results = store.search(query_embedding, top_k=top_k) or []
 
     telemetry.logs["retrieved_chunks"] = results
 
@@ -164,7 +325,7 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
             filtered_results.append(item)
 
     if not filtered_results:
-        filtered_results = results[:2]
+        filtered_results = results[:3]
 
     context_parts = []
     sources = []
@@ -186,22 +347,33 @@ def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
     telemetry.metrics["avg_score"] = round(avg_score, 4)
 
     for idx, item in enumerate(filtered_results, start=1):
-        trecho = item.get("content", "")[:MAX_CHUNK_CHARS].strip()
+        trecho = trim_text(item.get("content", ""), MAX_CHUNK_CHARS)
         filename = item.get("filename", "arquivo_desconhecido")
         titulo = item.get("titulo", "trecho_sem_titulo")
+        score = normalize_score(item.get("score", 0))
+
+        if not trecho:
+            continue
 
         block = (
             f"[Fonte {idx}]\n"
-            f"Arquivo: {filename}\n"
-            f"Título: {titulo}\n"
-            f"Trecho: {trecho}\n"
+            f"Documento: {filename}\n"
+            f"Cláusula/Título: {titulo}\n"
+            f"Relevância: {score:.3f}\n"
+            f"Texto:\n{trecho}\n"
         )
 
         if used_chars + len(block) > max_chars:
             break
 
         context_parts.append(block)
-        sources.append((filename, titulo))
+        sources.append({
+            "id": idx,
+            "label": f"Fonte {idx}",
+            "arquivo": filename,
+            "titulo": titulo,
+            "score": round(score, 4),
+        })
         used_chars += len(block)
 
     context = "\n\n".join(context_parts)
@@ -217,29 +389,38 @@ def build_prompt(context, question, conversation_context=""):
     prompt_base = f"""
 Você é um assistente jurídico especializado em convenções coletivas de trabalho.
 
+Sua tarefa é responder APENAS com base no contexto recuperado.
+
 Regras obrigatórias:
-- Responda SOMENTE com base no contexto fornecido.
 - Não use conhecimento externo.
-- Não invente cláusulas, datas, valores ou obrigações.
-- Se não houver evidência suficiente, diga:
-"Não encontrei informação suficiente no contexto recuperado."
-- Responda apenas à pergunta atual.
-- Não continue a conversa sozinho.
-- Sempre cite as fontes no formato [Fonte X] quando houver evidência.
+- Não invente cláusulas, datas, valores, percentuais, categorias ou obrigações.
+- Quando o contexto trouxer evidência parcial, explique exatamente o que foi encontrado e o que não foi encontrado.
+- Não responda apenas "não encontrei" se houver informação parcialmente útil.
+- Se houver indicação de facultatividade, manutenção de benefício já existente ou ausência de obrigação expressa, destaque isso claramente.
+- Use linguagem clara, objetiva e jurídica.
+- Não continue a conversa por conta própria.
+- Cite somente as fontes efetivamente utilizadas, no formato [Fonte X].
+- Não mencione fontes que não estejam no contexto.
+- Não afirme que algo é obrigatório sem evidência textual no contexto.
 
-Formato obrigatório:
-Resposta objetiva: ...
-Fundamentação: ...
-Fontes: [Fonte 1], [Fonte 2]
+Formato desejado:
+Resposta curta: responda objetivamente em 1 a 3 frases.
+Explicação: explique com base nos trechos recuperados.
+Fontes consultadas: liste apenas as fontes usadas.
 
-Contexto:
+Se a evidência for insuficiente, use formulação como:
+"Os trechos recuperados não permitem afirmar com segurança..."
+ou
+"Não foi identificada, nos trechos recuperados, cláusula expressa que..."
+
+Contexto recuperado:
 {context}
 
-Pergunta:
+Pergunta do usuário:
 {question}
 
 Resposta:
-"""
+""".strip()
 
     if conversation_context:
         prompt_base = f"""
@@ -247,35 +428,68 @@ Histórico recente da conversa:
 {conversation_context}
 
 {prompt_base}
-"""
+""".strip()
 
     return prompt_base
+
+
+def extract_used_source_labels(answer: str):
+    if not answer:
+        return []
+    return sorted(set(re.findall(r"\[Fonte\s+\d+\]", answer)))
+
+
+def append_sources_if_missing(answer: str, sources: list[dict]) -> str:
+    if not sources:
+        return answer
+
+    used_labels = extract_used_source_labels(answer)
+
+    if used_labels:
+        source_line = "Fontes consultadas: " + ", ".join(used_labels)
+        if "Fontes consultadas:" not in answer:
+            return f"{answer}\n\n{source_line}"
+        return answer
+
+    fallback_labels = [f"[{s['label']}]" for s in sources[:3]]
+    source_line = "Fontes consultadas: " + ", ".join(fallback_labels)
+
+    if "Fontes consultadas:" not in answer:
+        return f"{answer}\n\n{source_line}"
+
+    return answer
 
 
 def postprocess_answer(answer, sources):
     answer = clean_answer(answer)
 
-    weak_answers = {"sim", "não", "nao", "sim.", "não.", "nao."}
-
     if not answer:
         return "Não encontrei informação suficiente no contexto recuperado."
 
+    weak_answers = {"sim", "não", "nao", "sim.", "não.", "nao."}
     if answer.lower() in weak_answers:
-        if sources:
-            return (
-                f"{answer.capitalize()}, mas a resposta gerada ficou incompleta. "
-                "Consulte também as fontes recuperadas para validação."
-            )
-        return "Não encontrei informação suficiente no contexto recuperado."
+        return "A resposta gerada ficou incompleta com base no contexto recuperado."
 
-    if len(answer) < 40:
-        if sources:
-            return (
-                f"{answer} "
-                "A resposta foi curta demais; consulte também as fontes recuperadas para validação."
-            )
-        return "Não encontrei informação suficiente no contexto recuperado."
+    if len(answer) < 60:
+        answer = (
+            f"{answer}\n\n"
+            "Observação: a resposta foi curta e pode não refletir toda a nuance dos trechos recuperados."
+        )
 
+    overly_generic_patterns = [
+        "não encontrei informação suficiente no contexto recuperado",
+        "não foi possível identificar",
+    ]
+
+    lower_answer = answer.lower()
+    if any(p in lower_answer for p in overly_generic_patterns):
+        if sources:
+            answer += (
+                "\n\nObservação: verifique também os trechos recuperados, "
+                "pois pode haver evidência parcial ou indireta nas fontes."
+            )
+
+    answer = append_sources_if_missing(answer, sources)
     return answer
 
 
@@ -288,7 +502,7 @@ def generate_answer(prompt):
             model=MODEL_NAME,
             input=prompt,
             temperature=0.1,
-            max_output_tokens=300,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
         )
 
         answer = getattr(response, "output_text", "") or ""
@@ -303,14 +517,42 @@ def generate_answer(prompt):
         raise
 
 
+def format_sources_for_display(sources):
+    if not sources:
+        return []
+
+    formatted = []
+    for src in sources:
+        formatted.append(f"{src['arquivo']} | {src['titulo']} | score={src['score']}")
+    return formatted
+
+
 def answer_question(question, conversation_context=""):
+    telemetry.reset()
     telemetry.logs["question"] = question
 
-    rewritten_question = rewrite_question(question, conversation_context)
+    preprocessed = preprocess_user_input(question)
+
+    if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
+        answer = preprocessed["message"]
+        telemetry.logs["answer"] = answer
+        telemetry.logs["context"] = ""
+        telemetry.logs["sources"] = []
+        telemetry.metrics["chunks_retrieved"] = 0
+        telemetry.metrics["chunks_used"] = 0
+        telemetry.metrics["top_score"] = 0
+        telemetry.metrics["avg_score"] = 0
+        return answer, []
+
+    effective_question = preprocessed["question"]
+    rewritten_question = rewrite_question(effective_question, conversation_context)
     telemetry.logs["rewritten_question"] = rewritten_question
 
     if not is_in_scope(rewritten_question):
-        answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
+        answer = (
+            "Posso te ajudar com perguntas sobre convenções coletivas de trabalho, "
+            "como piso salarial, vigência, benefícios, reajuste, jornada e cláusulas específicas."
+        )
         telemetry.logs["answer"] = answer
         telemetry.logs["context"] = ""
         telemetry.logs["sources"] = []
@@ -323,10 +565,16 @@ def answer_question(question, conversation_context=""):
     embedder, store = load_components()
     context, sources = retrieve_context(embedder, store, rewritten_question)
 
-    top_score = telemetry.metrics.get("top_score", 0)
+    top_score = telemetry.metrics.get("top_score", 0.0)
 
-    if not context.strip() or top_score < MIN_ACCEPTABLE_TOP_SCORE:
-        answer = "Não encontrei informação suficiente no contexto recuperado."
+    if not context.strip():
+        answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
+        telemetry.logs["prompt"] = ""
+        telemetry.logs["answer"] = answer
+        return answer, sources
+
+    if top_score < MIN_ACCEPTABLE_TOP_SCORE and len(sources) == 0:
+        answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
         telemetry.logs["prompt"] = ""
         telemetry.logs["answer"] = answer
         return answer, sources
@@ -356,19 +604,35 @@ def main():
         telemetry.reset()
         telemetry.logs["question"] = question
 
-        rewritten_question = rewrite_question(question)
+        preprocessed = preprocess_user_input(question)
+
+        if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
+            print("\n" + preprocessed["message"])
+            continue
+
+        effective_question = preprocessed["question"]
+        rewritten_question = rewrite_question(effective_question)
         telemetry.logs["rewritten_question"] = rewritten_question
 
         if not is_in_scope(rewritten_question):
-            answer = "Esta aplicação foi projetada para responder apenas perguntas sobre convenções coletivas de trabalho."
+            answer = (
+                "Posso te ajudar com perguntas sobre convenções coletivas de trabalho, "
+                "como piso salarial, vigência, benefícios, reajuste, jornada e cláusulas específicas."
+            )
             print("\n" + answer)
             continue
 
         context, sources = retrieve_context(embedder, store, rewritten_question)
-        top_score = telemetry.metrics.get("top_score", 0)
+        top_score = telemetry.metrics.get("top_score", 0.0)
 
-        if not context.strip() or top_score < MIN_ACCEPTABLE_TOP_SCORE:
-            answer = "Não encontrei informação suficiente no contexto recuperado."
+        if not context.strip():
+            answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
+            telemetry.logs["answer"] = answer
+            print("\n" + answer)
+            continue
+
+        if top_score < MIN_ACCEPTABLE_TOP_SCORE and len(sources) == 0:
+            answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
             telemetry.logs["answer"] = answer
             print("\n" + answer)
             continue
@@ -385,9 +649,9 @@ def main():
         telemetry.logs["answer"] = answer
 
         print(answer)
-        print("\nFontes utilizadas:")
-        for file, clause in sources:
-            print(f"- {file} | {clause}")
+        print("\nFontes recuperadas:")
+        for line in format_sources_for_display(sources):
+            print(f"- {line}")
 
 
 if __name__ == "__main__":

@@ -202,9 +202,9 @@ def render_chat_history() -> None:
                     render_sources(item.get("sources", []))
 
 
-
 def build_conversation_context(max_turns: int = 6) -> str:
     history = st.session_state.get("chat_history", [])
+
     if not history:
         return ""
 
@@ -218,7 +218,6 @@ def build_conversation_context(max_turns: int = 6) -> str:
         )
 
     return "\n\n".join(parts)
-
 
 def update_prometheus_metrics():
 

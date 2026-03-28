@@ -126,6 +126,56 @@ def is_small_talk(text: str) -> bool:
     return any(p in lowered for p in small_talk_patterns)
 
 
+def is_conversation_question(text: str) -> bool:
+    if not text:
+        return False
+
+    patterns = [
+        "qual foi a primeira pergunta",
+        "qual foi minha primeira pergunta",
+        "qual foi a primiera pergunta",
+        "qual foi a primeira pergunta que lhe fiz",
+        "qual foi a primiera pergunta que lhe fiz",
+        "o que eu perguntei antes",
+        "o que eu perguntei",
+        "qual foi a pergunta anterior",
+        "qual foi minha pergunta anterior",
+        "lembra da pergunta",
+        "o que eu falei antes",
+        "qual foi a primeira coisa que eu perguntei",
+    ]
+
+    lowered = text.lower().strip()
+    return any(p in lowered for p in patterns)
+
+def answer_about_conversation(question: str, conversation_context: str) -> str:
+    if not conversation_context:
+        return "Ainda não há histórico suficiente da conversa para eu responder isso."
+
+    lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
+
+    perguntas = []
+    for line in lines:
+        lowered = line.lower()
+        if lowered.startswith("pergunta anterior"):
+            partes = line.split(":", 1)
+            if len(partes) == 2 and partes[1].strip():
+                perguntas.append(partes[1].strip())
+
+    if not perguntas:
+        return "Não consegui identificar perguntas anteriores no histórico da conversa."
+
+    lowered_question = (question or "").lower()
+
+    if "primeira" in lowered_question or "primiera" in lowered_question:
+        return f'A primeira pergunta que você fez foi: "{perguntas[0]}"'
+
+    if "anterior" in lowered_question or "antes" in lowered_question or "última" in lowered_question or "ultima" in lowered_question:
+        return f'A última pergunta antes desta foi: "{perguntas[-1]}"'
+
+    ultimas = ", ".join([f'"{p}"' for p in perguntas[-3:]])
+    return f"Identifiquei estas perguntas anteriores: {ultimas}"
+
 def is_in_scope(question: str) -> bool:
     keywords = [
         "acordo", "convenção", "convencao", "cláusula", "clausula",
@@ -142,7 +192,8 @@ def is_in_scope(question: str) -> bool:
         "segmento", "setor", "convenções se aplicam", "convencoes se aplicam",
         "aplica", "aplicável", "aplicavel", "obrigação", "obrigacao",
         "deve", "deverá", "devera", "facultativo", "facultativa",
-        "obrigatório", "obrigatorio", "auxílio", "auxilio", "cct", "act"
+        "obrigatório", "obrigatorio", "auxílio", "auxilio", "cct", "act",
+        "vale alimentação", "vale-alimentação", "vale transporte", "vale-transporte"
     ]
     q = (question or "").lower()
     return any(k in q for k in keywords)
@@ -287,6 +338,9 @@ def needs_rewrite(question: str) -> bool:
         "mesmo acordo",
         "o mesmo",
         "a mesma",
+        "tem ",
+        "tem o ",
+        "tem a ",
     ]
 
     return any(q.startswith(prefix) for prefix in continuation_starts)
@@ -340,6 +394,8 @@ def rewrite_question(question: str, conversation_context: str = "") -> str:
         ("e o vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
         ("e o auxílio alimentação", "auxílio alimentação", "auxilio alimentação"): "Há previsão de auxílio-alimentação na mesma convenção coletiva da pergunta anterior?",
         ("e a jornada", "jornada"): "Como a mesma convenção coletiva da pergunta anterior trata a jornada de trabalho?",
+        ("tem vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
+        ("tem vale alimentação",): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
     }
 
     for triggers, rewritten in explicit_patterns.items():
@@ -367,6 +423,7 @@ def rewrite_question_with_llm(question: str, conversation_context: str = "") -> 
     prompt = f"""
 Você receberá o histórico recente de uma conversa e a pergunta atual do usuário.
 Reescreva a pergunta atual para que ela fique independente, completa e adequada para busca semântica em convenções coletivas de trabalho.
+Se a pergunta atual for claramente independente, mantenha o sentido original.
 Não responda a pergunta.
 Não invente fatos.
 Apenas devolva a pergunta reescrita.
@@ -640,6 +697,12 @@ def answer_question(question, conversation_context=""):
 
     preprocessed = preprocess_user_input(question)
 
+    if is_conversation_question(question):
+        answer = answer_about_conversation(question, conversation_context)
+        telemetry.logs["answer"] = answer
+        reset_empty_metrics()
+        return answer, []
+
     if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
         answer = preprocessed["message"]
         telemetry.logs["answer"] = answer
@@ -709,6 +772,12 @@ def main():
         telemetry.logs["question"] = question
 
         preprocessed = preprocess_user_input(question)
+
+        if is_conversation_question(question):
+            answer = "No modo terminal, perguntas sobre histórico só funcionam se você passar conversation_context."
+            telemetry.logs["answer"] = answer
+            print("\n" + answer)
+            continue
 
         if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
             print("\n" + preprocessed["message"])

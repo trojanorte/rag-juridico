@@ -71,6 +71,39 @@ def is_greeting(text: str) -> bool:
     return any(lowered == g or lowered.startswith(g + " ") for g in greetings)
 
 
+def detect_greeting_type(text: str) -> str | None:
+    lowered = (text or "").lower().strip()
+
+    if lowered.startswith("bom dia"):
+        return "bom dia"
+    if lowered.startswith("boa tarde"):
+        return "boa tarde"
+    if lowered.startswith("boa noite"):
+        return "boa noite"
+    if lowered in {"oi", "olá", "ola", "e aí", "ei", "hello", "hi"}:
+        return "olá"
+
+    return None
+
+
+def build_greeting_message(text: str) -> str:
+    greeting_type = detect_greeting_type(text)
+
+    if greeting_type == "bom dia":
+        saudacao = "Bom dia"
+    elif greeting_type == "boa tarde":
+        saudacao = "Boa tarde"
+    elif greeting_type == "boa noite":
+        saudacao = "Boa noite"
+    else:
+        saudacao = "Olá"
+
+    return (
+        f"{saudacao}! Pode me perguntar sobre cláusulas, benefícios, piso, "
+        f"vigência, reajuste e outras regras de convenções coletivas."
+    )
+
+
 def is_small_talk(text: str) -> bool:
     if not text:
         return False
@@ -175,7 +208,7 @@ def preprocess_user_input(question: str):
     if is_greeting(q) and not is_in_scope(q):
         return {
             "type": "greeting",
-            "message": "Bom dia! Pode me perguntar sobre cláusulas, benefícios, piso, vigência, reajuste e outras regras de convenções coletivas.",
+            "message": build_greeting_message(q),
             "question": "",
         }
 
@@ -191,7 +224,10 @@ def preprocess_user_input(question: str):
     if is_small_talk(q) and not is_in_scope(q):
         return {
             "type": "small_talk",
-            "message": "Posso te ajudar com perguntas sobre convenções coletivas de trabalho. Mande a cláusula, benefício ou obrigação que você quer verificar.",
+            "message": (
+                "Posso te ajudar com perguntas sobre convenções coletivas de trabalho. "
+                "Mande a cláusula, benefício ou obrigação que você quer verificar."
+            ),
             "question": "",
         }
 
@@ -280,7 +316,7 @@ def extract_last_user_question(conversation_context: str):
 def rewrite_question(question: str, conversation_context: str = "") -> str:
     q = (question or "").strip()
 
-    if not conversation_context or not needs_rewrite(q):
+    if not conversation_context:
         return q
 
     last_user_question = extract_last_user_question(conversation_context)
@@ -302,13 +338,64 @@ def rewrite_question(question: str, conversation_context: str = "") -> str:
         ("e as horas extras", "horas extras"): "Como a mesma convenção coletiva da pergunta anterior trata as horas extras?",
         ("e o vale alimentação", "vale alimentação", "vale-alimentação"): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
         ("e o vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
+        ("e o auxílio alimentação", "auxílio alimentação", "auxilio alimentação"): "Há previsão de auxílio-alimentação na mesma convenção coletiva da pergunta anterior?",
+        ("e a jornada", "jornada"): "Como a mesma convenção coletiva da pergunta anterior trata a jornada de trabalho?",
     }
 
     for triggers, rewritten in explicit_patterns.items():
         if any(lowered == t or lowered.startswith(t + " ") or lowered == f"{t}?" for t in triggers):
             return rewritten
 
+    if needs_rewrite(q):
+        return f"{q} considerando o contexto da pergunta anterior: {last_user_question}"
+
+    if len(q.split()) <= 6:
+        return f"{q} considerando o contexto da pergunta anterior: {last_user_question}"
+
     return q
+
+
+@measure("rewrite_time")
+def rewrite_question_with_llm(question: str, conversation_context: str = "") -> str:
+    q = (question or "").strip()
+
+    if not conversation_context:
+        return q
+
+    client = get_openai_client()
+
+    prompt = f"""
+Você receberá o histórico recente de uma conversa e a pergunta atual do usuário.
+Reescreva a pergunta atual para que ela fique independente, completa e adequada para busca semântica em convenções coletivas de trabalho.
+Não responda a pergunta.
+Não invente fatos.
+Apenas devolva a pergunta reescrita.
+
+Histórico:
+{conversation_context}
+
+Pergunta atual:
+{q}
+
+Pergunta reescrita:
+""".strip()
+
+    try:
+        response = client.responses.create(
+            model=MODEL_NAME,
+            input=prompt,
+            temperature=0,
+            max_output_tokens=120,
+        )
+
+        rewritten = getattr(response, "output_text", "") or ""
+        rewritten = rewritten.strip()
+
+        return rewritten or rewrite_question(q, conversation_context)
+
+    except Exception:
+        logging.exception("Falha ao reescrever pergunta com LLM; usando fallback local.")
+        return rewrite_question(q, conversation_context)
 
 
 def trim_text(text: str, max_chars: int) -> str:
@@ -561,18 +648,18 @@ def answer_question(question, conversation_context=""):
 
     effective_question = preprocessed["question"]
 
-    # Gate primário: perguntas claramente fora do escopo
-    # não devem ser "salvas" por uma reescrita artificial.
     if not is_in_scope(effective_question) and not needs_rewrite(effective_question):
         answer = out_of_scope_answer()
         telemetry.logs["answer"] = answer
         reset_empty_metrics()
         return answer, []
 
-    rewritten_question = rewrite_question(effective_question, conversation_context)
+    rewritten_question = rewrite_question_with_llm(
+        question=effective_question,
+        conversation_context=conversation_context,
+    )
     telemetry.logs["rewritten_question"] = rewritten_question
 
-    # Gate secundário: depois da reescrita conservadora
     if not is_in_scope(rewritten_question):
         answer = out_of_scope_answer()
         telemetry.logs["answer"] = answer
@@ -635,7 +722,10 @@ def main():
             print("\n" + answer)
             continue
 
-        rewritten_question = rewrite_question(effective_question)
+        rewritten_question = rewrite_question_with_llm(
+            question=effective_question,
+            conversation_context="",
+        )
         telemetry.logs["rewritten_question"] = rewritten_question
 
         if not is_in_scope(rewritten_question):

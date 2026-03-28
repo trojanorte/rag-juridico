@@ -203,19 +203,15 @@ def render_chat_history() -> None:
 
 
 
-def build_conversation_context(max_turns: int = 3) -> str:
-
+def build_conversation_context(max_turns: int = 6) -> str:
     history = st.session_state.get("chat_history", [])
-
     if not history:
         return ""
 
     recent = history[-max_turns:]
-
     parts = []
 
     for i, item in enumerate(recent, start=1):
-
         parts.append(
             f"Pergunta anterior {i}: {item['question']}\n"
             f"Resposta anterior {i}: {item['answer']}"

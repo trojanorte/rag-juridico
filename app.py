@@ -1,7 +1,7 @@
 import uuid
 import streamlit as st
 
-from rag_generator import answer_question
+from rag_generator import answer_question, preprocess_user_input
 from observability.telemetry import telemetry
 from observability.debug_store import init_db, save_query_log
 from observability.prom_metrics import (
@@ -278,9 +278,12 @@ def process_question(question: str) -> None:
 
         update_prometheus_metrics()
 
+        processed = preprocess_user_input(question)
+        question_for_history = processed["question"] if processed["question"] else question
+
         st.session_state["chat_history"].append(
             {
-                "question": question,
+                "question": question_for_history,
                 "answer": answer,
                 "sources": sources,
             }

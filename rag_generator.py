@@ -125,27 +125,30 @@ def is_small_talk(text: str) -> bool:
     lowered = text.lower().strip()
     return any(p in lowered for p in small_talk_patterns)
 
-
 def is_conversation_question(text: str) -> bool:
     if not text:
         return False
 
+    lowered = text.lower().strip()
+
     patterns = [
         "qual foi a primeira pergunta",
         "qual foi minha primeira pergunta",
+        "qual foi a primira pergunta",
         "qual foi a primiera pergunta",
-        "qual foi a primeira pergunta que lhe fiz",
-        "qual foi a primiera pergunta que lhe fiz",
-        "o que eu perguntei antes",
-        "o que eu perguntei",
         "qual foi a pergunta anterior",
         "qual foi minha pergunta anterior",
-        "lembra da pergunta",
+        "qual foi a última pergunta",
+        "qual foi a ultima pergunta",
+        "o que eu perguntei antes",
+        "o que eu perguntei primeiro",
+        "eu perguntei primeiro sobre o que",
+        "eu perguntei primiero sobre o que",
+        "eu perguntei primiro sobre o que",
+        "lembra da pergunta anterior",
         "o que eu falei antes",
-        "qual foi a primeira coisa que eu perguntei",
     ]
 
-    lowered = text.lower().strip()
     return any(p in lowered for p in patterns)
 
 def answer_about_conversation(question: str, conversation_context: str) -> str:

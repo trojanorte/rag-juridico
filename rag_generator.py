@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import unicodedata
 from functools import lru_cache
 
 import streamlit as st
@@ -58,21 +59,41 @@ def normalize_score(score):
         return 0.0
 
 
-def is_greeting(text: str) -> bool:
-    if not text:
+def normalize_text(text: str) -> str:
+    text = (text or "").lower().strip()
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = re.sub(r"[^\w\s?]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def is_gibberish(text: str) -> bool:
+    t = normalize_text(text)
+    if not t:
         return False
 
+    if len(t) >= 8 and " " not in t:
+        vowels = sum(1 for c in t if c in "aeiou")
+        if vowels <= 1:
+            return True
+
+    return False
+
+
+def is_greeting(text: str) -> bool:
+    lowered = normalize_text(text)
+
     greetings = [
-        "oi", "olá", "ola", "bom dia", "boa tarde", "boa noite",
-        "e aí", "ei", "hello", "hi"
+        "oi", "ola", "bom dia", "boa tarde", "boa noite",
+        "e ai", "ei", "hello", "hi"
     ]
 
-    lowered = text.lower().strip()
     return any(lowered == g or lowered.startswith(g + " ") for g in greetings)
 
 
 def detect_greeting_type(text: str) -> str | None:
-    lowered = (text or "").lower().strip()
+    lowered = normalize_text(text)
 
     if lowered.startswith("bom dia"):
         return "bom dia"
@@ -80,8 +101,8 @@ def detect_greeting_type(text: str) -> str | None:
         return "boa tarde"
     if lowered.startswith("boa noite"):
         return "boa noite"
-    if lowered in {"oi", "olá", "ola", "e aí", "ei", "hello", "hi"}:
-        return "olá"
+    if lowered in {"oi", "ola", "e ai", "ei", "hello", "hi"}:
+        return "ola"
 
     return None
 
@@ -105,16 +126,14 @@ def build_greeting_message(text: str) -> str:
 
 
 def is_small_talk(text: str) -> bool:
-    if not text:
-        return False
+    lowered = normalize_text(text)
 
     small_talk_patterns = [
         "meu dia foi",
         "tudo bem",
         "como vai",
-        "como você está",
-        "como vc está",
-        "como esta",
+        "como voce esta",
+        "como vc esta",
         "estou bem",
         "que legal",
         "legal",
@@ -122,24 +141,44 @@ def is_small_talk(text: str) -> bool:
         "haha",
     ]
 
-    lowered = text.lower().strip()
     return any(p in lowered for p in small_talk_patterns)
 
-def is_conversation_question(text: str) -> bool:
-    if not text:
-        return False
 
-    lowered = text.lower().strip()
+def is_topic_question(text: str) -> bool:
+    lowered = normalize_text(text)
+
+    patterns = [
+        "estamos falando sobre o que",
+        "sobre o que estamos falando",
+        "qual o assunto",
+        "qual e o assunto",
+        "qual tema da conversa",
+        "qual o tema",
+        "qual e o tema",
+        "sobre o que e a conversa",
+    ]
+    return any(p in lowered for p in patterns)
+
+
+def is_conversation_question(text: str) -> bool:
+    lowered = normalize_text(text)
 
     patterns = [
         "qual foi a primeira pergunta",
         "qual foi minha primeira pergunta",
+        "qual a primeira pergunta",
+        "qual a primira pergunta",
+        "qual a primiera pergunta",
         "qual foi a primira pergunta",
         "qual foi a primiera pergunta",
+        "qual foi a primeira pergunta que eu fiz",
         "qual foi a pergunta anterior",
+        "qual minha pergunta anterior",
         "qual foi minha pergunta anterior",
-        "qual foi a última pergunta",
         "qual foi a ultima pergunta",
+        "qual foi a última pergunta",
+        "qual a ultima pergunta",
+        "qual a última pergunta",
         "o que eu perguntei antes",
         "o que eu perguntei primeiro",
         "eu perguntei primeiro sobre o que",
@@ -151,33 +190,97 @@ def is_conversation_question(text: str) -> bool:
 
     return any(p in lowered for p in patterns)
 
+
+def get_conversation_state():
+    if "conversation_state" not in st.session_state:
+        st.session_state["conversation_state"] = {
+            "first_legal_question": None,
+            "last_legal_question": None,
+            "current_topic": None,
+            "recent_legal_questions": [],
+        }
+    return st.session_state["conversation_state"]
+
+
+def infer_topic(question_processed: str, answer: str = "") -> str:
+    q = normalize_text(question_processed)
+    a = normalize_text(answer)
+
+    text = f"{q} {a}"
+
+    if any(k in text for k in ["vale alimentacao", "vale refeicao", "cesta", "auxilio alimentacao"]):
+        return "benefícios da convenção, com foco em vale alimentação e auxílio alimentação"
+
+    if "vale transporte" in text:
+        return "benefícios da convenção, com foco em vale transporte"
+
+    if "reajuste" in text or "data base" in text:
+        return "condições econômicas da convenção, com foco em reajuste salarial"
+
+    if "jornada" in text or "horas extras" in text or "banco de horas" in text:
+        return "jornada de trabalho e regras de tempo"
+
+    if "insalubridade" in text or "periculosidade" in text or "adicional noturno" in text:
+        return "adicionais trabalhistas previstos na convenção"
+
+    if "seguro" in text or "plano de saude" in text or "assistencia medica" in text:
+        return "benefícios e proteção do empregado"
+
+    return "cláusulas e benefícios da convenção coletiva"
+
+
+def update_conversation_state(question_processed: str, answer: str = "") -> None:
+    if not question_processed:
+        return
+
+    state = get_conversation_state()
+
+    if state["first_legal_question"] is None:
+        state["first_legal_question"] = question_processed
+
+    state["last_legal_question"] = question_processed
+    state["recent_legal_questions"].append(question_processed)
+    state["recent_legal_questions"] = state["recent_legal_questions"][-5:]
+    state["current_topic"] = infer_topic(question_processed, answer)
+
+
 def answer_about_conversation(question: str, conversation_context: str) -> str:
-    if not conversation_context:
-        return "Ainda não há histórico suficiente da conversa para eu responder isso."
+    state = get_conversation_state()
+    lowered_question = normalize_text(question)
 
-    lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
+    if "primeira" in lowered_question or "primira" in lowered_question or "primiera" in lowered_question or "primeiro" in lowered_question or "primiero" in lowered_question:
+        first_q = state.get("first_legal_question")
+        if first_q:
+            return f'A primeira pergunta jurídica que você fez foi: "{first_q}"'
+        return "Ainda não identifiquei uma pergunta jurídica anterior."
 
-    perguntas = []
-    for line in lines:
-        lowered = line.lower()
-        if lowered.startswith("pergunta anterior"):
-            partes = line.split(":", 1)
-            if len(partes) == 2 and partes[1].strip():
-                perguntas.append(partes[1].strip())
+    if "ultima" in lowered_question or "última" in lowered_question or "anterior" in lowered_question or "antes" in lowered_question:
+        last_q = state.get("last_legal_question")
+        if last_q:
+            return f'A última pergunta jurídica antes desta foi: "{last_q}"'
+        return "Ainda não identifiquei uma pergunta jurídica anterior."
 
-    if not perguntas:
-        return "Não consegui identificar perguntas anteriores no histórico da conversa."
+    recent = state.get("recent_legal_questions", [])
+    if recent:
+        ultimas = ", ".join([f'"{p}"' for p in recent[-3:]])
+        return f"Identifiquei estas perguntas jurídicas recentes: {ultimas}"
 
-    lowered_question = (question or "").lower()
+    return "Ainda não há histórico suficiente da conversa para eu responder isso."
 
-    if "primeira" in lowered_question or "primiera" in lowered_question:
-        return f'A primeira pergunta que você fez foi: "{perguntas[0]}"'
 
-    if "anterior" in lowered_question or "antes" in lowered_question or "última" in lowered_question or "ultima" in lowered_question:
-        return f'A última pergunta antes desta foi: "{perguntas[-1]}"'
+def answer_about_topic() -> str:
+    state = get_conversation_state()
+    topic = state.get("current_topic")
 
-    ultimas = ", ".join([f'"{p}"' for p in perguntas[-3:]])
-    return f"Identifiquei estas perguntas anteriores: {ultimas}"
+    if topic:
+        return f"Estamos falando sobre {topic}."
+
+    last_q = state.get("last_legal_question")
+    if last_q:
+        return f'Até aqui, sua última pergunta jurídica foi: "{last_q}"'
+
+    return "Ainda não consegui consolidar um assunto principal da conversa."
+
 
 def is_in_scope(question: str) -> bool:
     keywords = [
@@ -196,9 +299,9 @@ def is_in_scope(question: str) -> bool:
         "aplica", "aplicável", "aplicavel", "obrigação", "obrigacao",
         "deve", "deverá", "devera", "facultativo", "facultativa",
         "obrigatório", "obrigatorio", "auxílio", "auxilio", "cct", "act",
-        "vale alimentação", "vale-alimentação", "vale transporte", "vale-transporte"
+        "inss", "vale alimentação", "vale alimentacao", "vale-transporte", "vale transporte",
     ]
-    q = (question or "").lower()
+    q = normalize_text(question)
     return any(k in q for k in keywords)
 
 
@@ -206,47 +309,55 @@ def extract_legal_question(text: str) -> str:
     if not text:
         return ""
 
+    normalized = normalize_text(text)
+
     triggers = [
-        "existe",
-        "há",
-        "ha",
-        "qual",
-        "quais",
-        "o que",
-        "obriga",
-        "obrigatório",
-        "obrigatorio",
-        "facultativo",
-        "vigência",
-        "vigencia",
-        "reajuste",
-        "piso",
-        "cláusula",
-        "clausula",
-        "assistência médica",
-        "assistencia medica",
-        "seguro",
-        "plano de saúde",
-        "plano de saude",
-        "convenção",
-        "convencao",
-        "categoria",
-        "categorias",
-        "benefício",
-        "beneficio",
-        "jornada",
-        "vale",
+        "existe", "ha", "qual", "quais", "o que", "obriga", "obrigatorio",
+        "facultativo", "vigencia", "reajuste", "piso", "clausula",
+        "assistencia medica", "seguro", "plano de saude", "convencao",
+        "categoria", "categorias", "beneficio", "jornada", "vale", "inss"
     ]
 
-    lowered = text.lower()
-    positions = [lowered.find(t) for t in triggers if lowered.find(t) != -1]
+    positions = [normalized.find(t) for t in triggers if normalized.find(t) != -1]
 
     if not positions:
         return text.strip()
 
     start = min(positions)
-    extracted = text[start:].strip(" ,.-")
-    return extracted.strip()
+
+    original_lower = text.lower()
+    if start < len(original_lower):
+        extracted = text[start:].strip(" ,.-")
+        return extracted.strip()
+
+    return text.strip()
+
+
+def extract_legal_fragment(text: str) -> str:
+    if not text:
+        return ""
+
+    original = text.strip()
+    normalized = normalize_text(original)
+
+    fragments = re.split(r"[,.;/]| e ", normalized)
+
+    legal_candidates = []
+    legal_keywords = [
+        "vale", "reajuste", "inss", "jornada", "piso", "seguro",
+        "clausula", "beneficio", "vigencia", "transporte", "alimentacao",
+        "horas extras", "insalubridade", "periculosidade", "plano de saude",
+    ]
+
+    for frag in fragments:
+        frag = frag.strip()
+        if any(k in frag for k in legal_keywords):
+            legal_candidates.append(frag)
+
+    if legal_candidates:
+        return legal_candidates[-1]
+
+    return extract_legal_question(original)
 
 
 def preprocess_user_input(question: str):
@@ -259,6 +370,16 @@ def preprocess_user_input(question: str):
             "question": "",
         }
 
+    if is_gibberish(q):
+        return {
+            "type": "noise",
+            "message": (
+                "Não consegui entender sua mensagem. "
+                "Pode reformular a pergunta sobre a convenção coletiva?"
+            ),
+            "question": "",
+        }
+
     if is_greeting(q) and not is_in_scope(q):
         return {
             "type": "greeting",
@@ -266,13 +387,16 @@ def preprocess_user_input(question: str):
             "question": "",
         }
 
+    extracted_fragment = extract_legal_fragment(q)
     extracted_question = extract_legal_question(q)
 
-    if extracted_question != q and is_in_scope(extracted_question):
+    best_candidate = extracted_fragment if is_in_scope(extracted_fragment) else extracted_question
+
+    if best_candidate != q and is_in_scope(best_candidate):
         return {
             "type": "mixed",
             "message": None,
-            "question": extracted_question,
+            "question": best_candidate,
         }
 
     if is_small_talk(q) and not is_in_scope(q):
@@ -315,7 +439,7 @@ def clean_answer(answer: str) -> str:
 
 
 def needs_rewrite(question: str) -> bool:
-    q = (question or "").lower().strip()
+    q = normalize_text(question)
 
     continuation_starts = [
         "e ",
@@ -337,7 +461,7 @@ def needs_rewrite(question: str) -> bool:
         "esse",
         "ele",
         "ela",
-        "mesma convenção",
+        "mesma convencao",
         "mesmo acordo",
         "o mesmo",
         "a mesma",
@@ -346,7 +470,14 @@ def needs_rewrite(question: str) -> bool:
         "tem a ",
     ]
 
-    return any(q.startswith(prefix) for prefix in continuation_starts)
+    short_followup = len(q.split()) <= 4 and any(
+        k in q for k in [
+            "reajuste", "inss", "vale", "seguro", "jornada",
+            "piso", "vigencia", "transporte", "alimentacao"
+        ]
+    )
+
+    return any(q.startswith(prefix) for prefix in continuation_starts) or short_followup
 
 
 def extract_last_user_question(conversation_context: str):
@@ -356,13 +487,8 @@ def extract_last_user_question(conversation_context: str):
     history_lines = [line.strip() for line in conversation_context.splitlines() if line.strip()]
 
     for line in reversed(history_lines):
-        lowered = line.lower()
+        lowered = normalize_text(line)
         if lowered.startswith("pergunta anterior"):
-            parts = line.split(":", 1)
-            if len(parts) == 2 and parts[1].strip():
-                return parts[1].strip()
-
-        if lowered.startswith("usuário:") or lowered.startswith("usuario:"):
             parts = line.split(":", 1)
             if len(parts) == 2 and parts[1].strip():
                 return parts[1].strip()
@@ -380,25 +506,24 @@ def rewrite_question(question: str, conversation_context: str = "") -> str:
     if not last_user_question:
         return q
 
-    lowered = q.lower()
+    lowered = normalize_text(q)
 
     explicit_patterns = {
-        ("e o reajuste", "reajuste"): "Qual é o reajuste salarial previsto na mesma convenção coletiva da pergunta anterior?",
-        ("e o seguro", "seguro"): "Existe cláusula sobre seguro na mesma convenção coletiva da pergunta anterior?",
-        ("e a vigência", "vigência", "vigencia"): "Qual é a vigência da mesma convenção coletiva da pergunta anterior?",
-        ("e o piso", "piso"): "Qual é o piso salarial previsto na mesma convenção coletiva da pergunta anterior?",
-        ("e o plano de saúde", "plano de saúde", "plano de saude"): "Há previsão de plano de saúde na mesma convenção coletiva da pergunta anterior?",
-        ("e a assistência médica", "assistência médica", "assistencia medica"): "Há previsão de assistência médica na mesma convenção coletiva da pergunta anterior?",
-        ("e o adicional noturno", "adicional noturno"): "Existe cláusula sobre adicional noturno na mesma convenção coletiva da pergunta anterior?",
-        ("e a insalubridade", "insalubridade"): "Existe cláusula sobre adicional de insalubridade na mesma convenção coletiva da pergunta anterior?",
-        ("e a periculosidade", "periculosidade"): "Existe cláusula sobre adicional de periculosidade na mesma convenção coletiva da pergunta anterior?",
-        ("e as horas extras", "horas extras"): "Como a mesma convenção coletiva da pergunta anterior trata as horas extras?",
-        ("e o vale alimentação", "vale alimentação", "vale-alimentação"): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
-        ("e o vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
-        ("e o auxílio alimentação", "auxílio alimentação", "auxilio alimentação"): "Há previsão de auxílio-alimentação na mesma convenção coletiva da pergunta anterior?",
-        ("e a jornada", "jornada"): "Como a mesma convenção coletiva da pergunta anterior trata a jornada de trabalho?",
-        ("tem vale transporte", "vale transporte", "vale-transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
-        ("tem vale alimentação",): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
+        ("reajuste", "e o reajuste"): "Qual é o reajuste salarial previsto na mesma convenção coletiva da pergunta anterior?",
+        ("seguro", "e o seguro"): "Existe cláusula sobre seguro na mesma convenção coletiva da pergunta anterior?",
+        ("vigencia", "e a vigencia"): "Qual é a vigência da mesma convenção coletiva da pergunta anterior?",
+        ("piso", "e o piso"): "Qual é o piso salarial previsto na mesma convenção coletiva da pergunta anterior?",
+        ("plano de saude", "e o plano de saude"): "Há previsão de plano de saúde na mesma convenção coletiva da pergunta anterior?",
+        ("assistencia medica", "e a assistencia medica"): "Há previsão de assistência médica na mesma convenção coletiva da pergunta anterior?",
+        ("adicional noturno", "e o adicional noturno"): "Existe cláusula sobre adicional noturno na mesma convenção coletiva da pergunta anterior?",
+        ("insalubridade", "e a insalubridade"): "Existe cláusula sobre adicional de insalubridade na mesma convenção coletiva da pergunta anterior?",
+        ("periculosidade", "e a periculosidade"): "Existe cláusula sobre adicional de periculosidade na mesma convenção coletiva da pergunta anterior?",
+        ("horas extras", "e as horas extras"): "Como a mesma convenção coletiva da pergunta anterior trata as horas extras?",
+        ("vale alimentacao", "vale alimentação", "vale alimentacao", "e o vale alimentacao"): "Há previsão de vale-alimentação na mesma convenção coletiva da pergunta anterior?",
+        ("vale transporte", "vale-transporte", "e o vale transporte"): "Há previsão de vale-transporte na mesma convenção coletiva da pergunta anterior?",
+        ("auxilio alimentacao",): "Há previsão de auxílio-alimentação na mesma convenção coletiva da pergunta anterior?",
+        ("jornada", "e a jornada"): "Como a mesma convenção coletiva da pergunta anterior trata a jornada de trabalho?",
+        ("inss", "e o inss"): "Há alguma previsão relacionada a INSS ou descontos previdenciários na mesma convenção coletiva da pergunta anterior?",
     }
 
     for triggers, rewritten in explicit_patterns.items():
@@ -406,9 +531,6 @@ def rewrite_question(question: str, conversation_context: str = "") -> str:
             return rewritten
 
     if needs_rewrite(q):
-        return f"{q} considerando o contexto da pergunta anterior: {last_user_question}"
-
-    if len(q.split()) <= 6:
         return f"{q} considerando o contexto da pergunta anterior: {last_user_question}"
 
     return q
@@ -426,7 +548,7 @@ def rewrite_question_with_llm(question: str, conversation_context: str = "") -> 
     prompt = f"""
 Você receberá o histórico recente de uma conversa e a pergunta atual do usuário.
 Reescreva a pergunta atual para que ela fique independente, completa e adequada para busca semântica em convenções coletivas de trabalho.
-Se a pergunta atual for claramente independente, mantenha o sentido original.
+Se a pergunta atual já estiver clara sozinha, preserve o sentido original.
 Não responda a pergunta.
 Não invente fatos.
 Apenas devolva a pergunta reescrita.
@@ -700,13 +822,19 @@ def answer_question(question, conversation_context=""):
 
     preprocessed = preprocess_user_input(question)
 
+    if is_topic_question(question):
+        answer = answer_about_topic()
+        telemetry.logs["answer"] = answer
+        reset_empty_metrics()
+        return answer, []
+
     if is_conversation_question(question):
         answer = answer_about_conversation(question, conversation_context)
         telemetry.logs["answer"] = answer
         reset_empty_metrics()
         return answer, []
 
-    if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
+    if preprocessed["type"] in {"empty", "greeting", "small_talk", "noise"}:
         answer = preprocessed["message"]
         telemetry.logs["answer"] = answer
         reset_empty_metrics()
@@ -757,6 +885,8 @@ def answer_question(question, conversation_context=""):
     raw_answer = generate_answer(prompt)
     answer = postprocess_answer(raw_answer, sources)
 
+    update_conversation_state(effective_question, answer)
+
     telemetry.logs["answer"] = answer
     return answer, sources
 
@@ -774,15 +904,17 @@ def main():
         telemetry.reset()
         telemetry.logs["question"] = question
 
-        preprocessed = preprocess_user_input(question)
-
-        if is_conversation_question(question):
-            answer = "No modo terminal, perguntas sobre histórico só funcionam se você passar conversation_context."
-            telemetry.logs["answer"] = answer
-            print("\n" + answer)
+        if is_topic_question(question):
+            print("\n" + answer_about_topic())
             continue
 
-        if preprocessed["type"] in {"empty", "greeting", "small_talk"}:
+        if is_conversation_question(question):
+            print("\nNo modo terminal, perguntas sobre histórico dependem do estado da sessão Streamlit.")
+            continue
+
+        preprocessed = preprocess_user_input(question)
+
+        if preprocessed["type"] in {"empty", "greeting", "small_talk", "noise"}:
             print("\n" + preprocessed["message"])
             continue
 
@@ -829,6 +961,8 @@ def main():
         print("\nGerando resposta...\n")
         raw_answer = generate_answer(prompt)
         answer = postprocess_answer(raw_answer, sources)
+
+        update_conversation_state(effective_question, answer)
 
         telemetry.logs["answer"] = answer
 

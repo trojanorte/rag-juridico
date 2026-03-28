@@ -1,7 +1,7 @@
 import uuid
 import streamlit as st
 
-from rag_generator import answer_question, preprocess_user_input
+from rag_generator import answer_question, preprocess_user_input, get_conversation_state
 from observability.telemetry import telemetry
 from observability.debug_store import init_db, save_query_log
 from observability.prom_metrics import (
@@ -32,10 +32,6 @@ SUGGESTED_QUESTIONS = [
 ]
 
 
-# --------------------------------------------------
-# SESSION STATE
-# --------------------------------------------------
-
 def init_session_state() -> None:
 
     if "session_id" not in st.session_state:
@@ -50,10 +46,14 @@ def init_session_state() -> None:
     if "metrics_started" not in st.session_state:
         st.session_state["metrics_started"] = False
 
+    if "conversation_state" not in st.session_state:
+        st.session_state["conversation_state"] = {
+            "first_legal_question": None,
+            "last_legal_question": None,
+            "current_topic": None,
+            "recent_legal_questions": [],
+        }
 
-# --------------------------------------------------
-# SIDEBAR
-# --------------------------------------------------
 
 def render_sidebar() -> None:
 
@@ -94,9 +94,19 @@ def render_sidebar() -> None:
 
         st.divider()
 
+        state = get_conversation_state()
+        if state.get("current_topic"):
+            st.caption(f"Assunto atual: {state['current_topic']}")
+
         if st.button("🗑 Limpar conversa", use_container_width=True):
             st.session_state["chat_history"] = []
             st.session_state["pending_question"] = None
+            st.session_state["conversation_state"] = {
+                "first_legal_question": None,
+                "last_legal_question": None,
+                "current_topic": None,
+                "recent_legal_questions": [],
+            }
             st.rerun()
 
 
@@ -118,7 +128,6 @@ def render_header() -> None:
     st.divider()
 
 
-
 def render_suggested_questions() -> None:
 
     st.subheader("Perguntas sugeridas")
@@ -132,7 +141,6 @@ def render_suggested_questions() -> None:
             st.rerun()
 
 
-
 def render_sources(sources) -> None:
 
     if not sources:
@@ -143,7 +151,6 @@ def render_sources(sources) -> None:
 
     for idx, src in enumerate(sources, start=1):
 
-        # formato antigo (tupla)
         if isinstance(src, (tuple, list)) and len(src) >= 2:
 
             file_name = src[0]
@@ -155,7 +162,6 @@ def render_sources(sources) -> None:
 
             continue
 
-        # formato novo (dict)
         if isinstance(src, dict):
 
             arquivo = src.get("arquivo", "arquivo_desconhecido")
@@ -190,7 +196,7 @@ def render_chat_history() -> None:
     for idx, item in enumerate(history, start=1):
 
         with st.chat_message("user", avatar="👤"):
-            st.markdown(item["question"])
+            st.markdown(item.get("question_raw", item.get("question", "")))
 
         with st.chat_message("assistant", avatar="🤖"):
             st.markdown(item["answer"])
@@ -212,12 +218,18 @@ def build_conversation_context(max_turns: int = 6) -> str:
     parts = []
 
     for i, item in enumerate(recent, start=1):
+        pergunta_contexto = item.get(
+            "question_processed",
+            item.get("question_raw", item.get("question", ""))
+        )
+
         parts.append(
-            f"Pergunta anterior {i}: {item['question']}\n"
+            f"Pergunta anterior {i}: {pergunta_contexto}\n"
             f"Resposta anterior {i}: {item['answer']}"
         )
 
     return "\n\n".join(parts)
+
 
 def update_prometheus_metrics():
 
@@ -279,11 +291,12 @@ def process_question(question: str) -> None:
         update_prometheus_metrics()
 
         processed = preprocess_user_input(question)
-        question_for_history = processed["question"] if processed["question"] else question
+        question_processed = processed["question"] if processed["question"] else question
 
         st.session_state["chat_history"].append(
             {
-                "question": question_for_history,
+                "question_raw": question,
+                "question_processed": question_processed,
                 "answer": answer,
                 "sources": sources,
             }
@@ -308,7 +321,6 @@ def process_question(question: str) -> None:
         st.error(f"Erro na consulta: {exc}")
 
 
-
 def main() -> None:
 
     init_db()
@@ -318,7 +330,7 @@ def main() -> None:
 
         try:
             start_metrics_server(8000)
-        except:
+        except Exception:
             pass
 
         st.session_state["metrics_started"] = True

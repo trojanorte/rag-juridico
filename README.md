@@ -29,7 +29,7 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Ative o ambiente virtual conforme seu shell. Configure `OPENAI_API_KEY`, `LEXRAG_ACCESS_PASSWORD` e `LEXRAG_ADMIN_PASSWORD` por variável de ambiente ou `st.secrets`. Se apenas `ADMIN_PASSWORD` legado estiver configurado, ele também protege o chat. O app fecha o acesso quando não há credencial configurada. `.env.example` documenta as variáveis; `.env` e `.streamlit/secrets.toml` são ignorados pelo Git. O arquivo `.env` não é carregado automaticamente: exporte as variáveis no ambiente ou use os secrets do Streamlit.
+Ative o ambiente virtual conforme seu shell. Configure `OPENAI_API_KEY` para gerar respostas e `LEXRAG_ADMIN_PASSWORD` para proteger as páginas Debug, Histórico e Monitoramento, por variável de ambiente ou `st.secrets`. O chat abre sem senha; as páginas administrativas bloqueiam o acesso quando a senha não está configurada. `.env.example` documenta as variáveis; `.env` e `.streamlit/secrets.toml` são ignorados pelo Git. O arquivo `.env` não é carregado automaticamente: exporte as variáveis no ambiente ou use os secrets do Streamlit.
 
 ## Documentos e indexação
 
@@ -49,7 +49,7 @@ O novo índice fica em `vectorstore/versions/<versão>/` com `faiss.index`, `met
 streamlit run app.py
 ```
 
-Após autenticar, selecione uma convenção na barra lateral. Trocar a convenção inicia uma nova conversa para evitar referências cruzadas. O chat mostra o trecho citado, cláusula, nome, score vetorial e `chunk_id` em cada fonte. O bloco “Copiar resposta” usa o botão de cópia do componente de código do Streamlit. As páginas administrativas usam a credencial administrativa compartilhada; não há OAuth ou perfis por usuário. Não exponha a aplicação diretamente à internet sem controle de rede e revisão operacional. O devcontainer é apenas ambiente de desenvolvimento, com CORS/XSRF padrão do Streamlit.
+Ao abrir o chat, selecione uma convenção na barra lateral. Trocar a convenção inicia uma nova conversa para evitar referências cruzadas. O chat mostra o trecho citado, cláusula, nome, score vetorial e `chunk_id` em cada fonte. O bloco “Copiar resposta” usa o botão de cópia do componente de código do Streamlit. As páginas administrativas usam a credencial administrativa compartilhada; não há OAuth ou perfis por usuário. Não exponha a aplicação diretamente à internet sem controle de rede e revisão operacional. O devcontainer é apenas ambiente de desenvolvimento, com CORS/XSRF padrão do Streamlit.
 
 Para inspecionar a busca local:
 

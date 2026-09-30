@@ -1,4 +1,4 @@
-"""Small, fail-closed Streamlit access gate shared by the chat and admin pages."""
+"""Password gate for LexRAG administrative pages."""
 
 import hmac
 import os
@@ -13,17 +13,15 @@ def _secret(name: str) -> str:
         return os.getenv(name, "")
 
 
-def require_access(admin: bool = False) -> None:
-    admin_password = _secret("LEXRAG_ADMIN_PASSWORD") or _secret("ADMIN_PASSWORD")
-    access_password = _secret("LEXRAG_ACCESS_PASSWORD") or admin_password
-    expected = admin_password if admin else access_password
+def require_admin_access() -> None:
+    expected = _secret("LEXRAG_ADMIN_PASSWORD")
     if not expected:
-        st.error("Acesso não configurado. Defina LEXRAG_ACCESS_PASSWORD e LEXRAG_ADMIN_PASSWORD.")
+        st.error("Acesso administrativo não configurado. Defina LEXRAG_ADMIN_PASSWORD.")
         st.stop()
-    key = "lexrag_admin_authenticated" if admin else "lexrag_authenticated"
+    key = "lexrag_admin_authenticated"
     if st.session_state.get(key):
         return
-    entered = st.text_input("Senha de administração" if admin else "Senha de acesso", type="password", key=key + "_input")
+    entered = st.text_input("Senha de administração", type="password", key=key + "_input")
     if entered and hmac.compare_digest(entered, expected):
         st.session_state[key] = True
         st.rerun()

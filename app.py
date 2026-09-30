@@ -6,7 +6,6 @@ from pathlib import Path
 
 import streamlit as st
 
-from core.auth import require_access
 from core.config import SELECT_DOCUMENT
 from observability.debug_store import init_db, save_query_log
 from observability.prom_metrics import (start_metrics_server, rag_requests_total, rag_errors_total,
@@ -110,7 +109,6 @@ def process_question(question):
 
 
 def main():
-    require_access()
     init_session()
     init_db()
     try:

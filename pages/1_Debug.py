@@ -1,8 +1,8 @@
 import streamlit as st
-from core.auth import require_access
+from core.auth import require_admin_access
 from observability.debug_store import init_db, get_recent_logs, get_log_by_id
 st.set_page_config(page_title="Debug do RAG", layout="wide", page_icon="🛠")
-require_access(admin=True)
+require_admin_access()
 
 init_db()
 

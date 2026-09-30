@@ -1,8 +1,8 @@
 import streamlit as st
-from core.auth import require_access
+from core.auth import require_admin_access
 from observability.debug_store import init_db, get_recent_logs
 st.set_page_config(page_title="Histórico de Consultas", layout="wide", page_icon="🗂️")
-require_access(admin=True)
+require_admin_access()
 
 init_db()
 

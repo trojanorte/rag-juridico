@@ -1,37 +1,70 @@
-# Arquitetura do LexRAG
-
 ```mermaid
-flowchart TD
-  A[DOCX locais] --> B[docx2txt + normalização]
-  B --> C[Cláusulas + parágrafos/sentenças + subchunks]
-  C --> D[Metadados estáveis, hash e posições]
-  D --> E[E5 passage, 768D]
-  E --> F[(FAISS + metadata.jsonl + manifest.json)]
-  F --> G[Publicação atômica via CURRENT]
-  U[Streamlit autenticado] --> S[Seleção explícita da convenção]
-  S --> Q[Pré-processamento; reescrita só em follow-up]
-  Q --> H[E5 query]
-  H --> I[Busca global de candidatos no FAISS]
-  G --> I
-  I --> J[Filtro por document_id e ranking]
-  J --> K[Threshold de score]
-  K -->|sem evidência| N[Recusa controlada]
-  K -->|evidência| L[Contexto com IDs e orçamento de tokens]
-  L --> M[OpenAI Responses com instruções separadas]
-  M --> V[Validação estrutural das citações]
-  V --> U
-  N --> U
-  U --> O[(SQLAlchemy: SQLite ou DATABASE_URL)]
-  U --> P[Prometheus]
-```
+flowchart TB
 
-## Contratos e limites
+%% ==================================================
+%% ETAPA 1 — INDEXAÇÃO (OFFLINE)
+%% ==================================================
 
-- `answer_question(question, conversation_context="", document_id=None)` preserva a fachada principal. Uma pergunta normativa sem `document_id` recebe pedido de seleção.
-- `FAISSStore.search(..., document_id=...)` exige o filtro. Faz busca exata em todos os vetores, filtra por documento e mantém a ordem de similaridade; apropriado para o corpus atual, mas O(N) por consulta.
-- `retrieve_context` só aceita resultados acima de `MIN_RELEVANCE_SCORE`, sem fallback. Fonte tem `chunk_id`, `document_id`, título, cláusula, trecho e score. Score é semântico, não probabilidade de correção jurídica.
-- Instruções ficam em `prompts/rag_prompt.txt` e são enviadas separadas da pergunta e dos trechos. Trechos são tratados como dados não confiáveis. Citações `[n]` precisam corresponder a IDs do contexto; uma saída sem IDs válidos é recusada.
-- `metadata.jsonl` é JSON não executável. `CURRENT` aponta para diretório com índice, metadados e manifesto já validados. O índice FAISS anterior com `metadata.pkl` não é lido.
-- O banco administrativo mantém esquema legado para preservar registros existentes. O caminho atual grava conteúdo textual vazio e métricas/IDs, inclusive erros. Não há migração destrutiva.
-- A autenticação simples usa senha em ambiente ou `st.secrets`. A aplicação falha fechada sem configuração. A senha admin protege as páginas administrativas.
-- O dataset gold testa recuperação de fontes. BM25 combinado é apenas benchmark; não há reranker nem inferência de precisão jurídica a partir dessas métricas.
+subgraph INDEXACAO_OFFLINE["Indexação de Documentos (Offline)"]
+direction TB
+
+D1[Documentos .doc / .docx<br>Convenções Coletivas]
+D2[Parsing de texto]
+D3[Chunking por cláusula]
+D4[Geração de embeddings]
+D5[(FAISS Vector Index)]
+
+D1 --> D2 --> D3 --> D4 --> D5
+
+end
+
+
+%% ==================================================
+%% ETAPA 2 — CONSULTA (ONLINE)
+%% ==================================================
+
+subgraph CONSULTA_RAG["Pipeline RAG (Online)"]
+direction TB
+
+Q1[Usuário envia pergunta]
+Q2[Guardrail de entrada<br>validação da pergunta]
+Q3[Embedding da pergunta]
+Q4[Busca vetorial Top-K]
+Q5{Gate de confiança<br>score mínimo}
+Q6[Construção do contexto]
+Q7[Construção do prompt]
+Q8[LLM - GPT]
+Q9[Guardrail de saída]
+Q10[Resposta final + citações]
+
+Q1 --> Q2 --> Q3 --> Q4 --> Q5
+Q5 -- Contexto suficiente --> Q6
+Q5 -- Sem evidência --> Q10
+Q6 --> Q7 --> Q8 --> Q9 --> Q10
+
+end
+
+
+%% ==================================================
+%% ETAPA 3 — OBSERVABILITY
+%% ==================================================
+
+subgraph OBSERVABILITY["Observabilidade e Monitoramento"]
+direction TB
+
+M1[Captura de métricas]
+M2[(SQLite / Database)]
+M3[Dashboard Streamlit]
+
+M1 --> M2 --> M3
+
+end
+
+
+%% ==================================================
+%% CONEXÕES ENTRE SISTEMAS
+%% ==================================================
+
+D5 --> Q4
+Q8 --> M1
+Q10 --> M1

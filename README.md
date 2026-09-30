@@ -1,89 +1,375 @@
-# LexRAG
+# LexRAG — Legal RAG for Collective Labor Agreements
 
-LexRAG consulta **uma convenção coletiva por vez** e apresenta a resposta com trechos de origem verificáveis. É uma ferramenta de apoio à leitura, não substitui a conferência do instrumento nem parecer jurídico. O projeto usa Python, Streamlit, FAISS, `intfloat/multilingual-e5-base` (768 dimensões), OpenAI Responses (`gpt-4.1-mini` por padrão), SQLAlchemy/SQLite e Prometheus.
+Sistema de **Retrieval-Augmented Generation (RAG)** aplicado à análise de Convenções Coletivas de Trabalho.
 
-## Como funciona
+O projeto implementa um pipeline completo de busca semântica e geração de respostas fundamentadas a partir de documentos jurídicos, utilizando embeddings locais, indexação vetorial e um modelo de linguagem avançado para geração de respostas.
 
-```mermaid
-flowchart LR
-  D[DOCX locais] --> P[Parser e chunks por cláusula]
-  P --> E[E5 passage]
-  E --> I[(FAISS + JSONL + manifesto)]
-  U[Usuário escolhe convenção] --> Q[E5 query]
-  Q --> I
-  I --> F[Filtro document_id + threshold]
-  F --> C[Contexto com IDs de fonte]
-  C --> L[OpenAI Responses]
-  L --> V[Validação estrutural de citações]
-  V --> U
+O objetivo é permitir consultas jurídicas rápidas e fundamentadas em documentos de convenções coletivas, mantendo rastreabilidade das fontes utilizadas e observabilidade completa do sistema.
+
+## Principais funcionalidades
+
+* Ingestão de documentos `.doc` / `.docx`
+* Extração estruturada de cláusulas
+* Embeddings semânticos locais (MiniLM)
+* Indexação vetorial com FAISS
+* Busca semântica por similaridade
+* Geração de respostas com LLM (OpenAI GPT)
+* Observabilidade do pipeline
+* Sistema de debug e histórico de consultas
+* Avaliação automática da qualidade das respostas
+
+---
+
+# Arquitetura do sistema
+
+Fluxo do pipeline RAG:
+
+Pergunta do usuário
+→ Interface Web (Streamlit)
+→ Embedding da pergunta (MiniLM)
+→ Busca vetorial no FAISS
+→ Recuperação dos chunks mais relevantes
+→ Construção do contexto
+→ Geração de resposta (LLM via OpenAI API)
+→ Resposta fundamentada com fontes
+→ Registro de execução (Telemetry)
+→ Persistência em SQLite
+→ Visualização em páginas Debug / Histórico
+
+---
+
+# Estrutura do projeto
+
+```
+RAG/
+│
+├── convencoes_coletivas/        # Documentos fonte (.doc/.docx) - não versionados
+│
+├── embeddings/                  # Geração de embeddings
+├── ingest/                      # Parsing e chunking por cláusula
+├── prompts/                     # Templates de prompt
+│
+├── vectorstore/                 # Índice vetorial FAISS
+│   ├── faiss.index
+│   ├── metadata.pkl
+│   └── faiss_store.py
+│
+├── core/                        # Guardrails e utilitários centrais
+│   └── guardrails.py
+│
+├── observability/               # Telemetria e observabilidade
+│   ├── telemetry.py
+│   ├── decorators.py
+│   ├── debug_store.py
+│   └── prom_metrics.py
+│
+├── evaluation/                  # Avaliação automática do RAG
+│   ├── evaluation_set.json
+│   ├── evaluate_rag.py
+│   ├── evaluate_rag_v2.py
+│   ├── evaluation_results.json
+│   └── evaluation_results_v2.json
+│
+├── pages/                       # Páginas administrativas Streamlit
+│   ├── 1_Debug.py
+│   └── 2_Historico.py
+│
+├── app.py                       # Interface principal
+├── build_index.py               # Construção do índice vetorial
+├── query.py                     # Retrieval sem geração
+├── rag_generator.py             # Pipeline completo do RAG
+│
+├── .streamlit/
+│   └── secrets.toml
+│
+├── requirements.txt
+├── README.md
+└── ARCHITECTURE.md
 ```
 
-O parser preserva cláusula, título, posições aproximadas e IDs estáveis. Página é `null` porque `docx2txt` não oferece paginação confiável. Categoria, sindicatos, território e vigência também ficam `null` quando não foram extraídos com segurança. A busca exige `document_id`; resultados abaixo de `MIN_RELEVANCE_SCORE` não entram no contexto. Sem evidência, não há chamada ao LLM. A resposta gerada deve citar `[1]`, `[2]` etc.; IDs desconhecidos ou ausentes levam a recusa controlada. Isso verifica o vínculo da citação com o contexto, mas **não prova fidelidade jurídica de cada afirmação**.
+---
 
-## Instalação
+# Como executar o projeto
 
-Use Python 3.11 e execute na raiz:
+## 1. Criar ambiente virtual
 
-```bash
+```
 python -m venv venv
+```
+
+Windows (PowerShell)
+
+```
+venv\Scripts\activate
+```
+
+Linux / macOS
+
+```
+source venv/bin/activate
+```
+
+---
+
+## 2. Instalar dependências
+
+```
 pip install -r requirements.txt
 ```
 
-Ative o ambiente virtual conforme seu shell. Configure `OPENAI_API_KEY` para gerar respostas e `LEXRAG_ADMIN_PASSWORD` para proteger as páginas Debug, Histórico e Monitoramento, por variável de ambiente ou `st.secrets`. O chat abre sem senha; as páginas administrativas bloqueiam o acesso quando a senha não está configurada. `.env.example` documenta as variáveis; `.env` e `.streamlit/secrets.toml` são ignorados pelo Git. O arquivo `.env` não é carregado automaticamente: exporte as variáveis no ambiente ou use os secrets do Streamlit.
+---
 
-## Documentos e indexação
+## 3. Construir o índice vetorial
 
-Coloque arquivos `.docx` em `convencoes coletivas/` e execute:
-
-```bash
+```
 python build_index.py
 ```
 
-Arquivos `.doc` exigem conversão prévia. `convert_docs.py` usa Microsoft Word via COM no Windows e requer `pywin32`, que não é necessário para a execução web e por isso não está nas dependências principais. Em Linux/Codespaces, converta para `.docx` por processo externo antes da indexação. O diretório de documentos não é versionado.
+Este processo irá:
 
-O novo índice fica em `vectorstore/versions/<versão>/` com `faiss.index`, `metadata.jsonl` e `manifest.json`. `vectorstore/CURRENT` aponta para a versão publicada. Esses artefatos contêm texto do corpus e **não são versionados**; cada instalação precisa receber os documentos autorizados e executar a indexação. A troca do ponteiro é atômica; versões anteriores podem ser mantidas para recuperação. O cache do app acompanha a versão do ponteiro. O índice legado `faiss.index`/`metadata.pkl` não é carregado pela versão atual; reindexe antes de iniciar. O manifesto registra modelo, dimensão, hash do corpus, contagens e data.
+* gerar embeddings
+* criar índice FAISS
+* salvar `faiss.index` e `metadata.pkl`
 
-### Deploy no Streamlit Cloud
+---
 
-O checkout público contém somente o código de `vectorstore/`: `CURRENT` e `versions/<versão>/` são ignorados pelo Git. O app precisa de `CURRENT` e dos três arquivos `faiss.index`, `metadata.jsonl` e `manifest.json` da versão apontada. `metadata.jsonl` contém trechos das convenções; não publique o pacote nem os documentos originais em repositório ou URL pública.
+## 4. Testar busca semântica
 
-Na máquina com o índice autorizado, execute `python -m vectorstore.package_index`. Isso cria `vectorstore/index-bundle.zip` (ignorado pelo Git) e imprime seu SHA-256. Envie o ZIP para um armazenamento privado acessível por HTTPS pelo Streamlit Cloud. Nos secrets do app, configure `LEXRAG_INDEX_BUNDLE_URL` com uma URL HTTPS privada ou assinada e `LEXRAG_INDEX_BUNDLE_SHA256` com o hash exibido. Se o serviço exigir cabeçalho `Authorization: Bearer`, configure também `LEXRAG_INDEX_BUNDLE_TOKEN`. Mantenha URL/token fora do Git e garanta acesso ao objeto após reinícios do app; URLs assinadas com validade curta exigem renovação antes do próximo restart.
+```
+python query.py
+```
 
-No primeiro startup sem índice local, o app baixa o pacote, verifica o SHA-256, confere o manifesto e as contagens FAISS/metadados, e só então publica `CURRENT` no disco temporário do Cloud. Se o índice já existir localmente, usa o fluxo anterior sem download. A ausência ou falha de configuração mantém a mensagem “Índice indisponível”. O pacote só deve ser hospedado após confirmar que as convenções podem ser usadas nesse ambiente.
+Exemplo de pergunta:
 
-## Execução
+```
+Existe obrigação de seguro de vida empresarial?
+```
 
-```bash
+---
+
+# Executar interface web
+
+Após construir o índice vetorial, execute:
+
+```
 streamlit run app.py
 ```
 
-Ao abrir o chat, selecione uma convenção na barra lateral. Trocar a convenção inicia uma nova conversa para evitar referências cruzadas. O chat mostra o trecho citado, cláusula, nome, score vetorial e `chunk_id` em cada fonte. O bloco “Copiar resposta” usa o botão de cópia do componente de código do Streamlit. As páginas administrativas usam a credencial administrativa compartilhada; não há OAuth ou perfis por usuário. Não exponha a aplicação diretamente à internet sem controle de rede e revisão operacional. O devcontainer é apenas ambiente de desenvolvimento, com CORS/XSRF padrão do Streamlit.
+A aplicação abrirá em:
 
-Para inspecionar a busca local:
-
-```bash
-python query.py
-python query.py --document-id <id> "Qual é a vigência?"
+```
+http://localhost:8501
 ```
 
-## Testes e avaliação
+---
 
-```bash
-pip install -r requirements-dev.txt
-pytest tests -q
-ruff check . --select E4,E7,E9,F --exclude vectorstore/versions
-python evaluation/evaluate_retrieval.py --check-dataset
-python evaluation/evaluate_retrieval.py --benchmark
+# Configuração da API OpenAI
+
+Para utilizar o modelo GPT na geração das respostas, é necessário definir uma chave de API da OpenAI.
+
+Defina a variável de ambiente:
+
+```
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxx
 ```
 
-`--check-dataset` funciona sem modelo/API. `--benchmark` exige o índice novo e o modelo E5 disponível localmente, mas não usa a API OpenAI. O conjunto de 18 casos em `evaluation/gold_dataset.json` foi derivado de cláusulas presentes no corpus local; 16 casos têm `chunk_id` esperado e 2 são negativos exploratórios. As métricas são de **localização de fonte**, não de precisão jurídica. O benchmark compara busca global antiga (A), busca filtrada (B) e uma combinação BM25 experimental (C). A busca híbrida não é usada no produto sem ganho validado. Reranking não foi implementado.
+No Windows PowerShell:
 
-Os scripts `evaluation/evaluate_rag.py` e `evaluate_rag_v2.py` e seus resultados são históricos, heurísticos e não devem ser interpretados como benchmark jurídico. O CI executa lint, import/compilação, testes e checagem estrutural offline, sem chave OpenAI.
+```
+$env:OPENAI_API_KEY="sua_chave_aqui"
+```
 
-## Privacidade e operação
+Essa chave é utilizada pelo módulo `rag_generator.py` para acessar o modelo responsável pela geração das respostas.
 
-Novos registros no banco guardam `trace_id`, sessão, métricas, `document_id`, IDs de fontes e tipo de erro. Pergunta, resposta, contexto e prompt não são salvos pelo caminho atual da UI; registros antigos no banco local podem conter esses dados e precisam de tratamento operacional. As páginas Debug, Histórico e Monitoramento são administrativas. Métricas Prometheus ficam em `127.0.0.1:8000` quando disponível. A aplicação não implementa controle de tentativas de senha, retenção automática, permissões por usuário, limite de taxa ou streaming; use proteção de borda antes de disponibilização pública.
+---
 
-## Estrutura
+# Observabilidade do sistema
 
-`ingest/` extrai documentos; `embeddings/` gera vetores; `vectorstore/` armazena FAISS e catálogo JSONL; `rag_generator.py` é a fachada `answer_question(question, conversation_context="", document_id=None)`; `app.py` é a UI; `observability/` cuida de logs/métricas; `evaluation/` contém datasets e benchmark; `tests/` cobre regressões. Veja [ARCHITECTURE.md](ARCHITECTURE.md), [AUDITORIA_RAG.md](AUDITORIA_RAG.md) e [MELHORIAS_RAG.md](MELHORIAS_RAG.md).
+O sistema possui observabilidade completa do pipeline RAG.
+
+Cada consulta registra:
+
+* Trace ID da execução
+* Pergunta do usuário
+* Resposta gerada
+* Fontes utilizadas
+* Contexto enviado ao modelo
+* Prompt final
+* Métricas de tempo
+
+Os dados são armazenados em um banco **SQLite local**.
+
+## Páginas disponíveis
+
+### Debug
+
+* inspeção detalhada de uma consulta específica
+* visualização do contexto e prompt enviados ao modelo
+
+### Histórico
+
+* registro persistente de consultas
+* filtragem por `trace_id` e `session_id`
+* análise de métricas da execução
+
+---
+
+# Observabilidade com Prometheus e Grafana
+
+O sistema também exporta métricas para Prometheus.
+
+Métricas disponíveis:
+
+* `rag_requests_total`
+* `rag_errors_total`
+* `rag_total_time_seconds`
+* `rag_retrieval_time_seconds`
+* `rag_generation_time_seconds`
+* `rag_chunks_retrieved`
+* `rag_chunks_used`
+* `rag_top_score`
+* `rag_avg_score`
+
+As métricas podem ser acessadas em:
+
+```
+http://localhost:8000/metrics
+```
+
+Grafana pode ser utilizado para criar dashboards de monitoramento com:
+
+* latência média de resposta
+* latência de retrieval
+* latência de geração
+* taxa de erro
+* qualidade média do retrieval
+* volume de consultas
+
+---
+
+# Avaliação do sistema (RAG evaluation)
+
+O projeto inclui um framework de avaliação automática para medir a qualidade das respostas.
+
+Dataset de avaliação:
+
+25 perguntas jurídicas típicas encontradas em convenções coletivas de trabalho.
+
+Temas avaliados:
+
+* vigência do acordo
+* reajuste salarial
+* seguro de vida
+* contribuição sindical
+* jornada de trabalho
+* banco de horas
+* estabilidade
+* benefícios trabalhistas
+
+## Scripts disponíveis
+
+```
+python evaluation/evaluate_rag.py
+python evaluation/evaluate_rag_v2.py
+```
+
+## Categorias de avaliação
+
+* correct
+* correct_but_contaminated
+* partial
+* wrong
+* no_evidence
+* error
+
+## Resultados atuais (avaliação v2)
+
+Total de perguntas: 25
+
+correct: 0
+correct_but_contaminated: 18
+partial: 0
+wrong: 1
+no_evidence: 6
+error: 0
+
+### Interpretação
+
+* 72% das consultas produziram respostas substantivamente corretas
+* 96% das consultas foram respondidas corretamente ou recusadas com segurança
+* 4% produziram resposta claramente incorreta
+* 0% de erros de execução durante o benchmark
+
+A maioria das respostas classificadas como **correct_but_contaminated** está correta juridicamente, mas inclui detalhes adicionais além do necessário. Esse comportamento pode ser reduzido com ajustes de prompt e controle de geração.
+
+---
+
+# Decisões técnicas
+
+Embeddings
+`sentence-transformers/all-MiniLM-L6-v2`
+
+Vector store
+FAISS
+
+LLM
+OpenAI GPT (via API)
+
+Interface
+Streamlit
+
+Observabilidade
+Prometheus + Grafana
+
+Persistência
+SQLite
+
+---
+
+# Objetivo do projeto
+
+Demonstrar a implementação completa de um pipeline RAG aplicado a documentos jurídicos, incluindo:
+
+* recuperação semântica
+* fundamentação textual
+* observabilidade do sistema
+* avaliação automática de respostas
+* arquitetura modular e escalável
+
+---
+
+# Possíveis evoluções
+
+* autenticação de usuários
+* API REST com FastAPI
+* deploy com Docker
+* observabilidade com OpenTelemetry
+* reranking de documentos
+* extração estruturada de obrigações
+* suporte a múltiplas convenções coletivas
+* fine-tuning de prompts
+* cache de respostas
+
+---
+
+# Autor
+
+Allyson Aires
+
+Projeto desenvolvido como implementação técnica de um sistema RAG aplicado à análise de documentos jurídicos.
+
+---
+
+# Arquitetura detalhada
+
+O sistema segue uma arquitetura de Recuperação-Geração Aumentada (RAG) com três camadas principais:
+
+1. Indexação de documentos (pipeline offline)
+2. Recuperação e geração (pipeline online)
+3. Observabilidade e monitoramento
+
+Veja o desenho completo em:
+
+```
+ARCHITECTURE.md
+```

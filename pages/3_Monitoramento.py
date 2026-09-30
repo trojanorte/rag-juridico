@@ -6,11 +6,14 @@ import json
 import pandas as pd
 import streamlit as st
 from sqlalchemy import text
-from core.auth import require_admin_access
-from observability.debug_store import get_engine, init_db
-st.set_page_config(page_title="Monitoramento do RAG", layout="wide", page_icon="📈")
 
-require_admin_access()
+from observability.debug_store import get_engine, init_db
+
+password = st.text_input("Admin password", type="password")
+
+if password != st.secrets["ADMIN_PASSWORD"]:
+    st.warning("Acesso restrito.")
+    st.stop()
 
 def parse_metrics(metrics_json):
     if not metrics_json:
@@ -66,6 +69,11 @@ def highlight_rows(row):
     return [""] * len(row)
 
 
+st.set_page_config(
+    page_title="Monitoramento do RAG",
+    layout="wide",
+    page_icon="📈"
+)
 
 st.title("📈 Monitoramento do RAG")
 st.caption("Painel operacional com métricas agregadas das consultas registradas.")
@@ -164,7 +172,7 @@ with tab3:
     else:
         st.dataframe(
             error_df[["timestamp", "question", "error"]],
-            width="stretch"
+            use_container_width=True
         )
 
 with tab4:
@@ -185,6 +193,6 @@ with tab4:
 
     st.dataframe(
         styled_df,
-        width="stretch",
+        use_container_width=True,
         height=500
     )

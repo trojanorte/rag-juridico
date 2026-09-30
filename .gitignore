@@ -15,13 +15,3 @@ convencoes coletivas/
 observability/debug_history.db
 
 .streamlit/secrets.toml
-.env
-.env.*
-!.env.example
-evaluation/results/
-.pytest_cache/
-.ruff_cache/
-.test_tmp/
-pytest-cache-files-*/
-vectorstore/*.zip
-*.log

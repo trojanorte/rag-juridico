@@ -1,120 +1,160 @@
-"""Extract DOCX and create stable, clause-aware chunks."""
-from __future__ import annotations
-import hashlib
-import logging
+import os
 import re
-from pathlib import Path
 import docx2txt
-from core.config import MAX_CHUNK_TOKENS
 
-log = logging.getLogger(__name__)
-PARSER_VERSION = "2"
-CLAUSE = re.compile(r"(?im)^\s*(CL[ÁA]USULA\s+([^\n]{1,160}))")
-TOKEN = re.compile(r"\w+|[^\w\s]", re.UNICODE)
 
-def normalize_text(text: str) -> str:
-    text = (text or "").replace("\r\n", "\n").replace("\r", "\n").replace("\t", " ")
-    text = re.sub(r"[ \xa0]+", " ", text)
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(line.strip() for line in text.splitlines())).strip()
+MIN_CONTENT_LEN = 80
+
 
 def extract_text_from_docx(path: str) -> str:
-    return normalize_text(docx2txt.process(path) or "")
+    text = docx2txt.process(path)
+    return text or ""
 
-def token_count(text: str) -> int:
-    return len(TOKEN.findall(text))
+
+def normalize_text(text: str) -> str:
+    if not text:
+        return ""
+
+    # normaliza quebras de linha e espaços
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = text.replace("\t", " ")
+
+    # remove espaços duplicados
+    text = re.sub(r"[ \xa0]+", " ", text)
+
+    # reduz quebras excessivas
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    # remove espaços antes/depois das linhas
+    text = "\n".join(line.strip() for line in text.splitlines())
+
+    # remove linhas vazias repetidas de novo após strip
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    return text.strip()
+
+
+def is_valid_clause_content(content: str) -> bool:
+    content = (content or "").strip()
+    return len(content) >= MIN_CONTENT_LEN
+
 
 def split_by_clausula(text: str) -> list[dict]:
-    matches = list(CLAUSE.finditer(text))
-    if not matches:
-        return [{"titulo": "Texto sem cláusula identificada", "conteudo": text, "start": 0, "clause_number": None}] if text else []
-    sections = []
-    if text[:matches[0].start()].strip():
-        sections.append({"titulo": "Preâmbulo", "conteudo": text[:matches[0].start()].strip(), "start": 0, "clause_number": None})
-    for n, match in enumerate(matches):
-        end = matches[n + 1].start() if n + 1 < len(matches) else len(text)
-        sections.append({"titulo": match.group(1).strip(), "conteudo": text[match.start():end].strip(), "start": match.start(), "clause_number": match.group(2).split()[0]})
-    return sections
+    """
+    Divide o texto por cláusulas, preservando título e conteúdo.
+    Aceita variações como:
+    - CLÁUSULA PRIMEIRA
+    - CLAUSULA PRIMEIRA
+    - CLÁUSULA 1
+    - CLAUSULA 1ª
+    """
 
-def _pieces(text: str, limit: int):
-    sentences = [s.strip() for s in re.split(r"(?<=[.!?;])\s+|\n+", text) if s.strip()]
-    cursor, group, group_start = 0, [], 0
-    for sentence in sentences:
-        position = text.find(sentence, cursor)
-        if position < 0:
-            position = cursor
-        cursor = position + len(sentence)
-        if group and token_count(" ".join(group + [sentence])) > limit:
-            yield " ".join(group), group_start, position
-            group = []
-        if not group:
-            group_start = position
-        if token_count(sentence) > limit:
-            if group:
-                yield " ".join(group), group_start, position
-                group = []
-            # An unpunctuated legal paragraph still needs to fit the E5 window.
-            words = list(re.finditer(r"\S+", sentence))
-            block, block_start = [], 0
-            for word in words:
-                if block and token_count(" ".join(block + [word.group()])) > limit:
-                    yield " ".join(block), position + block_start, position + word.start()
-                    block = []
-                if not block:
-                    block_start = word.start()
-                block.append(word.group())
-            if block:
-                yield " ".join(block), position + block_start, cursor
-        else:
-            group.append(sentence)
-    if group:
-        yield " ".join(group), group_start, cursor
-
-def chunk_document(text: str, filename: str, max_tokens: int = MAX_CHUNK_TOKENS) -> list[dict]:
-    text = normalize_text(text)
     if not text:
         return []
-    document_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    document_id = document_hash[:16]
-    title = next((line for line in text.splitlines() if line and len(line) <= 180), Path(filename).stem)
+
+    # ancora no início de linha para evitar matches no meio do texto
+    clause_pattern = re.compile(
+        r"(?im)^(CL[ÁA]USULA\s+[^\n]{3,150})"
+    )
+
+    matches = list(clause_pattern.finditer(text))
+    clausulas = []
+
+    if not matches:
+        return clausulas
+
+    for i, match in enumerate(matches):
+        start = match.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+
+        titulo = match.group(1).strip(" -:\n\t")
+        conteudo = text[start:end].strip()
+
+        if not is_valid_clause_content(conteudo):
+            continue
+
+        clausulas.append({
+            "titulo": titulo,
+            "conteudo": conteudo,
+        })
+
+    return clausulas
+
+
+def fallback_split_text(text: str, chunk_size: int = 1200, overlap: int = 200) -> list[dict]:
+    """
+    Fallback para documentos que não possuem marcação clara de cláusulas.
+    Divide em blocos por tamanho com sobreposição.
+    """
+    text = (text or "").strip()
+    if not text:
+        return []
+
     chunks = []
-    for clause_index, clause in enumerate(split_by_clausula(text), start=1):
-        clause_key = str(clause_index)
-        for part, (content, relative_start, relative_end) in enumerate(_pieces(clause["conteudo"], max_tokens), start=1):
+    start = 0
+    idx = 1
+    text_len = len(text)
+
+    while start < text_len:
+        end = min(start + chunk_size, text_len)
+        piece = text[start:end].strip()
+
+        if len(piece) >= MIN_CONTENT_LEN:
             chunks.append({
-                "chunk_id": f"{document_id}:clause_{clause_key}:part_{part}",
-                "document_id": document_id, "document_hash": document_hash,
-                "document_version": document_hash[:12], "filename": filename,
-                "document_title": title, "categoria": None, "sindicato_laboral": None,
-                "sindicato_patronal": None, "abrangencia_territorial": None,
-                "vigencia_inicio": None, "vigencia_fim": None,
-                "clause_number": clause["clause_number"], "clause_title": clause["titulo"],
-                "section": None, "page": None,
-                "start_position": clause["start"] + relative_start,
-                "end_position": clause["start"] + relative_end, "content": content,
+                "titulo": f"BLOCO {idx}",
+                "conteudo": piece,
             })
+
+        if end == text_len:
+            break
+
+        start = max(end - overlap, start + 1)
+        idx += 1
+
     return chunks
 
+
 def load_and_chunk_documents(folder_path: str) -> list[dict]:
-    folder = Path(folder_path)
-    if not folder.is_dir():
-        raise FileNotFoundError(folder_path)
-    chunks, seen_hashes = [], set()
-    for path in sorted(folder.glob("*.docx")):
+    all_chunks = []
+
+    if not os.path.isdir(folder_path):
+        raise FileNotFoundError(f"Pasta não encontrada: {folder_path}")
+
+    for file in os.listdir(folder_path):
+        if not file.lower().endswith(".docx"):
+            continue
+
+        full_path = os.path.join(folder_path, file)
+
         try:
-            text = extract_text_from_docx(str(path))
+            raw_text = extract_text_from_docx(full_path)
+            text = normalize_text(raw_text)
+
             if not text:
-                log.warning("Ignored empty document: %s", path.name)
+                print(f"[AVISO] Documento vazio ou não lido corretamente: {file}")
                 continue
-            digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
-            if digest in seen_hashes:
-                log.warning("Duplicate document content ignored: %s", path.name)
-                continue
-            seen_hashes.add(digest)
-            produced = chunk_document(text, path.name)
-            if not produced:
-                log.warning("No chunks produced: %s", path.name)
-            chunks.extend(produced)
-        except Exception:
-            log.exception("Document processing failed: %s", path.name)
-            raise
-    return chunks
+
+            clausulas = split_by_clausula(text)
+
+            # fallback se não encontrar cláusulas
+            if not clausulas:
+                print(f"[AVISO] Nenhuma cláusula encontrada em {file}. Usando fallback por blocos.")
+                clausulas = fallback_split_text(text)
+
+            for clausula in clausulas:
+                titulo = (clausula.get("titulo") or "trecho_sem_titulo").strip()
+                conteudo = (clausula.get("conteudo") or "").strip()
+
+                if not is_valid_clause_content(conteudo):
+                    continue
+
+                all_chunks.append({
+                    "filename": file,
+                    "titulo": titulo,
+                    "content": conteudo,
+                })
+
+        except Exception as e:
+            print(f"[ERRO] Falha ao processar {file}: {e}")
+
+    return all_chunks

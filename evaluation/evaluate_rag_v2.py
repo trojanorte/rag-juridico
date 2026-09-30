@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -260,4 +261,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    raise SystemExit("Avaliador heurístico legado desativado. Use evaluation/evaluate_retrieval.py.")
+    main()

@@ -1,8 +1,18 @@
 import streamlit as st
-from core.auth import require_admin_access
+
+password = st.text_input("Admin password", type="password")
+
+if password != st.secrets["ADMIN_PASSWORD"]:
+    st.warning("Acesso restrito.")
+    st.stop()
+    
 from observability.debug_store import init_db, get_recent_logs
-st.set_page_config(page_title="Histórico de Consultas", layout="wide", page_icon="🗂️")
-require_admin_access()
+
+st.set_page_config(
+    page_title="Histórico de Consultas",
+    layout="wide",
+    page_icon="🗂️"
+)
 
 init_db()
 

@@ -1,61 +1,103 @@
-"""Offline index builder. Run from the repository root after DOCX conversion."""
-import argparse
 import logging
-from pathlib import Path
+import numpy as np
 
-from core.config import EMBEDDING_MODEL
+from ingest.parser import load_and_chunk_documents
 from embeddings.embedder import Embedder
-from ingest.parser import PARSER_VERSION, load_and_chunk_documents
 from vectorstore.faiss_store import FAISSStore
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-log = logging.getLogger(__name__)
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+DOCUMENTS_DIR = "convencoes coletivas"
+MIN_CHUNK_LEN = 80
+
+
+def is_valid_chunk(chunk: dict) -> bool:
+    content = (chunk.get("content") or "").strip()
+    if not content:
+        return False
+    if len(content) < MIN_CHUNK_LEN:
+        return False
+    return True
+
+
+def normalize_chunk(chunk: dict) -> dict:
+    return {
+        "content": (chunk.get("content") or "").strip(),
+        "filename": chunk.get("filename", "arquivo_desconhecido"),
+        "titulo": chunk.get("titulo", "trecho_sem_titulo"),
+    }
+
 
 def deduplicate_chunks(chunks: list[dict]) -> list[dict]:
-    seen, unique = set(), []
-    for chunk in chunks:
-        if chunk["chunk_id"] in seen:
-            log.warning("Duplicate chunk ignored: %s", chunk["chunk_id"])
-            continue
-        seen.add(chunk["chunk_id"])
-        unique.append(chunk)
-    return unique
+    seen = set()
+    unique_chunks = []
 
-def fit_model_window(chunks: list[dict], tokenizer) -> list[dict]:
-    fitted = []
     for chunk in chunks:
-        if len(tokenizer.encode("passage: " + chunk["content"], add_special_tokens=True)) <= 512:
-            fitted.append(chunk)
+        key = (
+            chunk.get("filename", ""),
+            chunk.get("titulo", ""),
+            chunk.get("content", ""),
+        )
+        if key in seen:
             continue
-        words = chunk["content"].split()
-        group, part = [], 1
-        for word in words:
-            if group and len(tokenizer.encode("passage: " + " ".join(group + [word]), add_special_tokens=True)) > 512:
-                fitted.append({**chunk, "chunk_id": f"{chunk['chunk_id']}:sub_{part}", "content": " ".join(group)})
-                group, part = [], part + 1
-            group.append(word)
-        if group:
-            fitted.append({**chunk, "chunk_id": f"{chunk['chunk_id']}:sub_{part}", "content": " ".join(group)})
-        log.warning("Split oversize E5 chunk: %s into %s", chunk["chunk_id"], part)
-    return fitted
+        seen.add(key)
+        unique_chunks.append(chunk)
 
-def main(documents_dir: str = "convencoes coletivas", output_dir: str = "vectorstore") -> dict:
-    chunks = deduplicate_chunks(load_and_chunk_documents(documents_dir))
-    if not chunks:
-        raise RuntimeError("Nenhum chunk gerado")
-    embedder = Embedder(EMBEDDING_MODEL)
-    tokenizer = embedder.model.tokenizer
-    chunks = fit_model_window(chunks, tokenizer)
-    embeddings = embedder.embed_texts([chunk["content"] for chunk in chunks])
-    store = FAISSStore(embeddings.shape[1])
-    store.add(embeddings, chunks)
-    manifest = store.save(Path(output_dir), PARSER_VERSION)
-    log.info("Indexed %s documents and %s chunks (version %s)", manifest["document_count"], manifest["chunk_count"], manifest["index_version"])
-    return manifest
+    return unique_chunks
+
+
+def main():
+    logging.info("Carregando e fragmentando documentos...")
+    raw_chunks = load_and_chunk_documents(DOCUMENTS_DIR)
+
+    if not raw_chunks:
+        raise RuntimeError("Nenhum chunk foi gerado pelo parser.")
+
+    logging.info("Total bruto de chunks: %s", len(raw_chunks))
+
+    normalized_chunks = [normalize_chunk(chunk) for chunk in raw_chunks]
+    valid_chunks = [chunk for chunk in normalized_chunks if is_valid_chunk(chunk)]
+    unique_chunks = deduplicate_chunks(valid_chunks)
+
+    if not unique_chunks:
+        raise RuntimeError("Nenhum chunk válido restou após limpeza e deduplicação.")
+
+    texts = [chunk["content"] for chunk in unique_chunks]
+
+    avg_len = sum(len(text) for text in texts) / len(texts)
+    logging.info("Chunks válidos: %s", len(valid_chunks))
+    logging.info("Chunks únicos: %s", len(unique_chunks))
+    logging.info("Tamanho médio dos chunks: %.1f caracteres", avg_len)
+
+    logging.info("Exemplo de chunk indexado:")
+    logging.info("Arquivo: %s", unique_chunks[0]["filename"])
+    logging.info("Título: %s", unique_chunks[0]["titulo"])
+    logging.info("Trecho: %s", unique_chunks[0]["content"][:500])
+
+    logging.info("Gerando embeddings...")
+    embedder = Embedder()
+    embeddings = embedder.embed_texts(texts)
+
+    if embeddings is None or len(embeddings) == 0:
+        raise RuntimeError("O modelo de embeddings não retornou vetores.")
+
+    if not isinstance(embeddings, np.ndarray):
+        embeddings = np.array(embeddings, dtype="float32")
+
+    if embeddings.ndim != 2:
+        raise RuntimeError(f"Embeddings com formato inválido: {embeddings.shape}")
+
+    dimension = embeddings.shape[1]
+    logging.info("Dimensão dos embeddings: %s", dimension)
+
+    store = FAISSStore(dimension)
+    store.add(embeddings, unique_chunks)
+    store.save()
+
+    logging.info("Indexação concluída com sucesso.")
+    logging.info("Total de chunks indexados: %s", len(unique_chunks))
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--documents-dir", default="convencoes coletivas")
-    parser.add_argument("--output-dir", default="vectorstore")
-    args = parser.parse_args()
-    main(args.documents_dir, args.output_dir)
+    main()

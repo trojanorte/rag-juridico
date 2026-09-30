@@ -5,7 +5,6 @@ import uuid
 
 import streamlit as st
 
-from core.config import SELECT_DOCUMENT
 from observability.debug_store import init_db, save_query_log
 from observability.prom_metrics import (
     start_metrics_server,
@@ -100,7 +99,9 @@ def render_sources(sources):
 
 
 def conversation_context():
-    rows = st.session_state["chat_history"][-4:]
+    document_id = st.session_state["selected_document"] or None
+    rows = [row for row in st.session_state["chat_history"]
+            if row.get("document_id") == document_id][-4:]
 
     return "\n".join(
         (
@@ -365,47 +366,15 @@ def main():
 
         new_id = options[selected]
 
-        # IMPORTANTE:
-        # selecionar a primeira convenção
-        # não apaga a conversa anterior.
-        #
-        # A conversa só é reiniciada
-        # se o usuário trocar de uma
-        # convenção já selecionada
-        # para outra diferente.
         if (
             new_id
             != st.session_state[
                 "selected_document"
             ]
         ):
-            old_id = (
-                st.session_state[
-                    "selected_document"
-                ]
-            )
-
             st.session_state[
                 "selected_document"
             ] = new_id
-
-            if (
-                old_id
-                and new_id
-                and old_id != new_id
-            ):
-                st.session_state[
-                    "chat_history"
-                ] = []
-
-                st.session_state[
-                    "conversation_state"
-                ] = fresh_conversation_state()
-
-                st.session_state[
-                    "session_id"
-                ] = str(uuid.uuid4())
-
             st.rerun()
 
         st.divider()
@@ -468,9 +437,9 @@ def main():
         )
     else:
         st.write(
-            "Converse comigo ou selecione uma "
-            "convenção coletiva para realizar "
-            "consultas jurídicas específicas."
+            "Converse comigo e consulte todas as "
+            "convenções, ou selecione uma para "
+            "restringir a busca."
         )
 
     if st.session_state["last_error"]:
@@ -478,14 +447,6 @@ def main():
             st.session_state[
                 "last_error"
             ]
-        )
-
-    if not new_id:
-        st.info(
-            "Para perguntas específicas sobre "
-            "cláusulas, salários, benefícios, "
-            "jornada ou outras regras jurídicas, "
-            "selecione uma convenção na barra lateral."
         )
 
     # HISTÓRICO DO CHAT
@@ -518,8 +479,7 @@ def main():
         )
     else:
         placeholder = (
-            "Converse comigo ou selecione "
-            "uma convenção para consultas jurídicas"
+            "Pergunte sobre as convenções coletivas"
         )
 
     question = st.chat_input(

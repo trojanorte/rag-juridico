@@ -103,8 +103,6 @@ class FAISSStore:
         return sorted(documents.values(), key=lambda row: (row["document_title"] or "", row["filename"]))
 
     def search(self, query_embedding, top_k=5, document_id: str | None = None) -> list[dict]:
-        if not document_id:
-            raise ValueError("document_id é obrigatório")
         if self.index.ntotal == 0:
             return []
         vector = self._vectors(query_embedding)
@@ -116,7 +114,7 @@ class FAISSStore:
             if position < 0:
                 continue
             item = self.metadata[int(position)]
-            if item["document_id"] == document_id:
+            if not document_id or item["document_id"] == document_id:
                 results.append({**item, "score": float(score), "index_id": int(position), "rank": len(results) + 1})
             if len(results) >= top_k:
                 break

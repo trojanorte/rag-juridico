@@ -2,7 +2,6 @@
 import logging
 import time
 import uuid
-from pathlib import Path
 
 import streamlit as st
 
@@ -13,6 +12,7 @@ from observability.prom_metrics import (start_metrics_server, rag_requests_total
                                         rag_generation_time_seconds, rag_chunks_retrieved,
                                         rag_chunks_used, rag_top_score, rag_avg_score)
 from observability.telemetry import telemetry
+from vectorstore.deploy import ensure_index_available
 from vectorstore.faiss_store import FAISSStore
 
 log = logging.getLogger(__name__)
@@ -116,7 +116,7 @@ def main():
     except OSError:
         log.warning("Metrics port unavailable")
     try:
-        store = catalog(Path("vectorstore/CURRENT").read_text(encoding="ascii").strip())
+        store = catalog(ensure_index_available())
         documents = store.list_documents()
     except (FileNotFoundError, ValueError, OSError):
         log.exception("Index unavailable")

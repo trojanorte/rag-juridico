@@ -43,6 +43,14 @@ Arquivos `.doc` exigem conversão prévia. `convert_docs.py` usa Microsoft Word 
 
 O novo índice fica em `vectorstore/versions/<versão>/` com `faiss.index`, `metadata.jsonl` e `manifest.json`. `vectorstore/CURRENT` aponta para a versão publicada. Esses artefatos contêm texto do corpus e **não são versionados**; cada instalação precisa receber os documentos autorizados e executar a indexação. A troca do ponteiro é atômica; versões anteriores podem ser mantidas para recuperação. O cache do app acompanha a versão do ponteiro. O índice legado `faiss.index`/`metadata.pkl` não é carregado pela versão atual; reindexe antes de iniciar. O manifesto registra modelo, dimensão, hash do corpus, contagens e data.
 
+### Deploy no Streamlit Cloud
+
+O checkout público contém somente o código de `vectorstore/`: `CURRENT` e `versions/<versão>/` são ignorados pelo Git. O app precisa de `CURRENT` e dos três arquivos `faiss.index`, `metadata.jsonl` e `manifest.json` da versão apontada. `metadata.jsonl` contém trechos das convenções; não publique o pacote nem os documentos originais em repositório ou URL pública.
+
+Na máquina com o índice autorizado, execute `python -m vectorstore.package_index`. Isso cria `vectorstore/index-bundle.zip` (ignorado pelo Git) e imprime seu SHA-256. Envie o ZIP para um armazenamento privado acessível por HTTPS pelo Streamlit Cloud. Nos secrets do app, configure `LEXRAG_INDEX_BUNDLE_URL` com uma URL HTTPS privada ou assinada e `LEXRAG_INDEX_BUNDLE_SHA256` com o hash exibido. Se o serviço exigir cabeçalho `Authorization: Bearer`, configure também `LEXRAG_INDEX_BUNDLE_TOKEN`. Mantenha URL/token fora do Git e garanta acesso ao objeto após reinícios do app; URLs assinadas com validade curta exigem renovação antes do próximo restart.
+
+No primeiro startup sem índice local, o app baixa o pacote, verifica o SHA-256, confere o manifesto e as contagens FAISS/metadados, e só então publica `CURRENT` no disco temporário do Cloud. Se o índice já existir localmente, usa o fluxo anterior sem download. A ausência ou falha de configuração mantém a mensagem “Índice indisponível”. O pacote só deve ser hospedado após confirmar que as convenções podem ser usadas nesse ambiente.
+
 ## Execução
 
 ```bash

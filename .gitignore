@@ -26,4 +26,5 @@ pytest-cache-files-*/
 vectorstore/CURRENT
 vectorstore/CURRENT.tmp
 vectorstore/versions/
+vectorstore/*.zip
 *.log

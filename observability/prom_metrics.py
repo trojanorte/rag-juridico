@@ -76,8 +76,5 @@ def start_metrics_server(port: int = 8000) -> None:
     if _metrics_started:
         return
 
-    try:
-        start_http_server(port)
-        _metrics_started = True
-    except OSError:
-        _metrics_started = True
+    start_http_server(port, addr="127.0.0.1")
+    _metrics_started = True

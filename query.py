@@ -1,69 +1,27 @@
+"""Local retrieval inspection. Requires an explicit document ID."""
+import argparse
+from core.guardrails import check_input
 from embeddings.embedder import Embedder
 from vectorstore.faiss_store import FAISSStore
-from guadrails import check_input, safe_refusal
-import logging
-
-
-logging.basicConfig(level=logging.INFO)
-
-
-def load_components():
-    """
-    Inicializa o modelo de embeddings e carrega o índice FAISS.
-    """
-    logging.info("Inicializando modelo de embeddings...")
-    embedder = Embedder()
-
-    logging.info("Carregando índice vetorial...")
-    store = FAISSStore(384)
-    store.load()
-
-    return embedder, store
-
-
-def search(embedder, store, query, top_k=5):
-    """
-    Executa busca semântica no índice vetorial.
-    """
-    query_embedding = embedder.embed_texts([query])
-    return store.search(query_embedding, top_k=top_k)
-
-
-def print_results(results):
-    """
-    Exibe os resultados encontrados de forma organizada.
-    """
-    if not results:
-        print("\nNenhum resultado encontrado.\n")
-        return
-
-    print("\nResultados encontrados:\n")
-
-    for i, item in enumerate(results, start=1):
-        print(f"Resultado {i}")
-        print("Arquivo:", item["filename"])
-        print("Cláusula:", item["titulo"])
-        print("Trecho:\n", item["content"][:500])
-        print("-" * 80)
-
 
 def main():
-    embedder, store = load_components()
-
-    while True:
-        pergunta = input("\nDigite sua pergunta (ou 'sair'): ").strip()
-
-        if pergunta.lower() == "sair":
-            print("\nEncerrando busca.")
-            break
-
-        gr = check_input(pergunta)
-        if not gr.ok:
-            print(safe_refusal(gr.reason))
-            continue
-
-        resultados = search(embedder, store, pergunta)
-        print_results(resultados)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("question", nargs="?")
+    parser.add_argument("--document-id")
+    args = parser.parse_args()
+    store = FAISSStore().load()
+    if not args.document_id:
+        for document in store.list_documents():
+            print(document["document_id"], document["filename"], document["document_title"])
+        return
+    result = check_input(args.question or "")
+    if not result.ok:
+        parser.error(result.reason)
+    if args.document_id not in {doc["document_id"] for doc in store.list_documents()}:
+        parser.error("document_id não encontrado")
+    vector = Embedder().embed_query(args.question)
+    for hit in store.search(vector, document_id=args.document_id):
+        print(hit["score"], hit["chunk_id"], hit["clause_title"], hit["content"][:500])
 
 if __name__ == "__main__":
     main()

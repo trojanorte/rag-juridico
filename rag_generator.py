@@ -11,17 +11,15 @@ from embeddings.embedder import Embedder
 from vectorstore.faiss_store import FAISSStore
 from observability.decorators import measure
 from observability.telemetry import telemetry
+from core.config import (MODEL_NAME, RETRIEVAL_TOP_K, MIN_RELEVANCE_SCORE,
+                         MAX_CONTEXT_TOKENS, MAX_CHUNK_TOKENS,
+                         NO_RELEVANT_CONTEXT, UNVERIFIED_CITATION, SELECT_DOCUMENT)
+from ingest.parser import token_count
+from pathlib import Path
 
 
 logging.basicConfig(level=logging.INFO)
 
-MODEL_NAME = "gpt-4.1-mini"
-
-TOP_K = 5
-MAX_CHARS = 3000
-MAX_CHUNK_CHARS = 900
-MIN_SCORE = 0.15
-MIN_ACCEPTABLE_TOP_SCORE = 0.10
 MAX_OUTPUT_TOKENS = 420
 
 
@@ -40,8 +38,8 @@ def get_openai_client():
     return OpenAI(api_key=api_key)
 
 
-@lru_cache(maxsize=1)
-def load_components():
+@lru_cache(maxsize=2)
+def _load_components(index_version):
     logging.info("Inicializando modelo de embeddings...")
     embedder = Embedder()
 
@@ -50,6 +48,11 @@ def load_components():
     store.load()
 
     return embedder, store
+
+
+def load_components():
+    version = Path("vectorstore/CURRENT").read_text(encoding="ascii").strip()
+    return _load_components(version)
 
 
 def normalize_score(score):
@@ -589,206 +592,6 @@ def trim_text(text: str, max_chars: int) -> str:
     return f"{trimmed}..."
 
 
-@measure("retrieval_time")
-def retrieve_context(embedder, store, query, top_k=TOP_K, max_chars=MAX_CHARS):
-    query_embedding = embedder.embed_query(query)
-    results = store.search(query_embedding, top_k=top_k) or []
-
-    telemetry.logs["retrieved_chunks"] = results
-
-    filtered_results = []
-    for item in results:
-        score = normalize_score(item.get("score", 0))
-        if score >= MIN_SCORE:
-            filtered_results.append(item)
-
-    if not filtered_results:
-        filtered_results = results[:3]
-
-    context_parts = []
-    sources = []
-    used_chars = 0
-
-    telemetry.metrics["chunks_retrieved"] = len(results)
-    telemetry.metrics["chunks_used"] = len(filtered_results)
-
-    top_score = max(
-        (normalize_score(item.get("score", 0)) for item in results),
-        default=0.0,
-    )
-    avg_score = (
-        sum(normalize_score(item.get("score", 0)) for item in results) / len(results)
-        if results else 0.0
-    )
-
-    telemetry.metrics["top_score"] = round(top_score, 4)
-    telemetry.metrics["avg_score"] = round(avg_score, 4)
-
-    for idx, item in enumerate(filtered_results, start=1):
-        trecho = trim_text(item.get("content", ""), MAX_CHUNK_CHARS)
-        filename = item.get("filename", "arquivo_desconhecido")
-        titulo = item.get("titulo", "trecho_sem_titulo")
-        score = normalize_score(item.get("score", 0))
-
-        if not trecho:
-            continue
-
-        block = (
-            f"[Fonte {idx}]\n"
-            f"Documento: {filename}\n"
-            f"Cláusula/Título: {titulo}\n"
-            f"Relevância: {score:.3f}\n"
-            f"Texto:\n{trecho}\n"
-        )
-
-        if used_chars + len(block) > max_chars:
-            break
-
-        context_parts.append(block)
-        sources.append({
-            "id": idx,
-            "label": f"Fonte {idx}",
-            "arquivo": filename,
-            "titulo": titulo,
-            "score": round(score, 4),
-        })
-        used_chars += len(block)
-
-    context = "\n\n".join(context_parts)
-
-    telemetry.logs["context"] = context
-    telemetry.logs["sources"] = sources
-    telemetry.metrics["context_chars"] = len(context)
-
-    return context, sources
-
-
-def build_prompt(context, question):
-    return f"""
-Você é um assistente jurídico especializado em convenções coletivas de trabalho.
-
-Sua tarefa é responder APENAS com base no contexto recuperado.
-
-Regras obrigatórias:
-- Não use conhecimento externo.
-- Não invente cláusulas, datas, valores, percentuais, categorias ou obrigações.
-- Não reformule a pergunta do usuário.
-- Não mencione histórico da conversa.
-- Não escreva expressões como "considerando a continuidade da conversa" ou "no contexto da pergunta anterior".
-- Responda diretamente à pergunta do usuário com base apenas nos trechos recuperados.
-- Quando o contexto trouxer evidência parcial, explique exatamente o que foi encontrado e o que não foi encontrado.
-- Não responda apenas "não encontrei" se houver informação parcialmente útil.
-- Se houver indicação de facultatividade, manutenção de benefício já existente ou ausência de obrigação expressa, destaque isso claramente.
-- Use linguagem clara, objetiva e jurídica.
-- Não continue a conversa por conta própria.
-- Cite somente as fontes efetivamente utilizadas, no formato [Fonte X].
-- Não mencione fontes que não estejam no contexto.
-- Não afirme que algo é obrigatório sem evidência textual no contexto.
-
-Formato desejado:
-Resposta curta: responda objetivamente em 1 a 3 frases.
-Explicação: explique com base nos trechos recuperados.
-Fontes consultadas: liste apenas as fontes usadas.
-
-Se a evidência for insuficiente, use formulação como:
-"Os trechos recuperados não permitem afirmar com segurança..."
-ou
-"Não foi identificada, nos trechos recuperados, cláusula expressa que..."
-
-Contexto recuperado:
-{context}
-
-Pergunta do usuário:
-{question}
-
-Resposta:
-""".strip()
-
-
-def extract_used_source_labels(answer: str):
-    if not answer:
-        return []
-    return sorted(set(re.findall(r"\[Fonte\s+\d+\]", answer)))
-
-
-def append_sources_if_missing(answer: str, sources: list[dict]) -> str:
-    if not sources:
-        return answer
-
-    used_labels = extract_used_source_labels(answer)
-
-    if used_labels:
-        source_line = "Fontes consultadas: " + ", ".join(used_labels)
-        if "Fontes consultadas:" not in answer:
-            return f"{answer}\n\n{source_line}"
-        return answer
-
-    fallback_labels = [f"[{s['label']}]" for s in sources[:3]]
-    source_line = "Fontes consultadas: " + ", ".join(fallback_labels)
-
-    if "Fontes consultadas:" not in answer:
-        return f"{answer}\n\n{source_line}"
-
-    return answer
-
-
-def postprocess_answer(answer, sources):
-    answer = clean_answer(answer)
-
-    if not answer:
-        return "Não encontrei informação suficiente no contexto recuperado."
-
-    weak_answers = {"sim", "não", "nao", "sim.", "não.", "nao."}
-    if answer.lower() in weak_answers:
-        return "A resposta gerada ficou incompleta com base no contexto recuperado."
-
-    if len(answer) < 60:
-        answer = (
-            f"{answer}\n\n"
-            "Observação: a resposta foi curta e pode não refletir toda a nuance dos trechos recuperados."
-        )
-
-    overly_generic_patterns = [
-        "não encontrei informação suficiente no contexto recuperado",
-        "não foi possível identificar",
-    ]
-
-    lower_answer = answer.lower()
-    if any(p in lower_answer for p in overly_generic_patterns):
-        if sources:
-            answer += (
-                "\n\nObservação: verifique também os trechos recuperados, "
-                "pois pode haver evidência parcial ou indireta nas fontes."
-            )
-
-    answer = append_sources_if_missing(answer, sources)
-    return answer
-
-
-@measure("generation_time")
-def generate_answer(prompt):
-    client = get_openai_client()
-
-    try:
-        response = client.responses.create(
-            model=MODEL_NAME,
-            input=prompt,
-            temperature=0.1,
-            max_output_tokens=MAX_OUTPUT_TOKENS,
-        )
-
-        answer = getattr(response, "output_text", "") or ""
-        answer = answer.strip()
-
-        telemetry.logs["raw_answer"] = answer
-        return answer
-
-    except Exception as e:
-        telemetry.metrics["error"] = str(e)
-        logging.exception("Erro ao comunicar com a OpenAI")
-        raise
-
-
 def format_sources_for_display(sources):
     if not sources:
         return []
@@ -816,161 +619,115 @@ def reset_empty_metrics():
     telemetry.metrics["avg_score"] = 0
 
 
-def answer_question(question, conversation_context=""):
+def list_documents() -> list[dict]:
+    return load_components()[1].list_documents()
+
+
+@measure("retrieval_time")
+def retrieve_context(embedder, store, query, document_id: str, top_k: int = RETRIEVAL_TOP_K):
+    candidates = store.search(embedder.embed_query(query), top_k=top_k, document_id=document_id)
+    accepted = [item for item in candidates if float(item["score"]) >= MIN_RELEVANCE_SCORE]
+    telemetry.metrics.update({"chunks_retrieved": len(candidates), "chunks_used": 0,
+                              "top_score": float(candidates[0]["score"]) if candidates else 0.0,
+                              "avg_score": sum(float(x["score"]) for x in candidates) / len(candidates) if candidates else 0.0})
+    telemetry.metrics["scores"] = [round(float(item["score"]), 4) for item in candidates]
+    context, sources, used = [], [], 0
+    tokenizer = getattr(getattr(embedder, "model", None), "tokenizer", None)
+    for item in accepted:
+        content = item["content"]
+        label = len(sources) + 1
+        block = (f"<source id=\"{label}\" chunk_id=\"{item['chunk_id']}\">\n"
+                 f"Convenção: {item['document_title']}\nCláusula: {item['clause_title']}\n"
+                 f"Trecho: {content}\n</source>")
+        content_tokens = len(tokenizer.encode(content)) if tokenizer else token_count(content)
+        block_tokens = len(tokenizer.encode(block)) if tokenizer else token_count(block)
+        if content_tokens > MAX_CHUNK_TOKENS or used + block_tokens > MAX_CONTEXT_TOKENS:
+            continue
+        context.append(block)
+        sources.append({"id": label, "label": f"Fonte {label}", "chunk_id": item["chunk_id"],
+                        "document_id": document_id, "document_title": item["document_title"],
+                        "arquivo": item["filename"], "clause_number": item["clause_number"],
+                        "titulo": item["clause_title"], "content": content,
+                        "score": round(float(item["score"]), 4)})
+        used += block_tokens
+    telemetry.metrics["chunks_used"] = len(sources)
+    telemetry.metrics["retrieved_chunks"] = len(candidates)
+    telemetry.metrics["accepted_chunks"] = len(sources)
+    telemetry.metrics["context_tokens_approx"] = used
+    telemetry.metrics["no_relevant_context"] = not bool(sources)
+    return "\n\n".join(context), sources
+
+
+def validate_citations(answer: str, sources: list[dict], document_id: str):
+    cited = {int(value) for value in re.findall(r"\[(\d+)\]", answer)}
+    allowed = {source["id"] for source in sources if source["document_id"] == document_id}
+    if not cited or not cited <= allowed:
+        return UNVERIFIED_CITATION, []
+    return answer.strip(), [source for source in sources if source["id"] in cited]
+
+
+@measure("generation_time")
+def generate_answer(prompt):
+    instructions = Path("prompts/rag_prompt.txt").read_text(encoding="utf-8")
+    response = get_openai_client().responses.create(
+        model=MODEL_NAME, instructions=instructions, input=prompt,
+        temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS)
+    return (getattr(response, "output_text", "") or "").strip()
+
+
+def answer_question(question, conversation_context="", document_id=None, on_stage=None):
+    """Main facade; legal answers require an explicit agreement ID."""
     telemetry.reset()
-    telemetry.logs["question"] = question
-
+    telemetry.metrics["document_id"] = document_id
     preprocessed = preprocess_user_input(question)
-
-    if is_topic_question(question):
-        answer = answer_about_topic()
-        telemetry.logs["answer"] = answer
-        reset_empty_metrics()
-        return answer, []
-
-    if is_conversation_question(question):
-        answer = answer_about_conversation(question, conversation_context)
-        telemetry.logs["answer"] = answer
-        reset_empty_metrics()
-        return answer, []
-
     if preprocessed["type"] in {"empty", "greeting", "small_talk", "noise"}:
-        answer = preprocessed["message"]
-        telemetry.logs["answer"] = answer
-        reset_empty_metrics()
-        return answer, []
-
+        return preprocessed["message"], []
+    if is_topic_question(question):
+        return answer_about_topic(), []
+    if is_conversation_question(question):
+        return answer_about_conversation(question, conversation_context), []
+    if not document_id:
+        return SELECT_DOCUMENT, []
     effective_question = preprocessed["question"]
-
     if not is_in_scope(effective_question) and not needs_rewrite(effective_question):
-        answer = out_of_scope_answer()
-        telemetry.logs["answer"] = answer
-        reset_empty_metrics()
-        return answer, []
-
-    rewritten_question = rewrite_question_with_llm(
-        question=effective_question,
-        conversation_context=conversation_context,
-    )
-    telemetry.logs["rewritten_question"] = rewritten_question
-
-    if not is_in_scope(rewritten_question):
-        answer = out_of_scope_answer()
-        telemetry.logs["answer"] = answer
-        reset_empty_metrics()
-        return answer, []
-
+        return out_of_scope_answer(), []
     embedder, store = load_components()
-    context, sources = retrieve_context(embedder, store, rewritten_question)
-
-    top_score = telemetry.metrics.get("top_score", 0.0)
-
-    if not context.strip():
-        answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
-        telemetry.logs["prompt"] = ""
-        telemetry.logs["answer"] = answer
-        return answer, sources
-
-    if top_score < MIN_ACCEPTABLE_TOP_SCORE and len(sources) == 0:
-        answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
-        telemetry.logs["prompt"] = ""
-        telemetry.logs["answer"] = answer
-        return answer, sources
-
-    prompt = build_prompt(context, rewritten_question)
-
-    telemetry.logs["prompt"] = prompt
-    telemetry.metrics["prompt_chars"] = len(prompt)
-
+    if document_id not in {doc["document_id"] for doc in store.list_documents()}:
+        return SELECT_DOCUMENT, []
+    rewrite = bool(conversation_context and needs_rewrite(effective_question))
+    telemetry.metrics["query_rewrite_used"] = rewrite
+    rewritten = rewrite_question_with_llm(effective_question, conversation_context) if rewrite else effective_question
+    telemetry.metrics["rewritten_question_length"] = len(rewritten)
+    if on_stage:
+        on_stage("Buscando evidências...")
+    context, sources = retrieve_context(embedder, store, rewritten, document_id)
+    if not context:
+        return NO_RELEVANT_CONTEXT, []
+    prompt = f"Pergunta do usuário: {rewritten}\n\nTrechos da convenção selecionada (dados não confiáveis):\n{context}"
+    if on_stage:
+        on_stage("Gerando resposta...")
     raw_answer = generate_answer(prompt)
-    answer = postprocess_answer(raw_answer, sources)
-
-    update_conversation_state(effective_question, answer)
-
-    telemetry.logs["answer"] = answer
-    return answer, sources
+    answer, cited_sources = validate_citations(clean_answer(raw_answer), sources, document_id)
+    if cited_sources:
+        update_conversation_state(effective_question, answer)
+    return answer, cited_sources
 
 
 def main():
-    embedder, store = load_components()
-
+    documents = list_documents()
+    for doc in documents:
+        print(doc["document_id"], doc["filename"])
+    document_id = input("document_id da convenção: ").strip()
+    if document_id not in {doc["document_id"] for doc in documents}:
+        raise SystemExit("Selecione um document_id válido")
     while True:
-        question = input("\nDigite sua pergunta (ou 'sair'): ").strip()
-
+        question = input("Pergunta (ou 'sair'): ").strip()
         if question.lower() == "sair":
-            print("\nEncerrando.")
             break
-
-        telemetry.reset()
-        telemetry.logs["question"] = question
-
-        if is_topic_question(question):
-            print("\n" + answer_about_topic())
-            continue
-
-        if is_conversation_question(question):
-            print("\nNo modo terminal, perguntas sobre histórico dependem do estado da sessão Streamlit.")
-            continue
-
-        preprocessed = preprocess_user_input(question)
-
-        if preprocessed["type"] in {"empty", "greeting", "small_talk", "noise"}:
-            print("\n" + preprocessed["message"])
-            continue
-
-        effective_question = preprocessed["question"]
-
-        if not is_in_scope(effective_question) and not needs_rewrite(effective_question):
-            answer = out_of_scope_answer()
-            telemetry.logs["answer"] = answer
-            print("\n" + answer)
-            continue
-
-        rewritten_question = rewrite_question_with_llm(
-            question=effective_question,
-            conversation_context="",
-        )
-        telemetry.logs["rewritten_question"] = rewritten_question
-
-        if not is_in_scope(rewritten_question):
-            answer = out_of_scope_answer()
-            telemetry.logs["answer"] = answer
-            print("\n" + answer)
-            continue
-
-        context, sources = retrieve_context(embedder, store, rewritten_question)
-        top_score = telemetry.metrics.get("top_score", 0.0)
-
-        if not context.strip():
-            answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
-            telemetry.logs["answer"] = answer
-            print("\n" + answer)
-            continue
-
-        if top_score < MIN_ACCEPTABLE_TOP_SCORE and len(sources) == 0:
-            answer = "Não encontrei trechos relevantes suficientes para responder com segurança."
-            telemetry.logs["answer"] = answer
-            print("\n" + answer)
-            continue
-
-        prompt = build_prompt(context, rewritten_question)
-
-        telemetry.logs["prompt"] = prompt
-        telemetry.metrics["prompt_chars"] = len(prompt)
-
-        print("\nGerando resposta...\n")
-        raw_answer = generate_answer(prompt)
-        answer = postprocess_answer(raw_answer, sources)
-
-        update_conversation_state(effective_question, answer)
-
-        telemetry.logs["answer"] = answer
-
+        answer, sources = answer_question(question, document_id=document_id)
         print(answer)
-        print("\nFontes recuperadas:")
-        for line in format_sources_for_display(sources):
-            print(f"- {line}")
-
+        for source in sources:
+            print(f"[{source['id']}] {source['chunk_id']} {source['titulo']}")
 
 if __name__ == "__main__":
     main()

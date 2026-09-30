@@ -158,4 +158,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit("Avaliador heurístico legado desativado. Use evaluation/evaluate_retrieval.py.")

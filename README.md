@@ -87,7 +87,3 @@ Novos registros no banco guardam `trace_id`, sessão, métricas, `document_id`, 
 ## Estrutura
 
 `ingest/` extrai documentos; `embeddings/` gera vetores; `vectorstore/` armazena FAISS e catálogo JSONL; `rag_generator.py` é a fachada `answer_question(question, conversation_context="", document_id=None)`; `app.py` é a UI; `observability/` cuida de logs/métricas; `evaluation/` contém datasets e benchmark; `tests/` cobre regressões. Veja [ARCHITECTURE.md](ARCHITECTURE.md), [AUDITORIA_RAG.md](AUDITORIA_RAG.md) e [MELHORIAS_RAG.md](MELHORIAS_RAG.md).
-
-## Limitações
-
-O threshold inicial precisa de calibração adicional com revisão humana. Citações são validadas estruturalmente, sem verificador semântico de cada afirmação. DOCX pode perder tabelas/layout/página; frases muito longas podem ser subdivididas por palavras para caber no E5. Metadados jurídicos não confirmados permanecem vazios. Não há upload público, API REST, banco vetorial externo ou licença declarada neste repositório. Screenshot real será adicionado após validação visual em navegador; não foi fabricado para esta entrega.

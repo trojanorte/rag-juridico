@@ -1,0 +1,10 @@
+{
+  "index_version": "272d97f80dbb49acbe5b64f8fb66b11a",
+  "created_at": "2026-09-30T18:46:01.428293+00:00",
+  "embedding_model": "intfloat/multilingual-e5-base",
+  "embedding_dimension": 768,
+  "document_count": 34,
+  "chunk_count": 1988,
+  "corpus_hash": "0db71c520ceb70e843de608c1028506aafa47552bef59e8ea1b42bbd197016ab",
+  "parser_version": "2"
+}
